@@ -10,6 +10,18 @@ var fighter
 var arena
 var cooldown_remaining: float = 0.0
 var active: bool = true
+var slot_id: String = ""
+var phase_type: String = "主动"
+var charge_time: float = 0.0
+var release_time: float = 0.0
+var charge_can_move: bool = true
+var charge_image_path: String = ""
+var release_image_path: String = ""
+var charge_texture: Texture2D
+var release_texture: Texture2D
+var phase: String = "normal"
+var phase_remaining: float = 0.0
+var _phase_target = null
 
 
 func setup(owner_fighter, battle_arena) -> void:
@@ -17,10 +29,78 @@ func setup(owner_fighter, battle_arena) -> void:
 	arena = battle_arena
 	cooldown_remaining = 0.0
 	active = true
+	var library = load("res://scripts/core/character_library.gd")
+	charge_texture = library.texture_from_path(charge_image_path)
+	release_texture = library.texture_from_path(release_image_path)
 
 
 func tick(delta: float) -> void:
 	cooldown_remaining = maxf(0.0, cooldown_remaining - delta)
+	if not active or fighter == null:
+		return
+	if phase != "normal":
+		phase_remaining = maxf(0.0, phase_remaining - delta)
+		if fighter.visual_skill == self:
+			fighter.visual_remaining = phase_remaining
+		if phase_remaining <= 0.000001:
+			if phase == "charge":
+				_perform_cast()
+			else:
+				cancel_cast()
+
+func request_cast(target) -> bool:
+	if not can_act() or cooldown_remaining > 0 or phase != "normal" or fighter.casting_skill != null or fighter.dash_remaining > 0:
+		return false
+	_phase_target = target
+	fighter.casting_skill = self
+	if charge_time > 0:
+		phase = "charge"
+		phase_remaining = charge_time
+		_set_visual("charge", charge_texture, charge_time)
+	else:
+		_perform_cast()
+	return true
+
+func _perform_cast() -> void:
+	if not can_act() or not arena.running:
+		cancel_cast()
+		return
+	if _phase_target == null or not arena.is_enemy(fighter, _phase_target) or not _phase_target.alive:
+		_phase_target = arena.opponent(fighter)
+	if _phase_target == null:
+		cancel_cast()
+		return
+	phase = "release"
+	phase_remaining = release_time
+	_set_visual("release", release_texture, release_time)
+	activate(_phase_target)
+	_phase_target = null
+	if release_time <= 0:
+		cancel_cast()
+
+func _set_visual(kind: String, texture: Texture2D, seconds: float) -> void:
+	fighter.visual_skill = self
+	fighter.visual_phase = kind
+	fighter.visual_remaining = seconds
+	fighter.visual_texture = texture
+
+func flash_release() -> void:
+	if fighter.casting_skill != null or release_time <= 0:
+		return
+	_set_visual("release", release_texture, release_time)
+
+func cancel_cast() -> void:
+	phase = "normal"
+	phase_remaining = 0.0
+	_phase_target = null
+	if fighter != null:
+		if fighter.casting_skill == self:
+			fighter.casting_skill = null
+		if fighter.visual_skill == self:
+			fighter.visual_skill = null
+			fighter.visual_phase = "normal"
+			fighter.visual_texture = null
+			fighter.visual_remaining = 0.0
 
 
 func activate(_target) -> void:

@@ -10,6 +10,7 @@ extends "res://scripts/skills/skill_base.gd"
 
 var strike_remaining: float = 0.0
 var strike_hit: bool = false
+var hit_targets: Dictionary = {}
 var previous_position: Vector2 = Vector2.ZERO
 var dash_start: Vector2 = Vector2.ZERO
 
@@ -28,15 +29,17 @@ func tick(delta: float) -> void:
 		return
 	var target = arena.opponent(fighter)
 	if strike_remaining > 0.0:
-		if target != null and target.alive and not strike_hit:
-			var closest: Vector2 = Geometry2D.get_closest_point_to_segment(target.position, previous_position, fighter.position)
-			var hit_distance: float = slash_radius + target.definition.radius
-			if closest.distance_squared_to(target.position) <= hit_distance * hit_distance:
-				_hit_target(target)
+		for enemy in arena.get_targets(fighter):
+			if hit_targets.has(enemy.fighter_id):
+				continue
+			var closest: Vector2 = Geometry2D.get_closest_point_to_segment(enemy.position, previous_position, fighter.position)
+			var hit_distance: float = slash_radius + enemy.definition.radius
+			if closest.distance_squared_to(enemy.position) <= hit_distance * hit_distance:
+				_hit_target(enemy)
 		strike_remaining = maxf(0.0, strike_remaining - delta)
 	if target != null and target.alive and cooldown_remaining <= 0.0 and strike_remaining <= 0.0:
 		if fighter.position.distance_to(target.position) <= dash_trigger_range:
-			activate(target)
+			request_cast(target)
 	previous_position = fighter.position
 
 
@@ -50,6 +53,7 @@ func activate(target) -> void:
 	fighter.dash_remaining = dash_duration
 	strike_remaining = dash_duration + 0.05
 	strike_hit = false
+	hit_targets.clear()
 	dash_start = fighter.position
 	previous_position = fighter.position
 	arena.emit_effect("dash", fighter.position, fighter.definition.theme_color, {
@@ -62,6 +66,7 @@ func activate(target) -> void:
 
 func _hit_target(target) -> void:
 	strike_hit = true
+	hit_targets[target.fighter_id] = true
 	arena.apply_damage(fighter, target, fighter.definition.attack * damage_multiplier, skill_id)
 	arena.apply_status(fighter, target, "slow", slow_duration, slow_power)
 	var direction: Vector2 = fighter.dash_velocity.normalized()

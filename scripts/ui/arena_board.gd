@@ -3,6 +3,11 @@ extends Control
 
 var arena
 var preview_definitions: Array = []
+var preview_config = null
+var preview_positions: Array = []
+var world_size := Vector2(760,760)
+var render_scale: float = 1.0
+const TEAM_COLORS := [Color("78e5dc"),Color("dec58d"),Color("bb96ff"),Color("ff92ae"),Color("91dda2"),Color("8abfff"),Color("ffa16a"),Color("d8e3ef")]
 var effects: Array = []
 var trails: Dictionary = {}
 var hit_flashes: Dictionary = {}
@@ -33,6 +38,7 @@ func reset_visuals() -> void:
 	hit_flashes.clear()
 	visual_time = 0.0
 	_trail_timer = 0.0
+	queue_redraw()
 
 func ingest(items: Array) -> void:
 	for event in items:
@@ -85,8 +91,14 @@ func _text(text: String, at: Vector2, size_px: int, color: Color, centered: bool
 	draw_string(font, p, text, HORIZONTAL_ALIGNMENT_LEFT, -1, size_px, color)
 
 func _draw() -> void:
-	var scale_factor: float = minf(size.x, size.y) / FIELD
-	var offset: Vector2 = (size - Vector2.ONE * FIELD * scale_factor) * 0.5
+	world_size = Vector2(760,760)
+	if arena != null and not arena.fighters.is_empty():
+		world_size = arena.bounds.end + Vector2(48,48)
+	elif preview_config != null:
+		world_size = Vector2(preview_config.width + 96,preview_config.height + 96)
+	var scale_factor: float = minf(size.x / world_size.x,size.y / world_size.y)
+	render_scale = scale_factor
+	var offset: Vector2 = (size - world_size * scale_factor) * 0.5
 	world_transform = Transform2D(0.0, Vector2.ONE * scale_factor, 0.0, offset)
 	draw_set_transform_matrix(world_transform)
 	_draw_field()
@@ -97,45 +109,57 @@ func _draw() -> void:
 		for visual in arena.get_visuals():
 			_draw_skill_visual(visual)
 		for f in arena.fighters:
-			_draw_fighter(f.definition, f.position, f.side, f.health_ratio(), f.shield, hit_flashes.get(f.side, 0.0), f.alive, f.velocity, f.statuses)
+			_draw_fighter(f.definition, f.position, f.side, f.health_ratio(), f.shield, hit_flashes.get(f.side, 0.0), f.alive, f.velocity, f.statuses, f.visual_texture, TEAM_COLORS[f.team_id % TEAM_COLORS.size()], f.visual_phase)
 	else:
-		for i in range(mini(2, preview_definitions.size())):
-			var p := Vector2(252 + i * 256, 380)
-			_draw_fighter(preview_definitions[i], p, i, 1.0, 0.0, 0.0, true, Vector2.ZERO, {})
-		_text("选择对手，开启一场新的交锋", Vector2(380, 552), 18, Color("677f96"), true)
-		_text("自动战斗  /  自由搭配  /  无限可能", Vector2(380, 582), 12, Color("4a657f"), true)
+		var positions: Array = []
+		if preview_config != null:
+			positions = preview_positions
+		for i in range(preview_definitions.size()):
+			var p: Vector2 = world_size * 0.5
+			if i < positions.size():
+				p = positions[i]
+			elif preview_definitions.size() > 1:
+				p += Vector2.from_angle(TAU * i / preview_definitions.size()) * 150
+			var team_id: int = int(preview_config.participants[i].team) if preview_config != null and preview_config.mode == "teams" else i
+			_draw_fighter(preview_definitions[i],p,i,1.0,0.0,0.0,true,Vector2.ZERO,{},null,TEAM_COLORS[team_id % 8])
+		if preview_definitions.size() > 1:
+			_text("配置完成后，开始自动对战",Vector2(world_size.x * 0.5,world_size.y - 100),16,Color("677f96"),true)
 	for e in effects:
 		_draw_effect(e)
 	draw_set_transform(Vector2.ZERO)
 
 func _draw_field() -> void:
-	_box(Rect2(5, 12, 750, 744), Color("040a13"), 74)
-	_box(Rect2(7, 7, 746, 746), Color("162a42"), 68, Color("34546e"), 2)
-	_box(Rect2(20, 20, 720, 720), Color("263f5a"), 58, Color("436783"), 1)
-	_box(Rect2(32, 32, 696, 696), Color("102337"), 48, Color("081321"), 3)
-	_box(Rect2(47, 47, 666, 666), Color("122b40"), 36, Color("416579"), 1)
+	var w: float = world_size.x
+	var h: float = world_size.y
+	_box(Rect2(5,12,w-10,h-16),Color("040a13"),64)
+	_box(Rect2(7,7,w-14,h-14),Color("162a42"),60,Color("34546e"),2)
+	_box(Rect2(20,20,w-40,h-40),Color("263f5a"),50,Color("436783"),1)
+	_box(Rect2(32,32,w-64,h-64),Color("102337"),40,Color("081321"),3)
+	_box(Rect2(47,47,w-94,h-94),Color("122b40"),30,Color("416579"),1)
 	if background_texture != null:
-		draw_texture_rect(background_texture, Rect2(55, 55, 650, 650), false)
+		draw_texture_rect(background_texture,Rect2(55,55,w-110,h-110),false)
 	else:
-		for x in range(92, 680, 42):
-			for y in range(92, 680, 42):
-				draw_circle(Vector2(x, y), 1.0, Color(0.38, 0.63, 0.70, 0.13))
-		draw_line(Vector2(380, 48), Vector2(380, 712), Color(0.45, 0.75, 0.82, 0.14), 1.0, true)
-		draw_circle(Vector2(380, 380), 110, Color(0.3, 0.6, 0.7, 0.05))
-		draw_arc(Vector2(380, 380), 110, 0, TAU, 96, Color(0.4, 0.7, 0.8, 0.16), 1.0, true)
-		draw_arc(Vector2(380, 380), 125, 0, TAU, 96, Color(0.4, 0.7, 0.8, 0.05), 1.0, true)
-		for angle in [0.0, PI * 0.5, PI, PI * 1.5]:
-			var direction := Vector2.from_angle(angle)
-			draw_line(Vector2(380, 380) + direction * 98, Vector2(380, 380) + direction * 121, Color("31536b"), 2.0, true)
-		draw_colored_polygon(PackedVector2Array([Vector2(380, 354), Vector2(389, 371), Vector2(406, 380), Vector2(389, 389), Vector2(380, 406), Vector2(371, 389), Vector2(354, 380), Vector2(371, 371)]), Color("29485f"))
-	for x in [19.0, 734.0]:
-		_box(Rect2(x, 294, 7, 172), Color("0b1827"), 3)
-		_box(Rect2(x + 1, 321, 5, 118), CYAN * Color(1, 1, 1, 0.65), 2)
-	for y in [19.0, 734.0]:
-		_box(Rect2(294, y, 172, 7), Color("0b1827"), 3)
-		_box(Rect2(335, y + 1, 90, 5), GOLD * Color(1, 1, 1, 0.75), 2)
-	_text("STAR RING", Vector2(380, 90), 11, Color("4d748c"), true)
-	_text("01  /  训练竞技场", Vector2(380, 683), 11, Color("4d748c"), true)
+		var grid_step: int = maxi(42,int(maxf(w,h) / 26.0))
+		for x in range(90,int(w)-70,grid_step):
+			for y in range(90,int(h)-70,grid_step):
+				draw_circle(Vector2(x,y),1,Color(0.38,0.63,0.70,0.13))
+		var center: Vector2 = world_size * 0.5
+		draw_line(Vector2(center.x,48),Vector2(center.x,h-48),Color(0.45,0.75,0.82,0.14),1,true)
+		var radius: float = minf(w,h) * 0.145
+		draw_circle(center,radius,Color(0.3,0.6,0.7,0.05))
+		draw_arc(center,radius,0,TAU,96,Color(0.4,0.7,0.8,0.16),1,true)
+		draw_arc(center,radius+15,0,TAU,96,Color(0.4,0.7,0.8,0.05),1,true)
+		var star := PackedVector2Array()
+		for i in range(8):
+			star.append(center + Vector2.from_angle(-PI*0.5+float(i)*PI*0.25) * (26 if i%2==0 else 12))
+		draw_colored_polygon(star,Color("29485f"))
+	for x in [19.0,w-26]:
+		_box(Rect2(x,h*0.5-86,7,172),Color("0b1827"),3)
+		_box(Rect2(x+1,h*0.5-59,5,118),Color(CYAN,0.65),2)
+	for y in [19.0,h-26]:
+		_box(Rect2(w*0.5-86,y,172,7),Color("0b1827"),3)
+		_box(Rect2(w*0.5-45,y+1,90,5),Color(GOLD,0.75),2)
+	_text("STAR RING",Vector2(w*0.5,90),11,Color("4d748c"),true)
 
 func _draw_trail(f) -> void:
 	if not trails.has(f.side):
@@ -147,7 +171,7 @@ func _draw_trail(f) -> void:
 		color.a = alpha
 		draw_line(positions[i - 1], positions[i], color, 3.0, true)
 
-func _draw_fighter(definition, position: Vector2, side: int, hp: float, shield: float, flash: float, alive: bool, velocity: Vector2, statuses: Dictionary) -> void:
+func _draw_fighter(definition, position: Vector2, side: int, hp: float, shield: float, flash: float, alive: bool, velocity: Vector2, statuses: Dictionary, state_texture: Texture2D = null, team_color: Color = CYAN, phase: String = "normal") -> void:
 	var tint: Color = definition.theme_color
 	var alpha: float = 1.0 if alive else 0.35
 	var bob: float = sin(visual_time * 4.0 + float(side) * PI) * 2.5 if alive else 0.0
@@ -161,11 +185,12 @@ func _draw_fighter(definition, position: Vector2, side: int, hp: float, shield: 
 	var tilt: float = clampf(velocity.x / 1800.0, -0.12, 0.12) if alive else 0.0
 	var pulse: float = 1.0 + sin(visual_time * 4.0 + side) * 0.015 + flash * 0.35
 	draw_set_transform_matrix(world_transform * Transform2D(tilt, Vector2.ONE * pulse, 0.0, pos))
-	if definition.portrait != null:
-		var image_size: Vector2 = definition.portrait.get_size()
+	var portrait: Texture2D = state_texture if state_texture != null else definition.portrait
+	if portrait != null:
+		var image_size: Vector2 = portrait.get_size()
 		var extent: Vector2 = image_size / maxf(image_size.x, image_size.y) * definition.portrait_size
 		var color := Color(1 + minf(flash * 5, 1), 1 + minf(flash * 5, 1), 1 + minf(flash * 5, 1), alpha)
-		draw_texture_rect(definition.portrait, Rect2(-extent * 0.5 + definition.portrait_offset, extent), false, color)
+		draw_texture_rect(portrait, Rect2(-extent * 0.5 + definition.portrait_offset, extent), false, color)
 	else:
 		_draw_placeholder(Vector2.ZERO, tint, definition, alpha, flash, velocity)
 	draw_set_transform_matrix(world_transform)
@@ -173,12 +198,12 @@ func _draw_fighter(definition, position: Vector2, side: int, hp: float, shield: 
 	_box(Rect2(bar.position - Vector2(2, 2), bar.size + Vector2(4, 4)), Color("060c17"), 3)
 	_box(bar, Color("223046"), 2)
 	if hp > 0:
-		_box(Rect2(bar.position, Vector2(92 * clampf(hp, 0, 1), 7)), Color(CYAN if side == 0 else GOLD, alpha), 2)
+		_box(Rect2(bar.position, Vector2(92 * clampf(hp, 0, 1), 7)), Color(team_color,alpha), 2)
 	if shield > 0:
 		_box(Rect2(bar.position + Vector2(0, 10), Vector2(92 * minf(shield / definition.max_health, 1), 3)), Color("88bdff"), 1)
 	_text(str(int(ceil(hp * definition.max_health))), position + Vector2(46, 47), 12, Color("d6e8ee"))
-	_text(definition.display_name, position + Vector2(0, -54), 14, Color("e2edf2"), true)
-	var tags := ""
+	_text("%02d · %s" % [side+1,definition.display_name], position + Vector2(0, -54), maxi(14,ceili(10/maxf(render_scale,0.1))), Color("e2edf2"), true)
+	var tags := "蓄力 " if phase == "charge" else ""
 	if statuses.has("burn"):
 		tags += "灼烧 "
 	if statuses.has("slow"):

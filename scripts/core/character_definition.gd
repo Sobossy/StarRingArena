@@ -6,6 +6,7 @@ extends Resource
 @export var display_name: String = "新角色"
 @export_multiline var description: String = ""
 @export var portrait: Texture2D
+@export var normal_image_path: String = ""
 @export_range(24.0, 180.0, 1.0) var portrait_size: float = 82.0
 @export var portrait_offset: Vector2 = Vector2.ZERO
 @export var theme_color: Color = Color("69d9ff")
@@ -15,3 +16,4 @@ extends Resource
 @export_range(8.0, 80.0, 1.0) var radius: float = 28.0
 @export_enum("bounce", "chase", "kite", "wander") var default_movement: String = "bounce"
 @export var skill_scenes: Array[PackedScene] = []
+@export var skill_slots: Array[Dictionary] = []

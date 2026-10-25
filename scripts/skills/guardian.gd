@@ -8,6 +8,8 @@ extends "res://scripts/skills/skill_base.gd"
 @export var shield_duration: float = 3.8
 @export var counter_multiplier: float = 0.65
 @export var counter_interval: float = 0.55
+@export var enable_shield: bool = true
+@export var enable_counter: bool = true
 
 var shield_timer: float = 0.0
 var counter_timer: float = 0.0
@@ -26,14 +28,14 @@ func tick(delta: float) -> void:
 		return
 	shield_timer = maxf(0.0, shield_timer - delta)
 	counter_timer = maxf(0.0, counter_timer - delta)
-	if shield_timer <= 0.0:
+	if enable_shield and shield_timer <= 0.0:
 		arena.add_shield(fighter, shield_amount, shield_duration)
 		shield_timer = maxf(0.1, shield_interval)
 	var target = arena.opponent(fighter)
 	if target == null or not target.alive or cooldown_remaining > 0.0:
 		return
 	if fighter.position.distance_to(target.position) <= melee_range:
-		activate(target)
+		request_cast(target)
 
 
 func activate(target) -> void:
@@ -49,7 +51,7 @@ func activate(target) -> void:
 
 
 func on_damage_received(event: Dictionary) -> void:
-	if not can_act() or counter_timer > 0.0 or not event.get("allow_reaction", true):
+	if not enable_counter or not can_act() or counter_timer > 0.0 or not event.get("allow_reaction", true):
 		return
 	var source = event.get("source")
 	if source == null or source == fighter or not source.alive:

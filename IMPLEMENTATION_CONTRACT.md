@@ -1,25 +1,33 @@
-# Implementation contract
+# Implementation contract — v0.2.0
 
-Godot 4.x, GDScript; all coordinates use a 760 x 760 arena. Rendering is external to simulation. Avoid circular class-name type annotations: use dynamic parameters for core/skill cross-references.
+Godot 4.7.2, GDScript, compatibility rendering. Version 0.1.0 is recoverable with Git tag baseline-v0.1.0; packaged baselines live in build/baselines/.
 
-## Core (scripts/core)
-- `character_definition.gd`: `class_name CharacterDefinition extends Resource`. Exports `id:String`, `display_name:String`, `description:String`, `portrait:Texture2D`, `portrait_size:float=82`, `portrait_offset:Vector2`, `theme_color:Color`, `max_health:float=1000`, `attack:float=38`, `speed:float=150`, `radius:float=28`, `default_movement:String`, `skill_scenes:Array[PackedScene]`.
-- `fighter.gd`: `class_name Fighter extends RefCounted`. Fields `definition`, `side:int`, `position:Vector2`, `velocity:Vector2`, `health:float`, `shield:float`, `alive:bool`, `skills:Array`, `statuses:Dictionary`, `movement_id:String`, `hit_flash:float`, `dash_velocity:Vector2`, `dash_remaining:float`, `knockback:Vector2`. Runtime state never stored in definition. Getter `health_ratio()`.
-- `battle_arena.gd`: `class_name BattleArena extends Node`. `fighters:Array`, `projectiles:Array` (dictionaries), `elapsed:float`, `duration:float=90`, `running:bool`, `winner:int` (-2 ongoing, -1 draw, 0/1 winner), `rng:RandomNumberGenerator`, `bounds:Rect2 = Rect2(48,48,664,664)`, `events:Array` (drainable presentation event queue), `event_log:Array` (bounded concise simulation log).
-- API: `start_battle(definitions:Array, movement_ids:Array, seed_value:int=42)`, `step(delta:float)`, `opponent(fighter)`, `get_targets(fighter)->Array`, `apply_damage(source,target,amount:float,skill_id:String,allow_reaction:bool=true)`, `heal(target,amount:float)`, `add_shield(target,amount:float,duration_seconds:float=4)`, `apply_status(source,target,id:String,duration_seconds:float,power:float)`, `spawn_projectile(source,options:Dictionary)`, `emit_effect(kind:String,position:Vector2,color:Color,extra:Dictionary={})`, `drain_events()->Array`, `get_visuals()->Array` (collect skills' visuals), `clear_battle()`.
-- All skills tick on fixed simulation steps, before deferred damage/death resolution so simultaneous death can draw. Damage events: dictionary `{source,target,amount,skill_id,allow_reaction}`. Skills do not call recursive damage directly; core queues it. Death halts future ticks and projectiles from that fighter. World bounds and body separation handled centrally.
-- Projectile options: `position`, `velocity`, `radius`, `damage`, `lifetime`, `color`, `skill_id`, optional `blast_radius`, `status_id`, `status_duration`, `status_power`; core assigns `source`. Projectile hit calls common damage and optional status; radial hits once per target.
-- Visual event kinds: `hit` (`position`,`amount`,`color`,`side`), `shield`, `heal`, `burst`, `slash`, `dash`, `death`, `end`; all carry position/color when relevant. Root visual renderer ignores unknown events safely.
-- Movement strategies in scripts/movement: IDs `bounce`, `chase`, `kite`, `wander`; `MovementBase extends RefCounted`, `setup(fighter,arena)`, `desired_velocity(delta)->Vector2`. Per-fighter instances. No rendering.
+## Content
 
-## Skills/content (scripts/skills, data, scenes/skills)
-- `skill_base.gd`: `class_name SkillBase extends Node`, fields `fighter`, `arena`, `cooldown_remaining:float`, `active:bool`; methods `setup(fighter,arena)`, `tick(delta)`, `activate(target)`, `on_damage_received(event:Dictionary)`, `get_visuals()->Array`.
-- Built-in registry `data/roster.gd`: `extends RefCounted`, static `get_all()->Array` returns CharacterDefinition resources in fixed order sword, mage, guard, assassin. A fifth extension example lives in examples and is not in default roster.
-- Four data resources and independent skill scenes. Orbit visual dictionary: `{kind:'sword',position:Vector2,angle:float,color:Color}`. Other visual kinds may use `ring` with position/radius/color. Event effects use core emit_effect.
-- Four intended kits: orbit blades; fireball + burn; melee + timed shield + non-recursive counter; dash slash + slow. Skill scenes export tuning values; attack scales from fighter.definition.attack. Any state belongs to skill instance.
+CharacterDefinition contains immutable authoring data, optional legacy skill_scenes, and skill_slots. CharacterLibrary overlays versioned user://characters JSON on built-in resources. PNG imports are verified and copied into characters/images. SkillCatalog is the code-only registry for saved template IDs; saves never contain executable scene paths. Slot IDs distinguish multiple instances of the same template. Do not store timers or health on shared resources.
 
-## UI/root ownership
-Root owns project.godot, main.tscn, scripts/ui, assets/fonts, README and docs, scripts/assets visuals. UI uses `load('res://data/roster.gd').get_all()`, and core APIs above. It drives arena.step at 1/60 with accumulator; pause/speed only affect accumulator. Board preserves square aspect ratio; PNG images optional, explicit vector placeholder labels otherwise.
+Built-in character IDs remain sword/mage/guard/assassin, displayed with supplied Yanqing/Himeko/Gepard/Blade sticker art. assets/stickers/manifest.json indexes 416 PNGs for the searchable browser. Export must include JSON and all textures.
 
-## Tooling/testing ownership
-Tooling agent owns tools/, *.ps1, *.cmd, tests/, build/export config (coordinate project.godot with root). Download official Godot 4.7.2 and matching export templates; if official version cannot be fetched, report evidence before substituting. Tools/install caches are ignored and not source. Tests can preload APIs above and run via headless Godot --script.
+## Skills
+
+SkillBase.request_cast(target) owns real charge and release phases. activate(target) is the concrete effect hook; tick(delta) uses simulation time. One active cast per fighter, passives and sustained effects run independently. Movement locking stops desired velocity but not knockback. Targets may be reacquired at release. Missing state textures fall back to normal. Death/end cancels casts.
+
+Guardian is decomposed into melee, shield, counter templates. The legacy guardian scene remains supported for prior extensions. Sustained orbit blades do not acquire charge phases. Counter damage uses allow_reaction=false. Per-target blade cooldowns and per-dash target sets prevent repeated damage.
+
+## Matches
+
+MatchConfig contains dimensions (480–2400 each), mode (ffa/teams), seed, duration and 2–8 participant dictionaries (definition/movement/team). start_match returns an error string without replacing a current match when validation fails. start_battle wraps legacy definitions and movements into a default FFA config.
+
+Fighter.fighter_id is unique, side remains a legacy alias, team_id controls allegiance. is_enemy/get_targets/nearest_enemy centrally define enemy selection. opponent is a nearest-enemy alias. Friendly damage and hostile status are rejected centrally; allied bodies do not block projectiles. All live bodies participate in deterministic separation.
+
+World bounds start at (48,48), rendering includes a 48-unit decorative margin. PNG dimensions never change collision or actual world speed. Rendering fits the entire rectangle. Spawn validation prevents overlapping starts.
+
+winner_team and result expose team/draw/reason. winner remains a representative actor index for old 1v1 callers. Final team survives to win; simultaneous elimination draws. At 90s compare remaining HP / starting maximum HP per team, counting dead members in the denominator.
+
+## UI and tests
+
+main.gd owns orchestration; match_panel.gd owns roster slots and config persistence; character_editor.gd owns drafts and import/browser UI; arena_board.gd is presentation only. Main advances arena at fixed 1/60 simulation steps. Per-fighter visual state follows simulation time, hit flashes decay in the presentation layer.
+
+settings.cfg configuration_v2 stores stable character IDs and map/slots. Legacy two-index selections migrate once. qa_mode isolates preferences and character files during tests.
+
+Run Test.ps1 for legacy, editor/multiplayer and UI headless tests plus cross-process persistence. Native ui_smoke.gd verifies rendering, performance_smoke.gd checks 8 sustained actors at 2x. Build.ps1 runs required checks before exporting. Pack source via Git archive and distribute the entire Windows directory, including PCK and notices.

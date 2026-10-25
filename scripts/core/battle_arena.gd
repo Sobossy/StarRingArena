@@ -22,6 +22,9 @@ var elapsed: float = 0.0
 var duration: float = 90.0
 var running: bool = false
 var winner: int = -2
+var winner_team: int = -2
+var result: Dictionary = {}
+var mode: String = "ffa"
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var bounds: Rect2 = Rect2(48.0, 48.0, 664.0, 664.0)
 var events: Array = []
@@ -32,37 +35,121 @@ var _damage_queue: Array = []
 var _next_projectile_id: int = 1
 
 func start_battle(definitions: Array, movement_ids: Array, new_seed: int = 42) -> void:
+	var config = load("res://scripts/core/match_config.gd").new()
+	config.seed_value = new_seed
+	config.duration = duration
+	for i in range(definitions.size()):
+		config.participants.append({"definition": definitions[i], "movement": movement_ids[i] if i < movement_ids.size() else definitions[i].default_movement, "team": i})
+	start_match(config)
+
+func validate_config(config) -> String:
+	if config.participants.size() < 2 or config.participants.size() > 8:
+		return "参战人数应为 2～8。"
+	if not is_finite(config.width) or not is_finite(config.height) or config.width < 480 or config.height < 480 or config.width > 2400 or config.height > 2400:
+		return "地图宽高应为 480～2400。"
+	if config.mode not in ["ffa", "teams"]:
+		return "请选择有效的对战模式。"
+	var teams: Dictionary = {}
+	for slot in config.participants:
+		var definition = slot.get("definition")
+		if definition == null or definition.max_health <= 0 or not is_finite(definition.max_health):
+			return "请选择有效角色。"
+		var team: int = int(slot.get("team", 0))
+		if config.mode == "teams" and (team < 0 or team > 3):
+			return "队伍编号应为 A～D。"
+		teams[team] = true
+	if config.mode == "teams" and teams.size() < 2:
+		return "组队对战至少需要两个有成员的队伍。"
+	if _spawn_layout(config).size() != config.participants.size():
+		return "当前地图无法无重叠地容纳这些角色，请增大地图或减小碰撞半径。"
+	return ""
+
+func _spawn_layout(config) -> Array:
+	var count: int = config.participants.size()
+	var positions: Array = []
+	var team_groups: Dictionary = {}
+	for i in range(count):
+		var team: int = i if config.mode == "ffa" else int(config.participants[i].get("team", 0))
+		if not team_groups.has(team):
+			team_groups[team] = []
+		team_groups[team].append(i)
+	var keys: Array = team_groups.keys()
+	keys.sort()
+	var local_rng := RandomNumberGenerator.new()
+	local_rng.seed = config.seed_value
+	var rotation: int = local_rng.randi_range(0, maxi(0, keys.size() - 1))
+	positions.resize(count)
+	var center := Vector2(48 + config.width * 0.5, 48 + config.height * 0.5)
+	for group_index in range(keys.size()):
+		var members: Array = team_groups[keys[group_index]]
+		var angle: float = PI + TAU * float((group_index + rotation) % keys.size()) / float(keys.size())
+		var base := center + Vector2(cos(angle) * config.width * 0.30, sin(angle) * config.height * 0.30)
+		if config.mode == "teams" and keys.size() >= 3:
+			var corners := [Vector2(0.23, 0.23),Vector2(0.77, 0.77),Vector2(0.77, 0.23),Vector2(0.23, 0.77)]
+			base = Vector2(48,48) + corners[(group_index + rotation) % 4] * Vector2(config.width, config.height)
+		var largest: float = 0
+		for member in members:
+			largest = maxf(largest, config.participants[member].definition.radius)
+		var spacing: float = largest * 2 + 12
+		var columns: int = ceili(sqrt(float(members.size())))
+		var rows: int = ceili(float(members.size()) / columns)
+		for j in range(members.size()):
+			var offset := Vector2(float(j % columns) - float(columns - 1) * 0.5, float(j / columns) - float(rows - 1) * 0.5) * spacing
+			positions[members[j]] = base + offset
+	var playfield := Rect2(48,48,config.width,config.height)
+	for i in range(count):
+		var radius: float = config.participants[i].definition.radius
+		if not playfield.grow(-radius - 1).has_point(positions[i]):
+			return []
+		for j in range(i):
+			if positions[i].distance_to(positions[j]) < radius + config.participants[j].definition.radius + 2:
+				return []
+	return positions
+
+func start_match(config) -> String:
+	var error := validate_config(config)
+	if not error.is_empty():
+		return error
+	var positions := _spawn_layout(config)
 	clear_battle()
-	if definitions.size() != 2 or definitions[0] == null or definitions[1] == null:
-		push_error("A battle requires exactly two valid CharacterDefinition resources.")
-		return
-	seed_value = new_seed
-	rng.seed = new_seed
-	for side in range(2):
+	mode = config.mode
+	bounds = Rect2(48,48,config.width,config.height)
+	duration = config.duration
+	seed_value = config.seed_value
+	rng.seed = seed_value
+	for i in range(config.participants.size()):
+		var slot: Dictionary = config.participants[i]
 		var fighter = FighterScript.new()
-		fighter.initialize(definitions[side], side)
-		fighter.position = Vector2(228.0 if side == 0 else 532.0, 380.0)
-		if side < movement_ids.size() and MOVEMENTS.has(str(movement_ids[side])):
-			fighter.movement_id = str(movement_ids[side])
-		elif not MOVEMENTS.has(fighter.movement_id):
-			fighter.movement_id = "bounce"
+		fighter.initialize(slot.definition.duplicate(true), i)
+		fighter.team_id = i if mode == "ffa" else int(slot.get("team", 0))
+		fighter.position = positions[i]
+		var movement_id: String = str(slot.get("movement", fighter.definition.default_movement))
+		fighter.movement_id = movement_id if MOVEMENTS.has(movement_id) else "bounce"
 		fighters.append(fighter)
 	running = true
+	var catalog = load("res://scripts/core/skill_catalog.gd")
 	for fighter in fighters:
 		fighter.movement = MOVEMENTS[fighter.movement_id].new()
 		fighter.movement.setup(fighter, self)
-		for packed_scene in fighter.definition.skill_scenes:
-			if packed_scene == null:
-				continue
-			var skill = packed_scene.instantiate()
-			if not skill.has_method("setup") or not skill.has_method("tick"):
-				push_warning("Ignored skill scene without setup/tick: " + packed_scene.resource_path)
-				skill.free()
-				continue
-			add_child(skill)
-			fighter.skills.append(skill)
-			skill.setup(fighter, self)
-	_log({"kind": "start", "seed": seed_value})
+		if not fighter.definition.skill_slots.is_empty():
+			for slot in fighter.definition.skill_slots:
+				var skill = catalog.instantiate(slot)
+				if skill != null:
+					_attach_skill(fighter, skill)
+		else:
+			for packed_scene in fighter.definition.skill_scenes:
+				if packed_scene != null:
+					_attach_skill(fighter, packed_scene.instantiate())
+	_log({"kind":"start", "seed":seed_value})
+	return ""
+
+func _attach_skill(fighter, skill) -> void:
+	if not skill.has_method("setup") or not skill.has_method("tick"):
+		skill.free()
+		return
+	add_child(skill)
+	fighter.skills.append(skill)
+	skill.setup(fighter, self)
 
 func step(delta: float) -> void:
 	if not running or delta <= 0.0 or not is_finite(delta):
@@ -85,23 +172,33 @@ func step(delta: float) -> void:
 	_resolve_damage()
 	_resolve_deaths_and_result()
 
+func is_enemy(first, second) -> bool:
+	return first != null and second != null and first != second and first.team_id != second.team_id
+
 func opponent(fighter):
-	for other in fighters:
-		if other != fighter and other.alive:
-			return other
-	return null
+	return nearest_enemy(fighter)
+
+func nearest_enemy(fighter):
+	var closest = null
+	var closest_distance: float = INF
+	for other in get_targets(fighter):
+		var distance: float = fighter.position.distance_squared_to(other.position)
+		if distance < closest_distance:
+			closest = other
+			closest_distance = distance
+	return closest
 
 func get_targets(fighter) -> Array:
 	var targets: Array = []
 	for other in fighters:
-		if other != fighter and other.alive:
+		if is_enemy(fighter, other) and other.alive:
 			targets.append(other)
 	return targets
 
 func apply_damage(source, target, amount: float, skill_id: String, allow_reaction: bool = true) -> void:
 	if not running or target == null or not target.alive or amount <= 0.0 or not is_finite(amount):
 		return
-	if source != null and not source.alive:
+	if source != null and (not source.alive or not is_enemy(source, target)):
 		return
 	if _damage_queue.size() >= MAX_DAMAGE_EVENTS_PER_STEP:
 		return
@@ -134,6 +231,8 @@ func add_shield(target, amount: float, duration_seconds: float = 4.0) -> void:
 
 func apply_status(source, target, id: String, duration_seconds: float, power: float) -> void:
 	if not running or target == null or not target.alive or duration_seconds <= 0.0 or id.is_empty():
+		return
+	if source != null and id in ["burn", "slow"] and not is_enemy(source, target):
 		return
 	if not is_finite(duration_seconds) or not is_finite(power):
 		return
@@ -206,6 +305,8 @@ func clear_battle() -> void:
 	elapsed = 0.0
 	tick_count = 0
 	winner = -2
+	winner_team = -2
+	result = {}
 	_next_projectile_id = 1
 
 func _exit_tree() -> void:
@@ -216,6 +317,12 @@ func _exit_tree() -> void:
 	projectiles.clear()
 
 func _update_timers(fighter, delta: float) -> void:
+	if fighter.visual_remaining > 0 and (fighter.casting_skill == null):
+		fighter.visual_remaining = maxf(0, fighter.visual_remaining - delta)
+		if fighter.visual_remaining <= 0:
+			fighter.visual_texture = null
+			fighter.visual_phase = "normal"
+			fighter.visual_skill = null
 	fighter.hit_flash = maxf(0.0, fighter.hit_flash - delta)
 	if fighter.shield_remaining > 0.0:
 		fighter.shield_remaining = maxf(0.0, fighter.shield_remaining - delta)
@@ -235,6 +342,8 @@ func _update_timers(fighter, delta: float) -> void:
 
 func _move_fighter(fighter, delta: float) -> void:
 	var desired: Vector2 = fighter.movement.desired_velocity(delta)
+	if fighter.casting_skill != null and fighter.casting_skill.phase == "charge" and not fighter.casting_skill.charge_can_move:
+		desired = Vector2.ZERO
 	if fighter.statuses.has("slow"):
 		desired *= clampf(1.0 - float(fighter.statuses["slow"]["power"]), 0.05, 1.0)
 	if fighter.dash_remaining > 0.0:
@@ -272,12 +381,18 @@ func _constrain_fighter(fighter) -> void:
 			fighter.knockback = fighter.knockback.slide(normal.normalized())
 
 func _separate_fighters() -> void:
-	if fighters.size() != 2 or not fighters[0].alive or not fighters[1].alive:
-		return
-	var first = fighters[0]
-	var second = fighters[1]
+	# Stable pair order with multiple solver passes for crowded corners.
+	for _pass in range(8):
+		for i in range(fighters.size()):
+			if not fighters[i].alive:
+				continue
+			for j in range(i + 1, fighters.size()):
+				if fighters[j].alive:
+					_separate_pair(fighters[i], fighters[j])
+
+func _separate_pair(first, second) -> void:
 	var minimum_distance: float = first.definition.radius + second.definition.radius + 0.05
-	for iteration in range(4):
+	for iteration in range(2):
 		var offset: Vector2 = first.position - second.position
 		var distance: float = offset.length()
 		if distance >= minimum_distance:
@@ -403,37 +518,64 @@ func _resolve_damage() -> void:
 		_damage_queue.clear()
 
 func _resolve_deaths_and_result() -> void:
+	var alive_teams: Dictionary = {}
 	for fighter in fighters:
-		if fighter.alive and fighter.health <= 0.0:
+		if fighter.alive and fighter.health <= 0:
 			fighter.alive = false
 			fighter.velocity = Vector2.ZERO
-			fighter.dash_remaining = 0.0
+			fighter.dash_remaining = 0
 			for skill in fighter.skills:
+				if skill.has_method("cancel_cast"):
+					skill.cancel_cast()
 				skill.active = false
-			emit_effect("death", fighter.position, fighter.definition.theme_color, {"side": fighter.side})
-			_log({"kind": "death", "side": fighter.side})
-	if not fighters[0].alive and not fighters[1].alive:
-		_finish(-1)
-	elif not fighters[0].alive:
-		_finish(1)
-	elif not fighters[1].alive:
-		_finish(0)
+			emit_effect("death", fighter.position, fighter.definition.theme_color, {"side":fighter.side})
+			_log({"kind":"death", "side":fighter.side})
+		if fighter.alive:
+			alive_teams[fighter.team_id] = true
+	if alive_teams.is_empty():
+		_finish_team(-1, "elimination")
+	elif alive_teams.size() == 1:
+		_finish_team(int(alive_teams.keys()[0]), "elimination")
 	elif elapsed >= duration - 0.00001:
-		var difference: float = fighters[0].health_ratio() - fighters[1].health_ratio()
-		_finish(-1 if absf(difference) <= 0.000001 else (0 if difference > 0.0 else 1))
+		var totals: Dictionary = {}
+		for fighter in fighters:
+			if not totals.has(fighter.team_id):
+				totals[fighter.team_id] = Vector2.ZERO
+			totals[fighter.team_id] += Vector2(fighter.health, fighter.definition.max_health)
+		var best_team: int = -1
+		var best_ratio: float = -1
+		var tied: bool = false
+		for team in totals:
+			var ratio: float = totals[team].x / totals[team].y
+			if ratio > best_ratio + 0.000001:
+				best_team = int(team)
+				best_ratio = ratio
+				tied = false
+			elif absf(ratio - best_ratio) <= 0.000001:
+				tied = true
+		_finish_team(-1 if tied else best_team, "timeout")
 
-func _finish(result: int) -> void:
+func _finish_team(team: int, reason: String) -> void:
 	running = false
-	winner = result
+	winner_team = team
+	winner = -1
+	if team >= 0:
+		for fighter in fighters:
+			if fighter.team_id == team:
+				winner = fighter.fighter_id
+				break
+	result = {"winning_team":team, "draw":team < 0, "reason":reason}
 	projectiles.clear()
 	for fighter in fighters:
 		fighter.velocity = Vector2.ZERO
-		fighter.dash_remaining = 0.0
+		fighter.dash_remaining = 0
 		for skill in fighter.skills:
+			if skill.has_method("cancel_cast"):
+				skill.cancel_cast()
 			skill.active = false
-	emit_effect("end", bounds.get_center(), Color.WHITE, {"winner": result})
-	_log({"kind": "end", "winner": result})
-	battle_ended.emit(result)
+	emit_effect("end", bounds.get_center(), Color.WHITE, {"winner":winner, "team":team})
+	_log({"kind":"end", "winner":winner, "team":team})
+	battle_ended.emit(winner)
 
 func _log(entry: Dictionary) -> void:
 	entry["tick"] = tick_count

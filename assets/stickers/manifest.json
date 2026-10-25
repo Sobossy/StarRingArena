@@ -1,0 +1,2082 @@
+[
+  {
+    "name": "真珠 不能理解",
+    "character": "真珠",
+    "path": "res://assets/stickers/001_真珠 不能理解.png"
+  },
+  {
+    "name": "真珠 补妆",
+    "character": "真珠",
+    "path": "res://assets/stickers/002_真珠 补妆.png"
+  },
+  {
+    "name": "真珠 端庄",
+    "character": "真珠",
+    "path": "res://assets/stickers/003_真珠 端庄.png"
+  },
+  {
+    "name": "真珠 短路",
+    "character": "真珠",
+    "path": "res://assets/stickers/004_真珠 短路.png"
+  },
+  {
+    "name": "叽米 晕",
+    "character": "叽米",
+    "path": "res://assets/stickers/005_叽米 晕.png"
+  },
+  {
+    "name": "斯科特 交给我",
+    "character": "斯科特",
+    "path": "res://assets/stickers/006_斯科特 交给我.png"
+  },
+  {
+    "name": "开拓者 加油",
+    "character": "开拓者",
+    "path": "res://assets/stickers/007_开拓者 加油.png"
+  },
+  {
+    "name": "开拓者 鼓舞",
+    "character": "开拓者",
+    "path": "res://assets/stickers/008_开拓者 鼓舞.png"
+  },
+  {
+    "name": "虚照 揭示",
+    "character": "虚照",
+    "path": "res://assets/stickers/009_虚照 揭示.png"
+  },
+  {
+    "name": "虚照 送你",
+    "character": "虚照",
+    "path": "res://assets/stickers/010_虚照 送你.png"
+  },
+  {
+    "name": "虚照 搞砸",
+    "character": "虚照",
+    "path": "res://assets/stickers/011_虚照 搞砸.png"
+  },
+  {
+    "name": "虚照 阿哈",
+    "character": "虚照",
+    "path": "res://assets/stickers/012_虚照 阿哈.png"
+  },
+  {
+    "name": "阿哈 笑哭",
+    "character": "阿哈",
+    "path": "res://assets/stickers/013_阿哈 笑哭.png"
+  },
+  {
+    "name": "虚照 盛大登场",
+    "character": "虚照",
+    "path": "res://assets/stickers/014_虚照 盛大登场.png"
+  },
+  {
+    "name": "球棒狸 摇摇",
+    "character": "球棒狸",
+    "path": "res://assets/stickers/015_球棒狸 摇摇.png"
+  },
+  {
+    "name": "帕姆 端盒",
+    "character": "帕姆",
+    "path": "res://assets/stickers/016_帕姆 端盒.png"
+  },
+  {
+    "name": "姬子 引领",
+    "character": "姬子",
+    "path": "res://assets/stickers/017_姬子 引领.png"
+  },
+  {
+    "name": "姬子 自信",
+    "character": "姬子",
+    "path": "res://assets/stickers/018_姬子 自信.png"
+  },
+  {
+    "name": "姬子 启行",
+    "character": "姬子",
+    "path": "res://assets/stickers/019_姬子 启行.png"
+  },
+  {
+    "name": "姬子 修理",
+    "character": "姬子",
+    "path": "res://assets/stickers/020_姬子 修理.png"
+  },
+  {
+    "name": "拓星者 冲锋",
+    "character": "拓星者",
+    "path": "res://assets/stickers/021_拓星者 冲锋.png"
+  },
+  {
+    "name": "虚照 好问题",
+    "character": "虚照",
+    "path": "res://assets/stickers/022_虚照 好问题.png"
+  },
+  {
+    "name": "朽叶 逮捕",
+    "character": "朽叶",
+    "path": "res://assets/stickers/023_朽叶 逮捕.png"
+  },
+  {
+    "name": "归寂 嗨",
+    "character": "归寂",
+    "path": "res://assets/stickers/024_归寂 嗨.png"
+  },
+  {
+    "name": "知更鸟 派对",
+    "character": "知更鸟",
+    "path": "res://assets/stickers/025_知更鸟 派对.png"
+  },
+  {
+    "name": "知更鸟 是我呀",
+    "character": "知更鸟",
+    "path": "res://assets/stickers/026_知更鸟 是我呀.png"
+  },
+  {
+    "name": "知更鸟 哼",
+    "character": "知更鸟",
+    "path": "res://assets/stickers/027_知更鸟 哼.png"
+  },
+  {
+    "name": "知更鸟 飞翔",
+    "character": "知更鸟",
+    "path": "res://assets/stickers/028_知更鸟 飞翔.png"
+  },
+  {
+    "name": "砂金 帅",
+    "character": "砂金",
+    "path": "res://assets/stickers/029_砂金 帅.png"
+  },
+  {
+    "name": "砂金 签名",
+    "character": "砂金",
+    "path": "res://assets/stickers/030_砂金 签名.png"
+  },
+  {
+    "name": "砂金 好热",
+    "character": "砂金",
+    "path": "res://assets/stickers/031_砂金 好热.png"
+  },
+  {
+    "name": "砂金 凉爽",
+    "character": "砂金",
+    "path": "res://assets/stickers/032_砂金 凉爽.png"
+  },
+  {
+    "name": "银狼LV.999 酷",
+    "character": "银狼LV.999",
+    "path": "res://assets/stickers/033_银狼LV.999 酷.png"
+  },
+  {
+    "name": "银狼LV.999 想赢",
+    "character": "银狼LV.999",
+    "path": "res://assets/stickers/035_银狼LV.999 想赢.png"
+  },
+  {
+    "name": "银狼LV.999 弱",
+    "character": "银狼LV.999",
+    "path": "res://assets/stickers/036_银狼LV.999 弱.png"
+  },
+  {
+    "name": "银狼LV.999 嘴炮",
+    "character": "银狼LV.999",
+    "path": "res://assets/stickers/038_银狼LV.999 嘴炮.png"
+  },
+  {
+    "name": "绯英 好累",
+    "character": "绯英",
+    "path": "res://assets/stickers/039_绯英 好累.png"
+  },
+  {
+    "name": "绯英 认可",
+    "character": "绯英",
+    "path": "res://assets/stickers/040_绯英 认可.png"
+  },
+  {
+    "name": "绯英 驳回",
+    "character": "绯英",
+    "path": "res://assets/stickers/041_绯英 驳回.png"
+  },
+  {
+    "name": "绯英 摄取知识",
+    "character": "绯英",
+    "path": "res://assets/stickers/042_绯英 摄取知识.png"
+  },
+  {
+    "name": "千冶•刃 看剑",
+    "character": "千冶•刃",
+    "path": "res://assets/stickers/043_千冶•刃 看剑.png"
+  },
+  {
+    "name": "千冶•刃 蓄势待发",
+    "character": "千冶•刃",
+    "path": "res://assets/stickers/044_千冶•刃 蓄势待发.png"
+  },
+  {
+    "name": "千冶•刃 冷静一下",
+    "character": "千冶•刃",
+    "path": "res://assets/stickers/045_千冶•刃 冷静一下.png"
+  },
+  {
+    "name": "千冶•刃 分蛋糕",
+    "character": "千冶•刃",
+    "path": "res://assets/stickers/046_千冶•刃 分蛋糕.png"
+  },
+  {
+    "name": "球棒浣熊 来了",
+    "character": "球棒浣熊",
+    "path": "res://assets/stickers/047_球棒浣熊 来了.png"
+  },
+  {
+    "name": "三月兔 别",
+    "character": "三月兔",
+    "path": "res://assets/stickers/048_三月兔 别.png"
+  },
+  {
+    "name": "丹丹汪 可靠",
+    "character": "丹丹汪",
+    "path": "res://assets/stickers/049_丹丹汪 可靠.png"
+  },
+  {
+    "name": "周天鸽 躲避",
+    "character": "周天鸽",
+    "path": "res://assets/stickers/050_周天鸽 躲避.png"
+  },
+  {
+    "name": "爻光 消失",
+    "character": "爻光",
+    "path": "res://assets/stickers/051_爻光 消失.png"
+  },
+  {
+    "name": "爻光 福气",
+    "character": "爻光",
+    "path": "res://assets/stickers/052_爻光 福气.png"
+  },
+  {
+    "name": "爻光 锦囊",
+    "character": "爻光",
+    "path": "res://assets/stickers/053_爻光 锦囊.png"
+  },
+  {
+    "name": "爻光 护手",
+    "character": "爻光",
+    "path": "res://assets/stickers/054_爻光 护手.png"
+  },
+  {
+    "name": "火花 求赞",
+    "character": "火花",
+    "path": "res://assets/stickers/055_火花 求赞.png"
+  },
+  {
+    "name": "火花 挤",
+    "character": "火花",
+    "path": "res://assets/stickers/056_火花 挤.png"
+  },
+  {
+    "name": "火花 是我",
+    "character": "火花",
+    "path": "res://assets/stickers/057_火花 是我.png"
+  },
+  {
+    "name": "火花 哭了",
+    "character": "火花",
+    "path": "res://assets/stickers/058_火花 哭了.png"
+  },
+  {
+    "name": "不死途 疲惫",
+    "character": "不死途",
+    "path": "res://assets/stickers/059_不死途 疲惫.png"
+  },
+  {
+    "name": "不死途 穷困",
+    "character": "不死途",
+    "path": "res://assets/stickers/060_不死途 穷困.png"
+  },
+  {
+    "name": "不死途 我在听",
+    "character": "不死途",
+    "path": "res://assets/stickers/061_不死途 我在听.png"
+  },
+  {
+    "name": "不死途 真相",
+    "character": "不死途",
+    "path": "res://assets/stickers/062_不死途 真相.png"
+  },
+  {
+    "name": "开拓者 球棒",
+    "character": "开拓者",
+    "path": "res://assets/stickers/063_开拓者 球棒.png"
+  },
+  {
+    "name": "开拓者 棒球",
+    "character": "开拓者",
+    "path": "res://assets/stickers/064_开拓者 棒球.png"
+  },
+  {
+    "name": "月亮 欢迎",
+    "character": "月亮",
+    "path": "res://assets/stickers/065_月亮 欢迎.png"
+  },
+  {
+    "name": "狸猫 拍摄",
+    "character": "狸猫",
+    "path": "res://assets/stickers/066_狸猫 拍摄.png"
+  },
+  {
+    "name": "奇美拉 保护",
+    "character": "奇美拉",
+    "path": "res://assets/stickers/067_奇美拉 保护.png"
+  },
+  {
+    "name": "奇美拉 捕捉",
+    "character": "奇美拉",
+    "path": "res://assets/stickers/068_奇美拉 捕捉.png"
+  },
+  {
+    "name": "奇美拉 直视",
+    "character": "奇美拉",
+    "path": "res://assets/stickers/069_奇美拉 直视.png"
+  },
+  {
+    "name": "奇美拉 听歌",
+    "character": "奇美拉",
+    "path": "res://assets/stickers/070_奇美拉 听歌.png"
+  },
+  {
+    "name": "奇美拉 不知道",
+    "character": "奇美拉",
+    "path": "res://assets/stickers/071_奇美拉 不知道.png"
+  },
+  {
+    "name": "奇美拉 夸夸",
+    "character": "奇美拉",
+    "path": "res://assets/stickers/072_奇美拉 夸夸.png"
+  },
+  {
+    "name": "奇美拉 安抚",
+    "character": "奇美拉",
+    "path": "res://assets/stickers/073_奇美拉 安抚.png"
+  },
+  {
+    "name": "奇美拉 喜爱",
+    "character": "奇美拉",
+    "path": "res://assets/stickers/074_奇美拉 喜爱.png"
+  },
+  {
+    "name": "奇美拉 起飞",
+    "character": "奇美拉",
+    "path": "res://assets/stickers/075_奇美拉 起飞.png"
+  },
+  {
+    "name": "奇美拉 再战",
+    "character": "奇美拉",
+    "path": "res://assets/stickers/076_奇美拉 再战.png"
+  },
+  {
+    "name": "奇美拉 炸飞",
+    "character": "奇美拉",
+    "path": "res://assets/stickers/077_奇美拉 炸飞.png"
+  },
+  {
+    "name": "奇美拉 缠绕",
+    "character": "奇美拉",
+    "path": "res://assets/stickers/078_奇美拉 缠绕.png"
+  },
+  {
+    "name": "大丽花 满意",
+    "character": "大丽花",
+    "path": "res://assets/stickers/079_大丽花 满意.png"
+  },
+  {
+    "name": "大丽花 危险",
+    "character": "大丽花",
+    "path": "res://assets/stickers/080_大丽花 危险.png"
+  },
+  {
+    "name": "大丽花 我在这",
+    "character": "大丽花",
+    "path": "res://assets/stickers/081_大丽花 我在这.png"
+  },
+  {
+    "name": "大丽花 沉醉",
+    "character": "大丽花",
+    "path": "res://assets/stickers/082_大丽花 沉醉.png"
+  },
+  {
+    "name": "开拓者 重写",
+    "character": "开拓者",
+    "path": "res://assets/stickers/083_开拓者 重写.png"
+  },
+  {
+    "name": "开拓者 改写",
+    "character": "开拓者",
+    "path": "res://assets/stickers/084_开拓者 改写.png"
+  },
+  {
+    "name": "螺丝咕姆 高速运转",
+    "character": "螺丝咕姆",
+    "path": "res://assets/stickers/085_螺丝咕姆 高速运转.png"
+  },
+  {
+    "name": "昔涟 嘻嘻",
+    "character": "昔涟",
+    "path": "res://assets/stickers/086_昔涟 嘻嘻.png"
+  },
+  {
+    "name": "昔涟 守护",
+    "character": "昔涟",
+    "path": "res://assets/stickers/087_昔涟 守护.png"
+  },
+  {
+    "name": "昔涟 收到",
+    "character": "昔涟",
+    "path": "res://assets/stickers/088_昔涟 收到.png"
+  },
+  {
+    "name": "昔涟 回眸",
+    "character": "昔涟",
+    "path": "res://assets/stickers/089_昔涟 回眸.png"
+  },
+  {
+    "name": "昔涟 爱",
+    "character": "昔涟",
+    "path": "res://assets/stickers/090_昔涟 爱.png"
+  },
+  {
+    "name": "丹恒•腾荒 拍照",
+    "character": "丹恒•腾荒",
+    "path": "res://assets/stickers/091_丹恒•腾荒 拍照.png"
+  },
+  {
+    "name": "丹恒•腾荒 欲言又止",
+    "character": "丹恒•腾荒",
+    "path": "res://assets/stickers/092_丹恒•腾荒 欲言又止.png"
+  },
+  {
+    "name": "丹恒•腾荒 大地之王",
+    "character": "丹恒•腾荒",
+    "path": "res://assets/stickers/093_丹恒•腾荒 大地之王.png"
+  },
+  {
+    "name": "丹恒•腾荒 倾听",
+    "character": "丹恒•腾荒",
+    "path": "res://assets/stickers/094_丹恒•腾荒 倾听.png"
+  },
+  {
+    "name": "长夜月 嚎啕大哭",
+    "character": "长夜月",
+    "path": "res://assets/stickers/095_长夜月 嚎啕大哭.png"
+  },
+  {
+    "name": "长夜月 去吧",
+    "character": "长夜月",
+    "path": "res://assets/stickers/096_长夜月 去吧.png"
+  },
+  {
+    "name": "长夜月 警告",
+    "character": "长夜月",
+    "path": "res://assets/stickers/097_长夜月 警告.png"
+  },
+  {
+    "name": "长夜月 暗示",
+    "character": "长夜月",
+    "path": "res://assets/stickers/098_长夜月 暗示.png"
+  },
+  {
+    "name": "白厄 我吗",
+    "character": "白厄",
+    "path": "res://assets/stickers/099_白厄 我吗.png"
+  },
+  {
+    "name": "白厄 再见",
+    "character": "白厄",
+    "path": "res://assets/stickers/100_白厄 再见.png"
+  },
+  {
+    "name": "白厄 掉线",
+    "character": "白厄",
+    "path": "res://assets/stickers/101_白厄 掉线.png"
+  },
+  {
+    "name": "白厄 没事",
+    "character": "白厄",
+    "path": "res://assets/stickers/102_白厄 没事.png"
+  },
+  {
+    "name": "白厄 战斗",
+    "character": "白厄",
+    "path": "res://assets/stickers/103_白厄 战斗.png"
+  },
+  {
+    "name": "迷迷 哭",
+    "character": "迷迷",
+    "path": "res://assets/stickers/104_迷迷 哭.png"
+  },
+  {
+    "name": "迷迷 攻击",
+    "character": "迷迷",
+    "path": "res://assets/stickers/105_迷迷 攻击.png"
+  },
+  {
+    "name": "迷迷 睡觉",
+    "character": "迷迷",
+    "path": "res://assets/stickers/106_迷迷 睡觉.png"
+  },
+  {
+    "name": "海瑟音 忠诚",
+    "character": "海瑟音",
+    "path": "res://assets/stickers/107_海瑟音 忠诚.png"
+  },
+  {
+    "name": "海瑟音 嘘",
+    "character": "海瑟音",
+    "path": "res://assets/stickers/108_海瑟音 嘘.png"
+  },
+  {
+    "name": "海瑟音 共舞",
+    "character": "海瑟音",
+    "path": "res://assets/stickers/109_海瑟音 共舞.png"
+  },
+  {
+    "name": "海瑟音 哼歌",
+    "character": "海瑟音",
+    "path": "res://assets/stickers/110_海瑟音 哼歌.png"
+  },
+  {
+    "name": "刻律德菈 再说一遍",
+    "character": "刻律德菈",
+    "path": "res://assets/stickers/111_刻律德菈 再说一遍.png"
+  },
+  {
+    "name": "刻律德菈 公平",
+    "character": "刻律德菈",
+    "path": "res://assets/stickers/112_刻律德菈 公平.png"
+  },
+  {
+    "name": "刻律德菈 将军",
+    "character": "刻律德菈",
+    "path": "res://assets/stickers/113_刻律德菈 将军.png"
+  },
+  {
+    "name": "刻律德菈 否决",
+    "character": "刻律德菈",
+    "path": "res://assets/stickers/114_刻律德菈 否决.png"
+  },
+  {
+    "name": "遐蝶 蝴蝶",
+    "character": "遐蝶",
+    "path": "res://assets/stickers/115_遐蝶 蝴蝶.png"
+  },
+  {
+    "name": "遐蝶 枯萎",
+    "character": "遐蝶",
+    "path": "res://assets/stickers/116_遐蝶 枯萎.png"
+  },
+  {
+    "name": "遐蝶 脸红",
+    "character": "遐蝶",
+    "path": "res://assets/stickers/117_遐蝶 脸红.png"
+  },
+  {
+    "name": "遐蝶 创作",
+    "character": "遐蝶",
+    "path": "res://assets/stickers/118_遐蝶 创作.png"
+  },
+  {
+    "name": "那刻夏 来吧",
+    "character": "那刻夏",
+    "path": "res://assets/stickers/119_那刻夏 来吧.png"
+  },
+  {
+    "name": "那刻夏 看穿",
+    "character": "那刻夏",
+    "path": "res://assets/stickers/120_那刻夏 看穿.png"
+  },
+  {
+    "name": "那刻夏 什么事",
+    "character": "那刻夏",
+    "path": "res://assets/stickers/121_那刻夏 什么事.png"
+  },
+  {
+    "name": "那刻夏 我没事",
+    "character": "那刻夏",
+    "path": "res://assets/stickers/122_那刻夏 我没事.png"
+  },
+  {
+    "name": "风堇 试试看",
+    "character": "风堇",
+    "path": "res://assets/stickers/123_风堇 试试看.png"
+  },
+  {
+    "name": "风堇 喜欢",
+    "character": "风堇",
+    "path": "res://assets/stickers/124_风堇 喜欢.png"
+  },
+  {
+    "name": "风堇 诊断",
+    "character": "风堇",
+    "path": "res://assets/stickers/125_风堇 诊断.png"
+  },
+  {
+    "name": "风堇 治愈",
+    "character": "风堇",
+    "path": "res://assets/stickers/126_风堇 治愈.png"
+  },
+  {
+    "name": "赛飞儿 招财",
+    "character": "赛飞儿",
+    "path": "res://assets/stickers/127_赛飞儿 招财.png"
+  },
+  {
+    "name": "赛飞儿 得手",
+    "character": "赛飞儿",
+    "path": "res://assets/stickers/128_赛飞儿 得手.png"
+  },
+  {
+    "name": "赛飞儿 可爱",
+    "character": "赛飞儿",
+    "path": "res://assets/stickers/129_赛飞儿 可爱.png"
+  },
+  {
+    "name": "赛飞儿 拜托",
+    "character": "赛飞儿",
+    "path": "res://assets/stickers/130_赛飞儿 拜托.png"
+  },
+  {
+    "name": "缇宝 睿智",
+    "character": "缇宝",
+    "path": "res://assets/stickers/131_缇宝 睿智.png"
+  },
+  {
+    "name": "缇宝 炸飞",
+    "character": "缇宝",
+    "path": "res://assets/stickers/132_缇宝 炸飞.png"
+  },
+  {
+    "name": "缇安 晚安",
+    "character": "缇安",
+    "path": "res://assets/stickers/133_缇安 晚安.png"
+  },
+  {
+    "name": "缇宁 发送",
+    "character": "缇宁",
+    "path": "res://assets/stickers/134_缇宁 发送.png"
+  },
+  {
+    "name": "万敌 健身",
+    "character": "万敌",
+    "path": "res://assets/stickers/135_万敌 健身.png"
+  },
+  {
+    "name": "万敌 吃什么",
+    "character": "万敌",
+    "path": "res://assets/stickers/136_万敌 吃什么.png"
+  },
+  {
+    "name": "万敌 狂",
+    "character": "万敌",
+    "path": "res://assets/stickers/137_万敌 狂.png"
+  },
+  {
+    "name": "万敌 红温",
+    "character": "万敌",
+    "path": "res://assets/stickers/138_万敌 红温.png"
+  },
+  {
+    "name": "白厄 诶嘿",
+    "character": "白厄",
+    "path": "res://assets/stickers/139_白厄 诶嘿.png"
+  },
+  {
+    "name": "遐蝶 不了",
+    "character": "遐蝶",
+    "path": "res://assets/stickers/140_遐蝶 不了.png"
+  },
+  {
+    "name": "奇美拉 点赞",
+    "character": "奇美拉",
+    "path": "res://assets/stickers/141_奇美拉 点赞.png"
+  },
+  {
+    "name": "奇美拉 迷惑",
+    "character": "奇美拉",
+    "path": "res://assets/stickers/142_奇美拉 迷惑.png"
+  },
+  {
+    "name": "万敌狮子 焦头烂额",
+    "character": "万敌狮子",
+    "path": "res://assets/stickers/143_万敌狮子 焦头烂额.png"
+  },
+  {
+    "name": "迷迷 心心",
+    "character": "迷迷",
+    "path": "res://assets/stickers/144_迷迷 心心.png"
+  },
+  {
+    "name": "迷迷 我来",
+    "character": "迷迷",
+    "path": "res://assets/stickers/145_迷迷 我来.png"
+  },
+  {
+    "name": "迷迷 抱",
+    "character": "迷迷",
+    "path": "res://assets/stickers/146_迷迷 抱.png"
+  },
+  {
+    "name": "大黑塔 砸",
+    "character": "大黑塔",
+    "path": "res://assets/stickers/147_大黑塔 砸.png"
+  },
+  {
+    "name": "大黑塔 研究",
+    "character": "大黑塔",
+    "path": "res://assets/stickers/148_大黑塔 研究.png"
+  },
+  {
+    "name": "大黑塔 照照自己",
+    "character": "大黑塔",
+    "path": "res://assets/stickers/149_大黑塔 照照自己.png"
+  },
+  {
+    "name": "大黑塔 自信",
+    "character": "大黑塔",
+    "path": "res://assets/stickers/150_大黑塔 自信.png"
+  },
+  {
+    "name": "阿格莱雅 泡澡",
+    "character": "阿格莱雅",
+    "path": "res://assets/stickers/151_阿格莱雅 泡澡.png"
+  },
+  {
+    "name": "阿格莱雅 不",
+    "character": "阿格莱雅",
+    "path": "res://assets/stickers/152_阿格莱雅 不.png"
+  },
+  {
+    "name": "阿格莱雅 设计",
+    "character": "阿格莱雅",
+    "path": "res://assets/stickers/153_阿格莱雅 设计.png"
+  },
+  {
+    "name": "阿格莱雅 慷慨",
+    "character": "阿格莱雅",
+    "path": "res://assets/stickers/154_阿格莱雅 慷慨.png"
+  },
+  {
+    "name": "开拓者 记忆",
+    "character": "开拓者",
+    "path": "res://assets/stickers/155_开拓者 记忆.png"
+  },
+  {
+    "name": "开拓者 记录",
+    "character": "开拓者",
+    "path": "res://assets/stickers/156_开拓者 记录.png"
+  },
+  {
+    "name": "贼灵 跑",
+    "character": "贼灵",
+    "path": "res://assets/stickers/157_贼灵 跑.png"
+  },
+  {
+    "name": "变手 指",
+    "character": "变手",
+    "path": "res://assets/stickers/158_变手 指.png"
+  },
+  {
+    "name": "真理之口 审批",
+    "character": "真理之口",
+    "path": "res://assets/stickers/159_真理之口 审批.png"
+  },
+  {
+    "name": "大地兽 探头",
+    "character": "大地兽",
+    "path": "res://assets/stickers/160_大地兽 探头.png"
+  },
+  {
+    "name": "奇美拉 求摸摸",
+    "character": "奇美拉",
+    "path": "res://assets/stickers/161_奇美拉 求摸摸.png"
+  },
+  {
+    "name": "奇美拉 疲惫",
+    "character": "奇美拉",
+    "path": "res://assets/stickers/162_奇美拉 疲惫.png"
+  },
+  {
+    "name": "星期日 讲",
+    "character": "星期日",
+    "path": "res://assets/stickers/163_星期日 讲.png"
+  },
+  {
+    "name": "星期日 光",
+    "character": "星期日",
+    "path": "res://assets/stickers/164_星期日 光.png"
+  },
+  {
+    "name": "星期日 无休",
+    "character": "星期日",
+    "path": "res://assets/stickers/165_星期日 无休.png"
+  },
+  {
+    "name": "星期日 擦拭",
+    "character": "星期日",
+    "path": "res://assets/stickers/166_星期日 擦拭.png"
+  },
+  {
+    "name": "忘归人 哈喽",
+    "character": "忘归人",
+    "path": "res://assets/stickers/167_忘归人 哈喽.png"
+  },
+  {
+    "name": "忘归人 捧脸",
+    "character": "忘归人",
+    "path": "res://assets/stickers/168_忘归人 捧脸.png"
+  },
+  {
+    "name": "忘归人 炸毛",
+    "character": "忘归人",
+    "path": "res://assets/stickers/169_忘归人 炸毛.png"
+  },
+  {
+    "name": "忘归人 开大",
+    "character": "忘归人",
+    "path": "res://assets/stickers/170_忘归人 开大.png"
+  },
+  {
+    "name": "小星期日 灵感",
+    "character": "小星期日",
+    "path": "res://assets/stickers/171_小星期日 灵感.png"
+  },
+  {
+    "name": "小停云 哇",
+    "character": "小停云",
+    "path": "res://assets/stickers/172_小停云 哇.png"
+  },
+  {
+    "name": "机器人 闭嘴",
+    "character": "机器人",
+    "path": "res://assets/stickers/173_机器人 闭嘴.png"
+  },
+  {
+    "name": "银狼 干嘛",
+    "character": "银狼",
+    "path": "res://assets/stickers/174_银狼 干嘛.png"
+  },
+  {
+    "name": "希儿 我来了",
+    "character": "希儿",
+    "path": "res://assets/stickers/175_希儿 我来了.png"
+  },
+  {
+    "name": "布洛妮娅 送花",
+    "character": "布洛妮娅",
+    "path": "res://assets/stickers/176_布洛妮娅 送花.png"
+  },
+  {
+    "name": "帕姆 大厨",
+    "character": "帕姆",
+    "path": "res://assets/stickers/177_帕姆 大厨.png"
+  },
+  {
+    "name": "罗刹 吃饭",
+    "character": "罗刹",
+    "path": "res://assets/stickers/178_罗刹 吃饭.png"
+  },
+  {
+    "name": "乱破 什么",
+    "character": "乱破",
+    "path": "res://assets/stickers/179_乱破 什么.png"
+  },
+  {
+    "name": "乱破 忍者",
+    "character": "乱破",
+    "path": "res://assets/stickers/180_乱破 忍者.png"
+  },
+  {
+    "name": "乱破 爆炸",
+    "character": "乱破",
+    "path": "res://assets/stickers/181_乱破 爆炸.png"
+  },
+  {
+    "name": "乱破 涂鸦",
+    "character": "乱破",
+    "path": "res://assets/stickers/182_乱破 涂鸦.png"
+  },
+  {
+    "name": "小猴 吃香蕉",
+    "character": "小猴",
+    "path": "res://assets/stickers/183_小猴 吃香蕉.png"
+  },
+  {
+    "name": "助蕉 上火",
+    "character": "助蕉",
+    "path": "res://assets/stickers/184_助蕉 上火.png"
+  },
+  {
+    "name": "小猴 猴",
+    "character": "小猴",
+    "path": "res://assets/stickers/185_小猴 猴.png"
+  },
+  {
+    "name": "芮克先生 开拍",
+    "character": "芮克先生",
+    "path": "res://assets/stickers/186_芮克先生 开拍.png"
+  },
+  {
+    "name": "芮克先生 拍照",
+    "character": "芮克先生",
+    "path": "res://assets/stickers/187_芮克先生 拍照.png"
+  },
+  {
+    "name": "芮克先生 暂停",
+    "character": "芮克先生",
+    "path": "res://assets/stickers/188_芮克先生 暂停.png"
+  },
+  {
+    "name": "开拓者 哟哟",
+    "character": "开拓者",
+    "path": "res://assets/stickers/189_开拓者 哟哟.png"
+  },
+  {
+    "name": "开拓者 切克闹",
+    "character": "开拓者",
+    "path": "res://assets/stickers/190_开拓者 切克闹.png"
+  },
+  {
+    "name": "波提欧 捏脸",
+    "character": "波提欧",
+    "path": "res://assets/stickers/191_波提欧 捏脸.png"
+  },
+  {
+    "name": "波提欧 热舞",
+    "character": "波提欧",
+    "path": "res://assets/stickers/192_波提欧 热舞.png"
+  },
+  {
+    "name": "知更鸟 打碟",
+    "character": "知更鸟",
+    "path": "res://assets/stickers/193_知更鸟 打碟.png"
+  },
+  {
+    "name": "丹恒 不猴",
+    "character": "丹恒",
+    "path": "res://assets/stickers/194_丹恒 不猴.png"
+  },
+  {
+    "name": "飞霄 夸夸",
+    "character": "飞霄",
+    "path": "res://assets/stickers/195_飞霄 夸夸.png"
+  },
+  {
+    "name": "飞霄 打架",
+    "character": "飞霄",
+    "path": "res://assets/stickers/196_飞霄 打架.png"
+  },
+  {
+    "name": "飞霄 健身",
+    "character": "飞霄",
+    "path": "res://assets/stickers/197_飞霄 健身.png"
+  },
+  {
+    "name": "飞霄 喝",
+    "character": "飞霄",
+    "path": "res://assets/stickers/198_飞霄 喝.png"
+  },
+  {
+    "name": "灵砂 消消气",
+    "character": "灵砂",
+    "path": "res://assets/stickers/199_灵砂 消消气.png"
+  },
+  {
+    "name": "灵砂 阴阳怪气",
+    "character": "灵砂",
+    "path": "res://assets/stickers/200_灵砂 阴阳怪气.png"
+  },
+  {
+    "name": "灵砂 享受",
+    "character": "灵砂",
+    "path": "res://assets/stickers/201_灵砂 享受.png"
+  },
+  {
+    "name": "灵砂 拿来",
+    "character": "灵砂",
+    "path": "res://assets/stickers/202_灵砂 拿来.png"
+  },
+  {
+    "name": "貊泽 无语",
+    "character": "貊泽",
+    "path": "res://assets/stickers/203_貊泽 无语.png"
+  },
+  {
+    "name": "貊泽 探头",
+    "character": "貊泽",
+    "path": "res://assets/stickers/204_貊泽 探头.png"
+  },
+  {
+    "name": "貊泽 刺客",
+    "character": "貊泽",
+    "path": "res://assets/stickers/205_貊泽 刺客.png"
+  },
+  {
+    "name": "景元 气鼓鼓",
+    "character": "景元",
+    "path": "res://assets/stickers/206_景元 气鼓鼓.png"
+  },
+  {
+    "name": "梦貘 翻滚",
+    "character": "梦貘",
+    "path": "res://assets/stickers/207_梦貘 翻滚.png"
+  },
+  {
+    "name": "烟兽 开心",
+    "character": "烟兽",
+    "path": "res://assets/stickers/208_烟兽 开心.png"
+  },
+  {
+    "name": "飞黄 咆哮",
+    "character": "飞黄",
+    "path": "res://assets/stickers/209_飞黄 咆哮.png"
+  },
+  {
+    "name": "卡美丽 采访",
+    "character": "卡美丽",
+    "path": "res://assets/stickers/210_卡美丽 采访.png"
+  },
+  {
+    "name": "机巧鸟 尖叫",
+    "character": "机巧鸟",
+    "path": "res://assets/stickers/211_机巧鸟 尖叫.png"
+  },
+  {
+    "name": "白露 灭火",
+    "character": "白露",
+    "path": "res://assets/stickers/212_白露 灭火.png"
+  },
+  {
+    "name": "素裳 喷火",
+    "character": "素裳",
+    "path": "res://assets/stickers/213_素裳 喷火.png"
+  },
+  {
+    "name": "怀炎 吃糖",
+    "character": "怀炎",
+    "path": "res://assets/stickers/214_怀炎 吃糖.png"
+  },
+  {
+    "name": "彦卿 我来了",
+    "character": "彦卿",
+    "path": "res://assets/stickers/215_彦卿 我来了.png"
+  },
+  {
+    "name": "三月七 告退",
+    "character": "三月七",
+    "path": "res://assets/stickers/216_三月七 告退.png"
+  },
+  {
+    "name": "三月七 我",
+    "character": "三月七",
+    "path": "res://assets/stickers/217_三月七 我.png"
+  },
+  {
+    "name": "三月七 比划",
+    "character": "三月七",
+    "path": "res://assets/stickers/218_三月七 比划.png"
+  },
+  {
+    "name": "椒丘 辣",
+    "character": "椒丘",
+    "path": "res://assets/stickers/219_椒丘 辣.png"
+  },
+  {
+    "name": "椒丘 不辣",
+    "character": "椒丘",
+    "path": "res://assets/stickers/220_椒丘 不辣.png"
+  },
+  {
+    "name": "椒丘 笑",
+    "character": "椒丘",
+    "path": "res://assets/stickers/221_椒丘 笑.png"
+  },
+  {
+    "name": "椒丘 撒椒",
+    "character": "椒丘",
+    "path": "res://assets/stickers/222_椒丘 撒椒.png"
+  },
+  {
+    "name": "云璃 威慑",
+    "character": "云璃",
+    "path": "res://assets/stickers/223_云璃 威慑.png"
+  },
+  {
+    "name": "云璃 白眼",
+    "character": "云璃",
+    "path": "res://assets/stickers/224_云璃 白眼.png"
+  },
+  {
+    "name": "云璃 好吃",
+    "character": "云璃",
+    "path": "res://assets/stickers/225_云璃 好吃.png"
+  },
+  {
+    "name": "云璃 期待",
+    "character": "云璃",
+    "path": "res://assets/stickers/226_云璃 期待.png"
+  },
+  {
+    "name": "布洛妮娅 开心鸭",
+    "character": "布洛妮娅",
+    "path": "res://assets/stickers/227_布洛妮娅 开心鸭.png"
+  },
+  {
+    "name": "托帕 眺望",
+    "character": "托帕",
+    "path": "res://assets/stickers/228_托帕 眺望.png"
+  },
+  {
+    "name": "花火 礼物",
+    "character": "花火",
+    "path": "res://assets/stickers/229_花火 礼物.png"
+  },
+  {
+    "name": "花火 锤飞",
+    "character": "花火",
+    "path": "res://assets/stickers/230_花火 锤飞.png"
+  },
+  {
+    "name": "星期日 喝茶",
+    "character": "星期日",
+    "path": "res://assets/stickers/231_星期日 喝茶.png"
+  },
+  {
+    "name": "黑塔 来测",
+    "character": "黑塔",
+    "path": "res://assets/stickers/232_黑塔 来测.png"
+  },
+  {
+    "name": "帕姆 开拓",
+    "character": "帕姆",
+    "path": "res://assets/stickers/233_帕姆 开拓.png"
+  },
+  {
+    "name": "奥帝 摇摇乐",
+    "character": "奥帝",
+    "path": "res://assets/stickers/234_奥帝 摇摇乐.png"
+  },
+  {
+    "name": "翡翠 珠宝",
+    "character": "翡翠",
+    "path": "res://assets/stickers/235_翡翠 珠宝.png"
+  },
+  {
+    "name": "翡翠 鞭打",
+    "character": "翡翠",
+    "path": "res://assets/stickers/236_翡翠 鞭打.png"
+  },
+  {
+    "name": "翡翠 飞吻",
+    "character": "翡翠",
+    "path": "res://assets/stickers/237_翡翠 飞吻.png"
+  },
+  {
+    "name": "翡翠 签字",
+    "character": "翡翠",
+    "path": "res://assets/stickers/238_翡翠 签字.png"
+  },
+  {
+    "name": "萨姆 出击",
+    "character": "萨姆",
+    "path": "res://assets/stickers/239_萨姆 出击.png"
+  },
+  {
+    "name": "流萤 也挺好",
+    "character": "流萤",
+    "path": "res://assets/stickers/240_流萤 也挺好.png"
+  },
+  {
+    "name": "流萤 没钱",
+    "character": "流萤",
+    "path": "res://assets/stickers/241_流萤 没钱.png"
+  },
+  {
+    "name": "流萤 比心",
+    "character": "流萤",
+    "path": "res://assets/stickers/242_流萤 比心.png"
+  },
+  {
+    "name": "知更鸟 暗中观察",
+    "character": "知更鸟",
+    "path": "res://assets/stickers/243_知更鸟 暗中观察.png"
+  },
+  {
+    "name": "知更鸟 你好",
+    "character": "知更鸟",
+    "path": "res://assets/stickers/244_知更鸟 你好.png"
+  },
+  {
+    "name": "知更鸟 打喷嚏",
+    "character": "知更鸟",
+    "path": "res://assets/stickers/245_知更鸟 打喷嚏.png"
+  },
+  {
+    "name": "知更鸟 唱歌",
+    "character": "知更鸟",
+    "path": "res://assets/stickers/246_知更鸟 唱歌.png"
+  },
+  {
+    "name": "波提欧 闭嘴",
+    "character": "波提欧",
+    "path": "res://assets/stickers/247_波提欧 闭嘴.png"
+  },
+  {
+    "name": "波提欧 嚼嚼嚼",
+    "character": "波提欧",
+    "path": "res://assets/stickers/248_波提欧 嚼嚼嚼.png"
+  },
+  {
+    "name": "波提欧 震撼",
+    "character": "波提欧",
+    "path": "res://assets/stickers/249_波提欧 震撼.png"
+  },
+  {
+    "name": "波提欧 哟",
+    "character": "波提欧",
+    "path": "res://assets/stickers/250_波提欧 哟.png"
+  },
+  {
+    "name": "开拓者 是你",
+    "character": "开拓者",
+    "path": "res://assets/stickers/251_开拓者 是你.png"
+  },
+  {
+    "name": "开拓者 就是你",
+    "character": "开拓者",
+    "path": "res://assets/stickers/252_开拓者 就是你.png"
+  },
+  {
+    "name": "派对客 呕",
+    "character": "派对客",
+    "path": "res://assets/stickers/253_派对客 呕.png"
+  },
+  {
+    "name": "鳄鱼老板 气炸了",
+    "character": "鳄鱼老板",
+    "path": "res://assets/stickers/254_鳄鱼老板 气炸了.png"
+  },
+  {
+    "name": "银河棒球侠 翻垃圾桶",
+    "character": "银河棒球侠",
+    "path": "res://assets/stickers/255_银河棒球侠 翻垃圾桶.png"
+  },
+  {
+    "name": "银河棒球侠 诶嘿",
+    "character": "银河棒球侠",
+    "path": "res://assets/stickers/256_银河棒球侠 诶嘿.png"
+  },
+  {
+    "name": "银河棒球侠 开心",
+    "character": "银河棒球侠",
+    "path": "res://assets/stickers/257_银河棒球侠 开心.png"
+  },
+  {
+    "name": "三月七 1周年",
+    "character": "三月七",
+    "path": "res://assets/stickers/258_三月七 1周年.png"
+  },
+  {
+    "name": "黄泉 吃桃",
+    "character": "黄泉",
+    "path": "res://assets/stickers/259_黄泉 吃桃.png"
+  },
+  {
+    "name": "黄泉 流泪",
+    "character": "黄泉",
+    "path": "res://assets/stickers/260_黄泉 流泪.png"
+  },
+  {
+    "name": "黄泉 迷茫",
+    "character": "黄泉",
+    "path": "res://assets/stickers/261_黄泉 迷茫.png"
+  },
+  {
+    "name": "黄泉 斩断",
+    "character": "黄泉",
+    "path": "res://assets/stickers/262_黄泉 斩断.png"
+  },
+  {
+    "name": "卡卡瓦夏 拜拜",
+    "character": "卡卡瓦夏",
+    "path": "res://assets/stickers/263_卡卡瓦夏 拜拜.png"
+  },
+  {
+    "name": "砂金 酷",
+    "character": "砂金",
+    "path": "res://assets/stickers/264_砂金 酷.png"
+  },
+  {
+    "name": "砂金 撒钱",
+    "character": "砂金",
+    "path": "res://assets/stickers/265_砂金 撒钱.png"
+  },
+  {
+    "name": "砂金 玩牌",
+    "character": "砂金",
+    "path": "res://assets/stickers/266_砂金 玩牌.png"
+  },
+  {
+    "name": "砂金 赢",
+    "character": "砂金",
+    "path": "res://assets/stickers/267_砂金 赢.png"
+  },
+  {
+    "name": "加拉赫 嗯？",
+    "character": "加拉赫",
+    "path": "res://assets/stickers/268_加拉赫 嗯？.png"
+  },
+  {
+    "name": "加拉赫 头痛",
+    "character": "加拉赫",
+    "path": "res://assets/stickers/269_加拉赫 头痛.png"
+  },
+  {
+    "name": "加拉赫 威胁",
+    "character": "加拉赫",
+    "path": "res://assets/stickers/270_加拉赫 威胁.png"
+  },
+  {
+    "name": "圆幕先生 愤怒",
+    "character": "圆幕先生",
+    "path": "res://assets/stickers/271_圆幕先生 愤怒.png"
+  },
+  {
+    "name": "折纸小鸟 汗颜",
+    "character": "折纸小鸟",
+    "path": "res://assets/stickers/272_折纸小鸟 汗颜.png"
+  },
+  {
+    "name": "钟表小子 庆祝",
+    "character": "钟表小子",
+    "path": "res://assets/stickers/273_钟表小子 庆祝.png"
+  },
+  {
+    "name": "哈努兄弟 埋伏",
+    "character": "哈努兄弟",
+    "path": "res://assets/stickers/274_哈努兄弟 埋伏.png"
+  },
+  {
+    "name": "黑天鹅 飞牌",
+    "character": "黑天鹅",
+    "path": "res://assets/stickers/275_黑天鹅 飞牌.png"
+  },
+  {
+    "name": "黑天鹅 比心",
+    "character": "黑天鹅",
+    "path": "res://assets/stickers/276_黑天鹅 比心.png"
+  },
+  {
+    "name": "黑天鹅 占卜",
+    "character": "黑天鹅",
+    "path": "res://assets/stickers/277_黑天鹅 占卜.png"
+  },
+  {
+    "name": "黑天鹅 照镜子",
+    "character": "黑天鹅",
+    "path": "res://assets/stickers/278_黑天鹅 照镜子.png"
+  },
+  {
+    "name": "花火 略略略",
+    "character": "花火",
+    "path": "res://assets/stickers/279_花火 略略略.png"
+  },
+  {
+    "name": "花火 嘿嘿",
+    "character": "花火",
+    "path": "res://assets/stickers/280_花火 嘿嘿.png"
+  },
+  {
+    "name": "花火 点火",
+    "character": "花火",
+    "path": "res://assets/stickers/281_花火 点火.png"
+  },
+  {
+    "name": "花火 我来啦",
+    "character": "花火",
+    "path": "res://assets/stickers/282_花火 我来啦.png"
+  },
+  {
+    "name": "米沙 导游",
+    "character": "米沙",
+    "path": "res://assets/stickers/283_米沙 导游.png"
+  },
+  {
+    "name": "米沙 自闭",
+    "character": "米沙",
+    "path": "res://assets/stickers/284_米沙 自闭.png"
+  },
+  {
+    "name": "米沙 欢迎光临",
+    "character": "米沙",
+    "path": "res://assets/stickers/285_米沙 欢迎光临.png"
+  },
+  {
+    "name": "桑博 哈啾",
+    "character": "桑博",
+    "path": "res://assets/stickers/286_桑博 哈啾.png"
+  },
+  {
+    "name": "钟表小子 开始",
+    "character": "钟表小子",
+    "path": "res://assets/stickers/287_钟表小子 开始.png"
+  },
+  {
+    "name": "王下一桶 注意",
+    "character": "王下一桶",
+    "path": "res://assets/stickers/288_王下一桶 注意.png"
+  },
+  {
+    "name": "广告牌 疑问",
+    "character": "广告牌",
+    "path": "res://assets/stickers/289_广告牌 疑问.png"
+  },
+  {
+    "name": "苏乐达 干杯",
+    "character": "苏乐达",
+    "path": "res://assets/stickers/290_苏乐达 干杯.png"
+  },
+  {
+    "name": "阮•梅 吃点心",
+    "character": "阮•梅",
+    "path": "res://assets/stickers/291_阮•梅 吃点心.png"
+  },
+  {
+    "name": "阮•梅 敷衍",
+    "character": "阮•梅",
+    "path": "res://assets/stickers/292_阮•梅 敷衍.png"
+  },
+  {
+    "name": "阮•梅 什么事",
+    "character": "阮•梅",
+    "path": "res://assets/stickers/293_阮•梅 什么事.png"
+  },
+  {
+    "name": "阮•梅 真棒",
+    "character": "阮•梅",
+    "path": "res://assets/stickers/294_阮•梅 真棒.png"
+  },
+  {
+    "name": "真理医生 不屑",
+    "character": "真理医生",
+    "path": "res://assets/stickers/295_真理医生 不屑.png"
+  },
+  {
+    "name": "真理医生 扔粉笔",
+    "character": "真理医生",
+    "path": "res://assets/stickers/296_真理医生 扔粉笔.png"
+  },
+  {
+    "name": "真理医生 计算中",
+    "character": "真理医生",
+    "path": "res://assets/stickers/297_真理医生 计算中.png"
+  },
+  {
+    "name": "真理医生 裂开",
+    "character": "真理医生",
+    "path": "res://assets/stickers/298_真理医生 裂开.png"
+  },
+  {
+    "name": "雪衣 无言",
+    "character": "雪衣",
+    "path": "res://assets/stickers/299_雪衣 无言.png"
+  },
+  {
+    "name": "雪衣 到点了",
+    "character": "雪衣",
+    "path": "res://assets/stickers/300_雪衣 到点了.png"
+  },
+  {
+    "name": "雪衣 逮捕",
+    "character": "雪衣",
+    "path": "res://assets/stickers/301_雪衣 逮捕.png"
+  },
+  {
+    "name": "姬子 喝杯热水",
+    "character": "姬子",
+    "path": "res://assets/stickers/302_姬子 喝杯热水.png"
+  },
+  {
+    "name": "佩佩 递茶",
+    "character": "佩佩",
+    "path": "res://assets/stickers/303_佩佩 递茶.png"
+  },
+  {
+    "name": "螺丝咕姆 宕机",
+    "character": "螺丝咕姆",
+    "path": "res://assets/stickers/304_螺丝咕姆 宕机.png"
+  },
+  {
+    "name": "黑塔 噗嗤",
+    "character": "黑塔",
+    "path": "res://assets/stickers/305_黑塔 噗嗤.png"
+  },
+  {
+    "name": "阮•梅造物 贴贴",
+    "character": "阮•梅造物",
+    "path": "res://assets/stickers/306_阮•梅造物 贴贴.png"
+  },
+  {
+    "name": "桂乃芬 惊",
+    "character": "桂乃芬",
+    "path": "res://assets/stickers/307_桂乃芬 惊.png"
+  },
+  {
+    "name": "桂乃芬 看透",
+    "character": "桂乃芬",
+    "path": "res://assets/stickers/308_桂乃芬 看透.png"
+  },
+  {
+    "name": "寒鸦 打叉",
+    "character": "寒鸦",
+    "path": "res://assets/stickers/309_寒鸦 打叉.png"
+  },
+  {
+    "name": "寒鸦 困倦",
+    "character": "寒鸦",
+    "path": "res://assets/stickers/310_寒鸦 困倦.png"
+  },
+  {
+    "name": "寒鸦 碎碎念",
+    "character": "寒鸦",
+    "path": "res://assets/stickers/312_寒鸦 碎碎念.png"
+  },
+  {
+    "name": "藿藿 呆滞",
+    "character": "藿藿",
+    "path": "res://assets/stickers/313_藿藿 呆滞.png"
+  },
+  {
+    "name": "藿藿 好痛",
+    "character": "藿藿",
+    "path": "res://assets/stickers/314_藿藿 好痛.png"
+  },
+  {
+    "name": "藿藿 捏脸",
+    "character": "藿藿",
+    "path": "res://assets/stickers/315_藿藿 捏脸.png"
+  },
+  {
+    "name": "藿藿 抓狂",
+    "character": "藿藿",
+    "path": "res://assets/stickers/316_藿藿 抓狂.png"
+  },
+  {
+    "name": "藿藿小纸人 瞧一瞧",
+    "character": "藿藿小纸人",
+    "path": "res://assets/stickers/317_藿藿小纸人 瞧一瞧.png"
+  },
+  {
+    "name": "瓦尔特 喷",
+    "character": "瓦尔特",
+    "path": "res://assets/stickers/318_瓦尔特 喷.png"
+  },
+  {
+    "name": "尾巴 就这",
+    "character": "尾巴",
+    "path": "res://assets/stickers/319_尾巴 就这.png"
+  },
+  {
+    "name": "银枝 登场",
+    "character": "银枝",
+    "path": "res://assets/stickers/320_银枝 登场.png"
+  },
+  {
+    "name": "银枝 静音",
+    "character": "银枝",
+    "path": "res://assets/stickers/321_银枝 静音.png"
+  },
+  {
+    "name": "银枝 玫瑰",
+    "character": "银枝",
+    "path": "res://assets/stickers/322_银枝 玫瑰.png"
+  },
+  {
+    "name": "银枝 邀请",
+    "character": "银枝",
+    "path": "res://assets/stickers/323_银枝 邀请.png"
+  },
+  {
+    "name": "桂乃芬 开播",
+    "character": "桂乃芬",
+    "path": "res://assets/stickers/324_桂乃芬 开播.png"
+  },
+  {
+    "name": "桂乃芬 略略",
+    "character": "桂乃芬",
+    "path": "res://assets/stickers/325_桂乃芬 略略.png"
+  },
+  {
+    "name": "桂乃芬 庆祝",
+    "character": "桂乃芬",
+    "path": "res://assets/stickers/326_桂乃芬 庆祝.png"
+  },
+  {
+    "name": "杰帕德 浇花",
+    "character": "杰帕德",
+    "path": "res://assets/stickers/327_杰帕德 浇花.png"
+  },
+  {
+    "name": "镜流 惆怅",
+    "character": "镜流",
+    "path": "res://assets/stickers/328_镜流 惆怅.png"
+  },
+  {
+    "name": "镜流 喝茶",
+    "character": "镜流",
+    "path": "res://assets/stickers/329_镜流 喝茶.png"
+  },
+  {
+    "name": "镜流 消灭你",
+    "character": "镜流",
+    "path": "res://assets/stickers/330_镜流 消灭你.png"
+  },
+  {
+    "name": "镜流 休息",
+    "character": "镜流",
+    "path": "res://assets/stickers/331_镜流 休息.png"
+  },
+  {
+    "name": "青雀 自摸",
+    "character": "青雀",
+    "path": "res://assets/stickers/332_青雀 自摸.png"
+  },
+  {
+    "name": "桑博 谢谢老板",
+    "character": "桑博",
+    "path": "res://assets/stickers/333_桑博 谢谢老板.png"
+  },
+  {
+    "name": "素裳 好重",
+    "character": "素裳",
+    "path": "res://assets/stickers/334_素裳 好重.png"
+  },
+  {
+    "name": "停云 扇风",
+    "character": "停云",
+    "path": "res://assets/stickers/335_停云 扇风.png"
+  },
+  {
+    "name": "托帕&账账 好耶",
+    "character": "托帕&账账",
+    "path": "res://assets/stickers/336_托帕&账账 好耶.png"
+  },
+  {
+    "name": "托帕&账账 肯定",
+    "character": "托帕&账账",
+    "path": "res://assets/stickers/337_托帕&账账 肯定.png"
+  },
+  {
+    "name": "托帕&账账 震惊",
+    "character": "托帕&账账",
+    "path": "res://assets/stickers/338_托帕&账账 震惊.png"
+  },
+  {
+    "name": "托帕&账账 注意",
+    "character": "托帕&账账",
+    "path": "res://assets/stickers/339_托帕&账账 注意.png"
+  },
+  {
+    "name": "丹恒•饮月 打一架",
+    "character": "丹恒•饮月",
+    "path": "res://assets/stickers/340_丹恒•饮月 打一架.png"
+  },
+  {
+    "name": "丹恒•饮月 摸摸",
+    "character": "丹恒•饮月",
+    "path": "res://assets/stickers/341_丹恒•饮月 摸摸.png"
+  },
+  {
+    "name": "丹恒•饮月 听不见",
+    "character": "丹恒•饮月",
+    "path": "res://assets/stickers/342_丹恒•饮月 听不见.png"
+  },
+  {
+    "name": "丹恒•饮月 想开了",
+    "character": "丹恒•饮月",
+    "path": "res://assets/stickers/343_丹恒•饮月 想开了.png"
+  },
+  {
+    "name": "驭空 飙车",
+    "character": "驭空",
+    "path": "res://assets/stickers/344_驭空 飙车.png"
+  },
+  {
+    "name": "佩拉 哇",
+    "character": "佩拉",
+    "path": "res://assets/stickers/345_佩拉 哇.png"
+  },
+  {
+    "name": "玲可 舒服",
+    "character": "玲可",
+    "path": "res://assets/stickers/346_玲可 舒服.png"
+  },
+  {
+    "name": "玲可 冷",
+    "character": "玲可",
+    "path": "res://assets/stickers/347_玲可 冷.png"
+  },
+  {
+    "name": "玲可 冲",
+    "character": "玲可",
+    "path": "res://assets/stickers/348_玲可 冲.png"
+  },
+  {
+    "name": "虎克 诶嘿",
+    "character": "虎克",
+    "path": "res://assets/stickers/349_虎克 诶嘿.png"
+  },
+  {
+    "name": "符玄 算一卦",
+    "character": "符玄",
+    "path": "res://assets/stickers/350_符玄 算一卦.png"
+  },
+  {
+    "name": "符玄 闪亮登场",
+    "character": "符玄",
+    "path": "res://assets/stickers/351_符玄 闪亮登场.png"
+  },
+  {
+    "name": "符玄 看到了",
+    "character": "符玄",
+    "path": "res://assets/stickers/352_符玄 看到了.png"
+  },
+  {
+    "name": "符玄 坏蛋",
+    "character": "符玄",
+    "path": "res://assets/stickers/353_符玄 坏蛋.png"
+  },
+  {
+    "name": "白露 吐泡泡",
+    "character": "白露",
+    "path": "res://assets/stickers/354_白露 吐泡泡.png"
+  },
+  {
+    "name": "艾丝妲 发红包",
+    "character": "艾丝妲",
+    "path": "res://assets/stickers/355_艾丝妲 发红包.png"
+  },
+  {
+    "name": "帕姆_注意",
+    "character": "帕姆_注意",
+    "path": "res://assets/stickers/356_帕姆_注意.png"
+  },
+  {
+    "name": "帕姆_震惊",
+    "character": "帕姆_震惊",
+    "path": "res://assets/stickers/357_帕姆_震惊.png"
+  },
+  {
+    "name": "帕姆_疑惑",
+    "character": "帕姆_疑惑",
+    "path": "res://assets/stickers/358_帕姆_疑惑.png"
+  },
+  {
+    "name": "帕姆_收到",
+    "character": "帕姆_收到",
+    "path": "res://assets/stickers/359_帕姆_收到.png"
+  },
+  {
+    "name": "帕姆_礼物",
+    "character": "帕姆_礼物",
+    "path": "res://assets/stickers/360_帕姆_礼物.png"
+  },
+  {
+    "name": "帕姆 哭哭",
+    "character": "帕姆",
+    "path": "res://assets/stickers/361_帕姆 哭哭.png"
+  },
+  {
+    "name": "帕姆_加班",
+    "character": "帕姆_加班",
+    "path": "res://assets/stickers/362_帕姆_加班.png"
+  },
+  {
+    "name": "帕姆_好耶",
+    "character": "帕姆_好耶",
+    "path": "res://assets/stickers/363_帕姆_好耶.png"
+  },
+  {
+    "name": "帕姆_好奇",
+    "character": "帕姆_好奇",
+    "path": "res://assets/stickers/364_帕姆_好奇.png"
+  },
+  {
+    "name": "帕姆_害羞",
+    "character": "帕姆_害羞",
+    "path": "res://assets/stickers/365_帕姆_害羞.png"
+  },
+  {
+    "name": "帕姆_嗨",
+    "character": "帕姆_嗨",
+    "path": "res://assets/stickers/366_帕姆_嗨.png"
+  },
+  {
+    "name": "帕姆_干饭",
+    "character": "帕姆_干饭",
+    "path": "res://assets/stickers/367_帕姆_干饭.png"
+  },
+  {
+    "name": "帕姆_点赞",
+    "character": "帕姆_点赞",
+    "path": "res://assets/stickers/368_帕姆_点赞.png"
+  },
+  {
+    "name": "帕姆_出金",
+    "character": "帕姆_出金",
+    "path": "res://assets/stickers/369_帕姆_出金.png"
+  },
+  {
+    "name": "帕姆_不可以",
+    "character": "帕姆_不可以",
+    "path": "res://assets/stickers/370_帕姆_不可以.png"
+  },
+  {
+    "name": "帕姆 比心",
+    "character": "帕姆",
+    "path": "res://assets/stickers/371_帕姆 比心.png"
+  },
+  {
+    "name": "阿兰 抱抱",
+    "character": "阿兰",
+    "path": "res://assets/stickers/372_阿兰 抱抱.png"
+  },
+  {
+    "name": "卡芙卡 爆炸",
+    "character": "卡芙卡",
+    "path": "res://assets/stickers/373_卡芙卡 爆炸.png"
+  },
+  {
+    "name": "卡芙卡 来电",
+    "character": "卡芙卡",
+    "path": "res://assets/stickers/374_卡芙卡 来电.png"
+  },
+  {
+    "name": "卡芙卡 嘘",
+    "character": "卡芙卡",
+    "path": "res://assets/stickers/375_卡芙卡 嘘.png"
+  },
+  {
+    "name": "卡芙卡 优雅",
+    "character": "卡芙卡",
+    "path": "res://assets/stickers/376_卡芙卡 优雅.png"
+  },
+  {
+    "name": "卢卡 沮丧",
+    "character": "卢卡",
+    "path": "res://assets/stickers/377_卢卡 沮丧.png"
+  },
+  {
+    "name": "卢卡 燃起来了",
+    "character": "卢卡",
+    "path": "res://assets/stickers/378_卢卡 燃起来了.png"
+  },
+  {
+    "name": "卢卡 重拳出击",
+    "character": "卢卡",
+    "path": "res://assets/stickers/379_卢卡 重拳出击.png"
+  },
+  {
+    "name": "娜塔莎 吃药了",
+    "character": "娜塔莎",
+    "path": "res://assets/stickers/380_娜塔莎 吃药了.png"
+  },
+  {
+    "name": "刃 看不见我",
+    "character": "刃",
+    "path": "res://assets/stickers/381_刃 看不见我.png"
+  },
+  {
+    "name": "刃 锁定",
+    "character": "刃",
+    "path": "res://assets/stickers/382_刃 锁定.png"
+  },
+  {
+    "name": "刃 我没事",
+    "character": "刃",
+    "path": "res://assets/stickers/383_刃 我没事.png"
+  },
+  {
+    "name": "刃 啧",
+    "character": "刃",
+    "path": "res://assets/stickers/384_刃 啧.png"
+  },
+  {
+    "name": "桑博 暗中观察",
+    "character": "桑博",
+    "path": "res://assets/stickers/385_桑博 暗中观察.png"
+  },
+  {
+    "name": "素裳 犯困",
+    "character": "素裳",
+    "path": "res://assets/stickers/386_素裳 犯困.png"
+  },
+  {
+    "name": "希露瓦 嗨起来",
+    "character": "希露瓦",
+    "path": "res://assets/stickers/387_希露瓦 嗨起来.png"
+  },
+  {
+    "name": "布洛妮娅 加班",
+    "character": "布洛妮娅",
+    "path": "res://assets/stickers/388_布洛妮娅 加班.png"
+  },
+  {
+    "name": "姬子 计算",
+    "character": "姬子",
+    "path": "res://assets/stickers/389_姬子 计算.png"
+  },
+  {
+    "name": "杰帕德 开门",
+    "character": "杰帕德",
+    "path": "res://assets/stickers/390_杰帕德 开门.png"
+  },
+  {
+    "name": "景元 鼓掌",
+    "character": "景元",
+    "path": "res://assets/stickers/391_景元 鼓掌.png"
+  },
+  {
+    "name": "景元 记录",
+    "character": "景元",
+    "path": "res://assets/stickers/392_景元 记录.png"
+  },
+  {
+    "name": "景元 微笑",
+    "character": "景元",
+    "path": "res://assets/stickers/393_景元 微笑.png"
+  },
+  {
+    "name": "克拉拉 拜托拜托",
+    "character": "克拉拉",
+    "path": "res://assets/stickers/394_克拉拉 拜托拜托.png"
+  },
+  {
+    "name": "罗刹 交易成功",
+    "character": "罗刹",
+    "path": "res://assets/stickers/395_罗刹 交易成功.png"
+  },
+  {
+    "name": "罗刹 治疗",
+    "character": "罗刹",
+    "path": "res://assets/stickers/396_罗刹 治疗.png"
+  },
+  {
+    "name": "瓦尔特 看破",
+    "character": "瓦尔特",
+    "path": "res://assets/stickers/397_瓦尔特 看破.png"
+  },
+  {
+    "name": "希儿 哈欠",
+    "character": "希儿",
+    "path": "res://assets/stickers/398_希儿 哈欠.png"
+  },
+  {
+    "name": "希儿 看不见我",
+    "character": "希儿",
+    "path": "res://assets/stickers/399_希儿 看不见我.png"
+  },
+  {
+    "name": "希儿 怒",
+    "character": "希儿",
+    "path": "res://assets/stickers/400_希儿 怒.png"
+  },
+  {
+    "name": "银狼 撤回",
+    "character": "银狼",
+    "path": "res://assets/stickers/401_银狼 撤回.png"
+  },
+  {
+    "name": "银狼 有了",
+    "character": "银狼",
+    "path": "res://assets/stickers/402_银狼 有了.png"
+  },
+  {
+    "name": "驭空 辛苦啦",
+    "character": "驭空",
+    "path": "res://assets/stickers/403_驭空 辛苦啦.png"
+  },
+  {
+    "name": "比心呜呜",
+    "character": "比心呜呜",
+    "path": "res://assets/stickers/404_比心呜呜.png"
+  },
+  {
+    "name": "冲刺呜呜",
+    "character": "冲刺呜呜",
+    "path": "res://assets/stickers/405_冲刺呜呜.png"
+  },
+  {
+    "name": "点赞呜呜",
+    "character": "点赞呜呜",
+    "path": "res://assets/stickers/406_点赞呜呜.png"
+  },
+  {
+    "name": "惊吓呜呜",
+    "character": "惊吓呜呜",
+    "path": "res://assets/stickers/407_惊吓呜呜.png"
+  },
+  {
+    "name": "开心呜呜",
+    "character": "开心呜呜",
+    "path": "res://assets/stickers/408_开心呜呜.png"
+  },
+  {
+    "name": "气气呜呜",
+    "character": "气气呜呜",
+    "path": "res://assets/stickers/409_气气呜呜.png"
+  },
+  {
+    "name": "敲黑板呜呜",
+    "character": "敲黑板呜呜",
+    "path": "res://assets/stickers/410_敲黑板呜呜.png"
+  },
+  {
+    "name": "求饶呜呜",
+    "character": "求饶呜呜",
+    "path": "res://assets/stickers/411_求饶呜呜.png"
+  },
+  {
+    "name": "认真呜呜",
+    "character": "认真呜呜",
+    "path": "res://assets/stickers/412_认真呜呜.png"
+  },
+  {
+    "name": "睡觉呜呜",
+    "character": "睡觉呜呜",
+    "path": "res://assets/stickers/413_睡觉呜呜.png"
+  },
+  {
+    "name": "无奈呜呜",
+    "character": "无奈呜呜",
+    "path": "res://assets/stickers/414_无奈呜呜.png"
+  },
+  {
+    "name": "无语呜呜",
+    "character": "无语呜呜",
+    "path": "res://assets/stickers/415_无语呜呜.png"
+  },
+  {
+    "name": "眩晕呜呜",
+    "character": "眩晕呜呜",
+    "path": "res://assets/stickers/416_眩晕呜呜.png"
+  },
+  {
+    "name": "疑惑呜呜",
+    "character": "疑惑呜呜",
+    "path": "res://assets/stickers/417_疑惑呜呜.png"
+  },
+  {
+    "name": "坏笑呜呜",
+    "character": "坏笑呜呜",
+    "path": "res://assets/stickers/418_坏笑呜呜.png"
+  },
+  {
+    "name": "期待呜呜",
+    "character": "期待呜呜",
+    "path": "res://assets/stickers/419_期待呜呜.png"
+  }
+]

@@ -1,14 +1,18 @@
-[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/character_definition.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/skills/orbit_blades.tscn" id="2"]
 
+[ext_resource type="Texture2D" path="res://assets/stickers/215_彦卿 我来了.png" id="3"]
+
 [resource]
 script = ExtResource("1")
 id = "sword"
-display_name = "飞剑使"
+display_name = "彦卿"
 description = "三柄飞剑环绕自身，擦过对手时连续造成伤害。擅长在竞技场中反弹穿行。"
-portrait_size = 82.0
+portrait = ExtResource("3")
+normal_image_path = "res://assets/stickers/215_彦卿 我来了.png"
+portrait_size = 92.0
 theme_color = Color(0.2, 0.86, 1, 1)
 max_health = 1000.0
 attack = 38.0

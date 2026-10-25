@@ -1,14 +1,18 @@
-[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/character_definition.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/skills/dash_slash.tscn" id="2"]
 
+[ext_resource type="Texture2D" path="res://assets/stickers/045_千冶•刃 冷静一下.png" id="3"]
+
 [resource]
 script = ExtResource("1")
 id = "assassin"
-display_name = "影刃"
+display_name = "刃"
 description = "游走寻找时机，高速冲刺穿过敌人并斩击。命中后短暂减速，同次冲刺仅命中一次。"
-portrait_size = 82.0
+portrait = ExtResource("3")
+normal_image_path = "res://assets/stickers/045_千冶•刃 冷静一下.png"
+portrait_size = 92.0
 theme_color = Color(0.72, 0.53, 1, 1)
 max_health = 920.0
 attack = 40.0

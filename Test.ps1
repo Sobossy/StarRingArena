@@ -14,3 +14,20 @@ $uiOutput | Tee-Object -FilePath (Join-Path $ProjectRoot 'test-results\ui-latest
 if ($uiExitCode -ne 0 -or (($uiOutput | Out-String) -match 'SCRIPT ERROR:|ERROR:') -or (($uiOutput | Out-String) -notmatch 'UI TESTS PASSED')) {
     throw 'UI integration tests failed. See test-results/ui-latest.log.'
 }
+$extensionOutput = & $GodotConsole --headless --path $ProjectRoot --script res://tests/extension_tests.gd 2>&1
+$extensionExitCode = $LASTEXITCODE
+$extensionOutput | Tee-Object -FilePath (Join-Path $ProjectRoot 'test-results\extension-latest.log') | Write-Host
+if ($extensionExitCode -ne 0 -or (($extensionOutput | Out-String) -match 'SCRIPT ERROR:|ERROR:|leaked at exit') -or (($extensionOutput | Out-String) -notmatch 'EXTENSION TESTS PASSED')) {
+    throw 'Editor/multiplayer regression tests failed. See test-results/extension-latest.log.'
+}
+foreach ($phase in @('write','read')) {
+    $arguments = @('--headless','--path',$ProjectRoot,'--script','res://tests/persistence_roundtrip.gd')
+    if ($phase -eq 'write') { $arguments += @('--','--write') }
+    $roundtripOutput = & $GodotConsole @arguments 2>&1
+    $roundtripExitCode = $LASTEXITCODE
+    $roundtripOutput | Tee-Object -FilePath (Join-Path $ProjectRoot "test-results\persistence-$phase.log") | Write-Host
+    $expected = "PERSISTENCE $($phase.ToUpperInvariant()) OK"
+    if ($roundtripExitCode -ne 0 -or (($roundtripOutput | Out-String) -match 'SCRIPT ERROR:|ERROR:') -or -not (($roundtripOutput | Out-String).Contains($expected))) {
+        throw "Persistence $phase failed."
+    }
+}

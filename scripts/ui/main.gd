@@ -3,6 +3,9 @@ extends Control
 const ArenaScript = preload("res://scripts/core/battle_arena.gd")
 const BoardScript = preload("res://scripts/ui/arena_board.gd")
 const Roster = preload("res://data/roster.gd")
+const LibraryScript = preload("res://scripts/core/character_library.gd")
+const MatchPanelScript = preload("res://scripts/ui/match_panel.gd")
+const WorkshopScript = preload("res://scripts/ui/character_editor.gd")
 const BG := Color("080f1b")
 const PANEL := Color("111e2e")
 const LINE := Color("263a50")
@@ -17,13 +20,15 @@ const STEP := 1.0 / 60.0
 var arena
 var board
 var roster: Array = []
-var selected: Array[int] = [0, 3]
+var library
+var match_panel
+var workshop
+var editor_button: Button
+var match_error_label: Label
+var live_roster_label: Label
 var role_options: Array[OptionButton] = []
 var move_options: Array[OptionButton] = []
-var stat_labels: Array[Label] = []
-var description_labels: Array[Label] = []
 var matchup_labels: Array[Label] = []
-var role_tags: Array[Label] = []
 var seed_input: SpinBox
 var random_button: Button
 var phase_label: Label
@@ -55,11 +60,13 @@ var font: Font
 var qa_mode: bool = false
 
 func _ready() -> void:
+	qa_mode = qa_mode or "--qa" in OS.get_cmdline_user_args()
 	var font_variation := FontVariation.new()
 	font_variation.base_font = load("res://assets/fonts/NotoSansSC.ttf")
 	font_variation.variation_opentype = {TextServerManager.get_primary_interface().name_to_tag("wght"): 500}
 	font = font_variation
-	roster = Roster.get_all()
+	library = LibraryScript.new("user://qa_ui_library" if qa_mode else "user://characters")
+	roster = library.reload()
 	arena = ArenaScript.new()
 	add_child(arena)
 	_build_theme()
@@ -67,16 +74,26 @@ func _ready() -> void:
 	_build_audio()
 	if not qa_mode:
 		_load_settings()
-	_refresh_selection(0)
-	_refresh_selection(1)
-	if not qa_mode:
-		_restore_movements()
+	_update_configuration()
 	_set_speed(1.0)
 	var args := OS.get_cmdline_user_args()
 	smoke_mode = "--smoke" in args
+	if "--demo-eight" in args:
+		match_panel.count_input.set_value_no_signal(8)
+		match_panel.mode_option.select(1)
+		match_panel.width_input.set_value_no_signal(1200)
+		match_panel.height_input.set_value_no_signal(700)
+		for i in range(8):
+			match_panel.slot_data[i].team = i % 4
+		match_panel.rebuild_rows()
+		_update_configuration()
 	if "--demo" in args or smoke_mode:
 		_start_battle()
-	get_window().close_requested.connect(_save_settings)
+	if "--editor-demo" in args:
+		workshop.open_editor()
+	get_window().min_size = Vector2i(1020,675)
+	get_tree().auto_accept_quit = false
+	get_window().close_requested.connect(_on_close_requested)
 
 func _build_theme() -> void:
 	var t := Theme.new()
@@ -107,6 +124,13 @@ func _build_theme() -> void:
 	t.set_stylebox("slider", "HSlider", _style(Color("293d50"), Color.TRANSPARENT, 3, 0, 0))
 	t.set_stylebox("grabber_area", "HSlider", _style(Color("68cfc7"), Color.TRANSPARENT, 3, 0, 0))
 	t.set_stylebox("grabber_area_highlight", "HSlider", _style(CYAN, Color.TRANSPARENT, 3, 0, 0))
+	t.set_stylebox("panel", "ItemList", _style(Color("0e1b2b"), LINE, 8, 8, 8))
+	t.set_stylebox("selected", "ItemList", _style(Color("29484d"), Color("59958c"), 5, 4, 3))
+	t.set_stylebox("selected_focus", "ItemList", _style(Color("29484d"), CYAN, 5, 4, 3))
+	t.set_stylebox("panel", "TabContainer", _style(Color("111e2e"), LINE, 8, 0, 0))
+	t.set_stylebox("tab_selected", "TabContainer", _style(Color("233b4c"), Color("4e7a85"), 5, 12, 9))
+	t.set_stylebox("tab_unselected", "TabContainer", _style(Color("102030"), LINE, 5, 12, 9))
+	t.set_color("font_selected_color", "TabContainer", CYAN)
 	theme = t
 
 func _style(bg: Color, border: Color, radius: int = 10, horizontal: int = 16, vertical: int = 14) -> StyleBoxFlat:
@@ -172,6 +196,11 @@ func _build_ui() -> void:
 	left_note.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	footer.add_child(left_note)
 	footer.add_child(_label("SPACE  暂停     R  重开     F11  全屏", 11, Color("6a8296")))
+	workshop = WorkshopScript.new()
+	add_child(workshop)
+	workshop.build(self,library)
+	workshop.library_changed.connect(_library_changed)
+
 
 func _build_header(parent: VBoxContainer) -> void:
 	var row := HBoxContainer.new()
@@ -189,6 +218,10 @@ func _build_header(parent: VBoxContainer) -> void:
 	row.add_child(title)
 	title.add_child(_label("星环竞技场", 25))
 	title.add_child(_label("S T A R   R I N G   /   A U T O   B A T T L E", 10, MUTED))
+	editor_button = _button("角色编辑", func(): workshop.open_editor())
+	editor_button.custom_minimum_size.y = 37
+	editor_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(editor_button)
 	var badge := PanelContainer.new()
 	badge.add_theme_stylebox_override("panel", _style(Color("142630"), Color("284850"), 16, 13, 6))
 	badge.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -227,7 +260,7 @@ func _build_arena_column(parent: HBoxContainer) -> void:
 		var v := VBoxContainer.new()
 		v.add_theme_constant_override("separation", 0)
 		card.add_child(v)
-		var tag := _label("A  /  青方" if i == 0 else "B  /  金方", 10, CYAN if i == 0 else GOLD)
+		var tag := _label("模式 / MODE" if i == 0 else "地图 / ARENA", 10, CYAN if i == 0 else GOLD)
 		var name_label := _label("", 18)
 		if i == 1:
 			tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -271,147 +304,102 @@ func _build_arena_column(parent: HBoxContainer) -> void:
 
 func _build_sidebar(parent: HBoxContainer) -> void:
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size.x = 330
-	panel.add_theme_stylebox_override("panel", _style(PANEL, LINE, 14, 20, 18))
+	panel.custom_minimum_size.x = 360
+	panel.add_theme_stylebox_override("panel", _style(PANEL, LINE, 14, 16, 15))
 	parent.add_child(panel)
-	var scroll := ScrollContainer.new()
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	panel.add_child(scroll)
 	var v := VBoxContainer.new()
-	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	v.add_theme_constant_override("separation", 9)
-	scroll.add_child(v)
-	var heading := HBoxContainer.new()
-	v.add_child(heading)
-	var title := _label("对战设置", 20)
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	heading.add_child(title)
-	heading.add_child(_label("01 / DUEL", 10, GOLD))
-	v.add_child(_label("自由搭配角色与移动策略", 12, MUTED))
-	for i in range(2):
-		_build_role_selector(v, i)
+	v.add_theme_constant_override("separation", 8)
+	panel.add_child(v)
+	v.add_child(_label("对战配置", 20))
+	match_panel = MatchPanelScript.new()
+	match_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	v.add_child(match_panel)
+	match_panel.build(self,library)
+	match_panel.configuration_changed.connect(_update_configuration)
+	match_error_label = _label("", 11, Color("ffb7a4"))
+	match_error_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	v.add_child(match_error_label)
 	var seed_row := HBoxContainer.new()
-	seed_row.add_theme_constant_override("separation", 9)
+	seed_row.add_theme_constant_override("separation", 8)
 	v.add_child(seed_row)
-	var seed_label := _label("对战种子", 12, MUTED)
-	seed_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	seed_row.add_child(seed_label)
+	seed_row.add_child(_label("随机种子", 12, MUTED))
 	seed_input = SpinBox.new()
 	seed_input.min_value = 1
 	seed_input.max_value = 999999
 	seed_input.value = 42
-	seed_input.custom_minimum_size.x = 106
-	seed_input.tooltip_text = "相同角色、策略与种子可重复同一场战斗。"
+	seed_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	seed_row.add_child(seed_input)
-	random_button = _button("换一组", func(): seed_input.value = randi_range(1, 999999))
+	random_button = _button("换一组", func(): seed_input.value = randi_range(1,999999); _update_configuration())
 	random_button.custom_minimum_size.y = 33
-	random_button.add_theme_font_size_override("font_size", 11)
+	random_button.add_theme_font_size_override("font_size",12)
 	seed_row.add_child(random_button)
 	start_button = _button("开始对战  →", _start_battle, true)
-	start_button.custom_minimum_size.y = 52
-	start_button.add_theme_font_size_override("font_size", 17)
+	start_button.custom_minimum_size.y = 47
 	v.add_child(start_button)
 	var playback := HBoxContainer.new()
-	playback.add_theme_constant_override("separation", 8)
+	playback.add_theme_constant_override("separation",8)
 	v.add_child(playback)
-	pause_button = _button("暂停", _toggle_pause)
-	pause_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	pause_button = _button("暂停",_toggle_pause)
 	pause_button.disabled = true
+	pause_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	playback.add_child(pause_button)
-	return_button = _button("返回选角", _return_to_selection)
-	return_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	return_button = _button("返回配置",_return_to_selection)
 	return_button.disabled = true
+	return_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	playback.add_child(return_button)
 	var speed_row := HBoxContainer.new()
-	speed_row.add_theme_constant_override("separation", 7)
+	speed_row.add_theme_constant_override("separation",7)
 	v.add_child(speed_row)
-	for value in [0.5, 1.0, 2.0]:
-		var b := _button(("%.1f" % value).trim_suffix(".0") + "×", _set_speed.bind(value))
-		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		b.custom_minimum_size.y = 32
-		b.tooltip_text = "战斗播放速度"
-		speed_row.add_child(b)
-		speed_buttons.append(b)
+	for value in [0.5,1.0,2.0]:
+		var button := _button(("%.1f" % value).trim_suffix(".0") + "×",_set_speed.bind(value))
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.custom_minimum_size.y = 32
+		speed_row.add_child(button)
+		speed_buttons.append(button)
 	var volume_row := HBoxContainer.new()
-	volume_row.add_theme_constant_override("separation", 10)
+	volume_row.add_theme_constant_override("separation",8)
 	v.add_child(volume_row)
-	volume_label = _label("音量  35%", 11, MUTED)
+	volume_label = _label("音量 35%",11,MUTED)
 	volume_label.custom_minimum_size.x = 75
 	volume_row.add_child(volume_label)
 	volume_slider = HSlider.new()
-	volume_slider.min_value = 0
 	volume_slider.max_value = 100
-	volume_slider.step = 1
 	volume_slider.value = 35
 	volume_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	volume_slider.custom_minimum_size.y = 25
 	volume_slider.value_changed.connect(_set_volume)
 	volume_row.add_child(volume_slider)
-	var notes := _label("当前为素材占位版本\n可替换透明 PNG，保留所有技能与属性。", 11, Color("698295"))
-	notes.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	v.add_child(notes)
+	live_roster_label = _label("最多 8 人 · 角色形象可在编辑页导入",11,MUTED)
+	live_roster_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	v.add_child(live_roster_label)
 
-func _build_role_selector(parent: VBoxContainer, side: int) -> void:
-	var card := PanelContainer.new()
-	card.add_theme_stylebox_override("panel", _style(Color("0d1928"), Color("283f50"), 9, 12, 8))
-	parent.add_child(card)
-	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 5)
-	card.add_child(v)
-	var tag := _label("A  /  青方角色" if side == 0 else "B  /  金方角色", 12, CYAN if side == 0 else GOLD)
-	v.add_child(tag)
-	role_tags.append(tag)
-	var option := OptionButton.new()
-	option.custom_minimum_size.y = 32
-	option.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	for definition in roster:
-		option.add_item(definition.display_name)
-	option.select(selected[side])
-	option.item_selected.connect(_on_role_selected.bind(side))
-	v.add_child(option)
-	role_options.append(option)
-	var description := _label("", 12, MUTED)
-	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	description.custom_minimum_size.y = 18
-	v.add_child(description)
-	description_labels.append(description)
-	var stat := _label("", 12, Color("9eb2c0"))
-	v.add_child(stat)
-	stat_labels.append(stat)
-	var move_row := HBoxContainer.new()
-	move_row.add_theme_constant_override("separation", 8)
-	v.add_child(move_row)
-	move_row.add_child(_label("移动", 11, MUTED))
-	var move := OptionButton.new()
-	move.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	move.custom_minimum_size.y = 31
-	move.add_theme_font_size_override("font_size", 12)
-	for move_name in MOVE_NAMES:
-		move.add_item(move_name)
-	move_row.add_child(move)
-	move_options.append(move)
+func _update_configuration() -> void:
+	if match_panel == null or start_button == null:
+		return
+	roster = library.characters
+	role_options = match_panel.role_options
+	move_options = match_panel.move_options
+	var config = match_panel.get_config(int(seed_input.value))
+	board.preview_config = config
+	board.preview_positions = arena._spawn_layout(config)
+	board.queue_redraw()
+	board.preview_definitions = []
+	for slot in config.participants:
+		board.preview_definitions.append(slot.definition)
+	matchup_labels[0].text = ("个人竞技" if config.mode == "ffa" else "组队对战") + " · %d 人" % config.participants.size()
+	matchup_labels[1].text = "%d × %d" % [config.width,config.height]
+	if not has_started:
+		match_error_label.text = arena.validate_config(config)
+		start_button.disabled = not match_error_label.text.is_empty()
+		hint_label.text = "配置阵容与地图，或在角色编辑页导入你的形象。"
+
+func _library_changed() -> void:
+	roster = library.characters
+	match_panel.rebuild_rows()
+	_update_configuration()
 
 func _on_role_selected(index: int, side: int) -> void:
-	selected[side] = index
-	_refresh_selection(side)
-
-func _refresh_selection(side: int) -> void:
-	var definition = roster[selected[side]]
-	role_options[side].select(selected[side])
-	var summaries := {"sword": "环绕飞剑 · 持续接触伤害", "mage": "远程火球 · 爆炸与灼烧", "guard": "护盾防御 · 近身反击", "assassin": "冲刺斩击 · 命中减速"}
-	description_labels[side].text = summaries.get(definition.id, definition.description)
-	description_labels[side].tooltip_text = definition.description
-	stat_labels[side].text = "生命 %d   攻击 %d   速度 %d" % [definition.max_health, definition.attack, definition.speed]
-	matchup_labels[side].text = definition.display_name
-	var move_index: int = MOVE_IDS.find(definition.default_movement)
-	move_options[side].select(maxi(0, move_index))
-	board.preview_definitions = [roster[selected[0]], roster[selected[1]]]
-	if not has_started:
-		_update_art_note()
-
-func _update_art_note() -> void:
-	var placeholder: bool = roster[selected[0]].portrait == null or roster[selected[1]].portrait == null
-	hint_label.text = "双角色自动对战  ·  " + ("角色图片待替换" if placeholder else "准备开始")
+	match_panel._select_role(index,side)
 
 func _start_battle() -> void:
 	_save_settings()
@@ -421,7 +409,13 @@ func _start_battle() -> void:
 	paused = false
 	accumulator = 0.0
 	has_started = true
-	arena.start_battle([roster[selected[0]], roster[selected[1]]], [MOVE_IDS[move_options[0].selected], MOVE_IDS[move_options[1].selected]], int(seed_input.value))
+	var error: String = arena.start_match(match_panel.get_config(int(seed_input.value)))
+	if not error.is_empty():
+		has_started = false
+		match_error_label.text = error
+		return
+	match_panel.set_locked(true)
+	editor_button.disabled = true
 	board.ingest(arena.drain_events())
 	board.frozen = false
 	for option in role_options:
@@ -450,6 +444,8 @@ func _return_to_selection() -> void:
 		option.disabled = false
 	for option in move_options:
 		option.disabled = false
+	match_panel.set_locked(false)
+	editor_button.disabled = false
 	seed_input.editable = true
 	random_button.disabled = false
 	start_button.text = "开始对战  →"
@@ -458,7 +454,7 @@ func _return_to_selection() -> void:
 	return_button.disabled = true
 	phase_label.text = "●  准备就绪"
 	timer_label.text = "01:30"
-	_update_art_note()
+	_update_configuration()
 
 func _toggle_pause() -> void:
 	if not has_started or not arena.running:
@@ -485,6 +481,9 @@ func _toggle_fullscreen() -> void:
 
 func _process(delta: float) -> void:
 	boot_time += delta
+	if workshop.visible:
+		_tick_smoke()
+		return
 	audio_wait = maxf(0, audio_wait - delta)
 	if has_started and arena.running and not paused:
 		accumulator += minf(delta, 0.25) * speed
@@ -498,8 +497,31 @@ func _process(delta: float) -> void:
 					_play_hit()
 		var seconds: int = maxi(0, int(ceil(arena.duration - arena.elapsed)))
 		timer_label.text = "%02d:%02d" % [seconds / 60, seconds % 60]
+	if has_started:
+		var alive: int = 0
+		var names: Array[String] = []
+		var team_counts: Dictionary = {}
+		for fighter in arena.fighters:
+			if fighter.alive:
+				alive += 1
+			names.append("%02d %s %d" % [fighter.fighter_id + 1,fighter.definition.display_name,fighter.health])
+			if fighter.fighter_id < match_panel.health_labels.size():
+				match_panel.health_labels[fighter.fighter_id].text = str(int(ceil(fighter.health))) if fighter.alive else "淘汰"
+			if not team_counts.has(fighter.team_id):
+				team_counts[fighter.team_id] = Vector2i.ZERO
+			team_counts[fighter.team_id] += Vector2i(1 if fighter.alive else 0,1)
+		live_roster_label.text = "存活 %d / %d" % [alive,arena.fighters.size()]
+		if arena.mode == "teams":
+			var team_text: Array[String] = []
+			for team in team_counts:
+				team_text.append("%s队 %d/%d" % [["A","B","C","D"][team],team_counts[team].x,team_counts[team].y])
+			live_roster_label.text += "\n" + "  ".join(team_text)
+		live_roster_label.tooltip_text = "\n".join(names)
 	if has_started and not arena.running and not result_shown:
 		_show_result()
+	_tick_smoke()
+
+func _tick_smoke() -> void:
 	if smoke_mode and boot_time > 4.0 and not capture_done:
 		capture_done = true
 		_capture_smoke.call_deferred()
@@ -507,11 +529,23 @@ func _process(delta: float) -> void:
 		print("UI_SMOKE_OK fps=", Engine.get_frames_per_second(), " elapsed=", arena.elapsed)
 		get_tree().quit()
 
+func _on_close_requested() -> void:
+	if workshop.visible and workshop.dirty:
+		workshop._guard(func(): _save_settings(); get_tree().quit())
+	else:
+		_save_settings()
+		get_tree().quit()
+
 func _show_result() -> void:
 	result_shown = true
 	paused = false
 	board.frozen = false
-	result_title.text = "势均力敌 · 平局" if arena.winner < 0 else arena.fighters[arena.winner].definition.display_name + "  获胜"
+	if arena.winner_team < 0:
+		result_title.text = "势均力敌 · 平局"
+	elif arena.mode == "teams":
+		result_title.text = ["A","B","C","D"][arena.winner_team] + " 队获胜"
+	else:
+		result_title.text = "%02d · %s 获胜" % [arena.winner + 1, arena.fighters[arena.winner].definition.display_name]
 	result_detail.text = "战斗用时 %.1f 秒  ·  种子 %d" % [arena.elapsed, arena.seed_value]
 	result_panel.show()
 	pause_button.disabled = true
@@ -519,6 +553,8 @@ func _show_result() -> void:
 	hint_label.text = "每一种搭配，都有新的可能。"
 
 func _input(event: InputEvent) -> void:
+	if workshop.visible:
+		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		match event.keycode:
 			KEY_F11:
@@ -581,31 +617,30 @@ func _save_settings() -> void:
 	if qa_mode:
 		return
 	var config := ConfigFile.new()
-	config.set_value("audio", "volume", volume_slider.value)
-	config.set_value("match", "seed", int(seed_input.value))
-	config.set_value("match", "roles", selected)
-	config.set_value("match", "moves", [move_options[0].selected, move_options[1].selected])
+	config.set_value("audio","volume",volume_slider.value)
+	config.set_value("match","seed",int(seed_input.value))
+	config.set_value("match","configuration_v2",match_panel.serialize())
 	config.save("user://settings.cfg")
 
 func _load_settings() -> void:
 	var config := ConfigFile.new()
 	if config.load("user://settings.cfg") != OK:
 		return
-	volume_slider.value = float(config.get_value("audio", "volume", 35))
-	seed_input.value = int(config.get_value("match", "seed", 42))
-	var roles = config.get_value("match", "roles", [0, 3])
-	if roles is Array and roles.size() == 2:
-		selected[0] = clampi(int(roles[0]), 0, roster.size() - 1)
-		selected[1] = clampi(int(roles[1]), 0, roster.size() - 1)
-
-func _restore_movements() -> void:
-	var config := ConfigFile.new()
-	if config.load("user://settings.cfg") != OK:
-		return
-	var movements = config.get_value("match", "moves", [0, 3])
-	if movements is Array and movements.size() == 2:
-		for side in range(2):
-			move_options[side].select(clampi(int(movements[side]), 0, MOVE_IDS.size() - 1))
+	volume_slider.value = float(config.get_value("audio","volume",35))
+	seed_input.value = int(config.get_value("match","seed",42))
+	var match_data = config.get_value("match","configuration_v2",{})
+	if match_data is Dictionary and not match_data.is_empty():
+		match_panel.restore(match_data)
+	else:
+		# Old selections were roster indices. Resolve them once into stable IDs.
+		var old_roles = config.get_value("match","roles",[0,3])
+		var old_moves = config.get_value("match","moves",[0,3])
+		for i in range(2):
+			if old_roles is Array and old_roles.size() > i:
+				match_panel.slot_data[i].character_id = roster[clampi(int(old_roles[i]),0,roster.size()-1)].id
+			if old_moves is Array and old_moves.size() > i:
+				match_panel.slot_data[i].movement = MOVE_IDS[clampi(int(old_moves[i]),0,3)]
+		match_panel.rebuild_rows()
 
 func _capture_smoke() -> void:
 	await RenderingServer.frame_post_draw

@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/skills/guardian.gd" id="1"]
+[node name="Melee" type="Node"]
+script = ExtResource("1")
+skill_id = "melee"
+cooldown = 0.85
+enable_shield = false
+enable_counter = false

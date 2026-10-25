@@ -12,6 +12,8 @@ preload("res://examples/wind_pulse/wind_walker.tres"),
 
 重新运行工程即可看到“风行者（扩展示例）”；发行版需重新打包。
 
+0.2.0 的角色库继续兼容这个旧场景例子。若还希望在角色编辑页自由添加此技能，请在 `scripts/core/skill_catalog.gd` 的 `ITEMS` 注册 `{ "id": "wind_pulse", "name": "风之脉冲", "type": "主动", "scene": "res://examples/wind_pulse/wind_pulse.tscn" }`，并将示例技能 `tick` 内的 `activate(target)` 改为 `request_cast(target)` 以接入蓄力流程。新建角色后从模板列表选择即可保存。
+
 ## 换成自己的角色
 
 1. 复制本目录并修改角色资源的 `id` 和 `display_name`，确保 ID 唯一。

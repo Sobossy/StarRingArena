@@ -20,7 +20,7 @@ func tick(delta: float) -> void:
 		return
 	var target = arena.opponent(fighter)
 	if target != null and target.alive:
-		activate(target)
+		request_cast(target)
 
 
 func activate(target) -> void:
