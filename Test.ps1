@@ -3,7 +3,7 @@ param([switch]$Extended)
 Ensure-Godot
 New-Item -ItemType Directory -Path (Join-Path $ProjectRoot 'test-results') -Force | Out-Null
 Invoke-GodotChecked -GodotArguments @('--headless','--path',$ProjectRoot,'--editor','--import')
-foreach ($suite in @('current_rules','current_ui_smoke','mobile_tests')) {
+foreach ($suite in @('current_rules','yunli_tests','current_ui_smoke','mobile_tests')) {
     $arguments = @('--headless','--path',$ProjectRoot,'--script',"res://tests/$suite.gd")
     if ($Extended -and $suite -eq 'current_rules') { $arguments += @('--','--extended') }
     $previousPreference = $ErrorActionPreference

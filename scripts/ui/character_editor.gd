@@ -418,9 +418,13 @@ func _select_skill(index: int) -> void:
 	skill_behavior_label.text = "无敌方接触时蓄力，碰撞后从头计时。球棒回到手中才恢复常规图，离手形象不使用固定释放时长。" if bat_skill else ("敌方碰撞时造成重击与击飞，并重置自身的球棒蓄力。" if item.get("id","") == "collision_smash" else "")
 	if item.get("id","") == "sparkle_revolver":
 		skill_behavior_label.text = "上膛时间在下方技能数值设置；每次随机装入一发子弹，逐膛扣扳机，实弹射出后重新上膛。"
+	if item.get("id","") == "yunli_guard":
+		skill_behavior_label.text = "常态每秒回血；首次受击后防反，结束投出老铁并恢复常态。防反图使用下方蓄力形象，时长、减伤与伤害公式在技能数值里调整。"
 	charge_input.max_value = float(item.get("charge_max",10))
 	charge_input.editable = item.get("type", "") == "主动"
 	release_input.editable = not item.is_empty() and item.get("type", "") != "持续" and not bat_skill
+	if item.get("id","") == "yunli_guard":
+		release_input.editable = false
 	movement_check.disabled = not charge_input.editable
 	charge_input.value = float(slot.get("charge_time", 0))
 	release_input.value = float(slot.get("release_time", 0.3))
@@ -645,6 +649,8 @@ func play_preview() -> void:
 		preview_arena.apply_damage(preview_arena.fighters[1],preview_arena.fighters[0],1,"preview")
 	elif skill.skill_id == "collision_smash":
 		preview_arena.fighters[1].position = preview_arena.fighters[0].position + Vector2(50,0)
+	elif skill.skill_id == "yunli_guard":
+		preview_arena.apply_damage(preview_arena.fighters[1],preview_arena.fighters[0],100,"preview")
 	preview_board.arena = preview_arena
 	preview_playing = true
 	preview_clock = 0
@@ -663,11 +669,14 @@ func _process(delta: float) -> void:
 			ui.game_audio.play_weapon_event(str(event.get("kind","")))
 		preview_accumulator -= 1.0/60.0
 	if not preview_arena.fighters.is_empty():
-		preview_caption.text = {"charge":"蓄力中", "release":"释放中", "normal":"常规形象"}.get(preview_arena.fighters[0].visual_phase,"常规形象")
+		preview_caption.text = {"charge":"蓄力中", "guard":"防反中", "release":"释放中", "normal":"常规形象"}.get(preview_arena.fighters[0].visual_phase,"常规形象")
 	var flying: bool = false
 	if not preview_arena.fighters.is_empty():
 		for skill in preview_arena.fighters[0].skills:
 			if skill.has_method("is_in_flight") and skill.is_in_flight():
 				flying = true
-	if not flying and preview_clock > float(draft.skill_slots[selected_skill].get("charge_time",0)) + float(draft.skill_slots[selected_skill].get("release_time",0.3)) + 1.0:
+	var preview_limit: float = float(draft.skill_slots[selected_skill].get("charge_time",0)) + float(draft.skill_slots[selected_skill].get("release_time",0.3)) + 1.0
+	if draft.skill_slots[selected_skill].get("template_id","") == "yunli_guard":
+		preview_limit = float(draft.skill_slots[selected_skill].get("parameters",{}).get("guard_duration",4.0)) + 2.0
+	if not flying and preview_clock > preview_limit:
 		_refresh_preview()

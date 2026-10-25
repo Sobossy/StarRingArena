@@ -1,4 +1,10 @@
-# Implementation contract — v0.6.0
+# Implementation contract — v0.7.0
+
+## Yunli and settled damage observation
+
+Roster adds yunli, default HP1000/speed160/bounce. Yunli heals30 per full second only in eating state. The first effective settled hit triggers a four-second guard after that hit; it is neither reduced nor accumulated. Subsequent damage is reduced20%, counted as actual HP lost after shields, and never refreshes the guard timer. Guard ends with an independent spinning Lao Tie projectile (150 + 0.4 * stored HP loss), then immediately returns to eating. Projectile damage is snapshotted; death/end cancels pending guard. All numeric exports are editable per role.
+
+SkillBase provides incoming_damage_multiplier(event) default1 and on_damage_settled(event) default no-op. Arena applies active incoming modifiers before shields, then invokes settled observers for every damage event. allow_reaction continues to gate immediate on_damage_received counters, never defensive bookkeeping. Preserve this distinction to avoid bypassed mitigation or immediate counter chains. Yunli uses charge_image as guard art, reserves the visual cast lock, and owns its four-second timer; workshop preview must run through the counter release. yunli_tests and yunli_visual are focused checks.
 
 ## Current roster, numeric authoring and Sparkle
 

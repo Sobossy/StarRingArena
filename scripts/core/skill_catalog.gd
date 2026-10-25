@@ -10,6 +10,7 @@ const ITEMS := [
 	{"id":"bat_throw", "name":"毁灭主 · 蓄力回旋球棒", "type":"主动", "scene":"res://scenes/skills/bat_throw.tscn", "charge_max":60.0, "default_charge":6.0},
 	{"id":"collision_smash", "name":"毁灭主 · 碰撞重击", "type":"被动", "scene":"res://scenes/skills/collision_smash.tscn"},
 	{"id":"sparkle_revolver", "name":"花火 · 六膛惊喜左轮", "type":"持续", "scene":"res://scenes/skills/sparkle_revolver.tscn"},
+	{"id":"yunli_guard", "name":"云璃 · 吃串防反与老铁", "type":"被动", "scene":"res://scenes/skills/yunli_guard.tscn"},
 ]
 static var _parameter_cache: Dictionary = {}
 const PARAMETER_NAMES := {
@@ -21,7 +22,8 @@ const PARAMETER_NAMES := {
 	"projectile_speed":"投射物速度", "projectile_radius":"投射物半径", "blast_radius":"爆炸半径", "burn_duration":"灼烧时间（秒）", "burn_dps":"灼烧每秒伤害",
 	"shield_amount":"护盾量", "shield_duration":"护盾时间（秒）", "shield_interval":"护盾间隔（秒）", "melee_range":"近战距离", "melee_damage_multiplier":"近战伤害倍率", "counter_multiplier":"反击倍率", "counter_interval":"反击间隔（秒）",
 	"dash_speed":"冲刺速度", "dash_duration":"冲刺时间（秒）", "strike_radius":"斩击半径", "slow_duration":"减速时间（秒）", "slow_power":"减速比例", "trigger_range":"触发距离", "enable_shield":"开启护盾", "enable_counter":"开启反击"
-,	"angular_speed":"环绕角速度", "blade_radius":"飞剑判定半径", "projectile_lifetime":"投射物存活时间（秒）", "explosion_radius":"爆炸范围", "burn_damage_per_second":"灼烧每秒伤害", "dash_trigger_range":"冲刺触发距离", "slash_radius":"斩击判定半径"
+,	"angular_speed":"环绕角速度", "blade_radius":"飞剑判定半径", "projectile_lifetime":"投射物存活时间（秒）", "explosion_radius":"爆炸范围", "burn_damage_per_second":"灼烧每秒伤害", "dash_trigger_range":"冲刺触发距离", "slash_radius":"斩击判定半径",
+	"healing_per_second":"常态每秒回复生命", "guard_duration":"防反持续时间（秒）", "damage_reduction":"减伤比例（0.2=20%）", "counter_base_damage":"老铁基础伤害", "counter_damage_ratio":"防反受伤转伤害倍率", "sword_speed":"老铁飞行速度", "sword_radius":"老铁判定半径", "sword_lifetime":"老铁最长飞行时间（秒）", "sword_knockback":"老铁击退强度", "sword_spin_speed":"老铁旋转速度（弧度/秒）"
 }
 
 static func parameter_definitions(template_id: String) -> Array:
@@ -36,7 +38,7 @@ static func parameter_definitions(template_id: String) -> Array:
 		if not (int(property.usage) & PROPERTY_USAGE_EDITOR) or not (int(property.usage) & PROPERTY_USAGE_SCRIPT_VARIABLE) or int(property.type) not in [TYPE_INT,TYPE_FLOAT,TYPE_BOOL]:
 			continue
 		var key := str(property.name)
-		if key == "cooldown" and template_id in ["bat_throw","collision_smash","sparkle_revolver"]:
+		if key == "cooldown" and template_id in ["bat_throw","collision_smash","sparkle_revolver","yunli_guard"]:
 			continue
 		var minimum: float = 0.0
 		var maximum: float = 100000.0

@@ -110,6 +110,12 @@ func activate(_target) -> void:
 func on_damage_received(_event: Dictionary) -> void:
 	pass
 
+func incoming_damage_multiplier(_event: Dictionary) -> float:
+	return 1.0
+
+func on_damage_settled(_event: Dictionary) -> void:
+	pass
+
 func on_enemy_contact(_enemy) -> void:
 	pass
 

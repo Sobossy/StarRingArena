@@ -41,7 +41,7 @@ func dummy():
 func _run() -> void:
 	library = Library.new("user://qa_current_rules")
 	var roles: Array = library.reload()
-	check(roles.size() == 2 and roles[0].id == "destruction_trailblazer" and roles[1].id == "sparkle","Only the two current built-ins are listed")
+	check(roles.size() == 3 and roles[0].id == "destruction_trailblazer" and roles[1].id == "sparkle" and roles[2].id == "yunli","Three current built-ins are listed")
 	for role in roles:
 		check(role.max_health == 1000 and role.speed == 160 and role.default_movement == "bounce","Built-in defaults are 1000 HP, 160 speed, bounce")
 	var fresh = library.make_new()

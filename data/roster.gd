@@ -4,6 +4,7 @@ extends RefCounted
 const CHARACTERS = [
 	preload("res://data/characters/destruction_trailblazer.tres"),
 	preload("res://data/characters/sparkle.tres"),
+	preload("res://data/characters/yunli.tres"),
 ]
 
 

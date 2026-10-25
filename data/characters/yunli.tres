@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/core/character_definition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/stickers/225_云璃 好吃.png" id="2"]
+[resource]
+script = ExtResource("1")
+id = "yunli"
+display_name = "云璃"
+description = "常态吃琼实鸟串，每秒回复30生命。首次受击后防反4秒，减伤20%，结束投出老铁，伤害为150+防反期间实际受伤的40%。"
+portrait = ExtResource("2")
+normal_image_path = "res://assets/stickers/225_云璃 好吃.png"
+portrait_size = 96.0
+theme_color = Color(0.9,0.75,0.4,1)
+max_health = 1000.0
+speed = 160.0
+default_movement = "bounce"
+skill_slots = Array[Dictionary]([{"template_id":"yunli_guard","slot_id":"yunli_counter","charge_time":0.0,"release_time":0.0,"charge_can_move":true,"charge_image":"res://assets/stickers/223_云璃 威慑.png","release_image":"","parameters":{}}])

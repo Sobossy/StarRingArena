@@ -253,6 +253,8 @@ func _draw_fighter(definition, position: Vector2, side: int, hp: float, shield: 
 		_box(Rect2(bar.position + Vector2(0, 10), Vector2(92 * minf(shield / definition.max_health, 1), 3)), Color("88bdff"), 1)
 	_text(str(int(ceil(hp * definition.max_health))), position + Vector2(46, 47), 12, Color("d6e8ee"))
 	var tags := "蓄力 " if phase == "charge" else ""
+	if phase == "guard":
+		tags = "防反 "
 	if phase == "charge" and definition.skill_slots.any(func(slot): return slot.get("template_id","") == "sparkle_revolver"):
 		tags = "上膛 "
 	if statuses.has("burn"):
@@ -284,6 +286,12 @@ func _draw_projectiles() -> void:
 		var velocity: Vector2 = p.get("velocity", Vector2.RIGHT)
 		var radius: float = p.get("radius", 8.0)
 		var color: Color = p.get("color", Color("ffac6d"))
+		if p.get("visual_type","") == "laotie":
+			var direction: Vector2 = velocity.normalized()
+			draw_line(position-direction*75,position,Color(0.52,0.68,0.51,0.25),16,true)
+			draw_arc(position,55,visual_time*8,visual_time*8+PI,24,Color(0.86,0.76,0.43,0.3),5,true)
+			_draw_laotie(position,velocity.angle() + visual_time*float(p.get("spin_speed",10)))
+			continue
 		if p.get("visual_type","") == "red_bullet":
 			var direction: Vector2 = velocity.normalized()
 			draw_line(position-direction*22,position+direction*8,Color("9e193b"),9,true)
@@ -298,7 +306,13 @@ func _draw_projectiles() -> void:
 func _draw_skill_visual(v: Dictionary) -> void:
 	var p: Vector2 = v.get("position", Vector2.ZERO)
 	var color: Color = v.get("color", CYAN)
-	if v.get("kind", "") == "revolver":
+	if v.get("kind", "") == "yunli_guard":
+		draw_arc(p,52,-PI*.85,-PI*.15,36,Color(0.94,0.78,0.38,0.7),3,true)
+		var progress: float = clampf(float(v.remaining)/maxf(float(v.duration),0.001),0,1)
+		draw_line(p+Vector2(-41,93),p+Vector2(41,93),Color("493f2f"),3,true)
+		draw_line(p+Vector2(-41,93),p+Vector2(-41+82*progress,93),Color("ecc777"),3,true)
+		_text("%.1fs · 老铁 %.0f" % [v.remaining,v.damage],p+Vector2(0,110),11,Color("f3db9a"),true)
+	elif v.get("kind", "") == "revolver":
 		_draw_revolver(v)
 	elif v.get("kind", "") == "sword":
 		var direction := Vector2.from_angle(float(v.get("angle", 0.0)))
@@ -331,6 +345,26 @@ func _draw_skill_visual(v: Dictionary) -> void:
 			draw_line(Vector2(band,-3),Vector2(band,3),Color("d7b875"),2,true)
 		draw_circle(Vector2(40,0),3,Color("d9bd7d"))
 		draw_set_transform_matrix(world_transform)
+
+func _draw_laotie(position: Vector2, angle: float) -> void:
+	draw_set_transform_matrix(world_transform * Transform2D(angle,position))
+	# A broad jade-grey blade, gold guard and a red/gold pommel, following the reference.
+	draw_colored_polygon(PackedVector2Array([Vector2(-73,-8),Vector2(-61,-15),Vector2(-50,-10),Vector2(-47,8),Vector2(-60,15),Vector2(-74,9)]),Color("e49b25"))
+	draw_colored_polygon(PackedVector2Array([Vector2(-69,-5),Vector2(-61,-10),Vector2(-54,-6),Vector2(-52,6),Vector2(-61,10),Vector2(-70,5)]),Color("a92d24"))
+	draw_line(Vector2(-52,0),Vector2(-17,0),Color("af783d"),12,true)
+	draw_line(Vector2(-50,-2),Vector2(-20,-2),Color("f4c95b"),3,true)
+	draw_line(Vector2(-21,-26),Vector2(-21,26),Color("dcad48"),7,true)
+	var blade := PackedVector2Array([Vector2(-17,-14),Vector2(12,-15),Vector2(52,-27),Vector2(43,-9),Vector2(67,0),Vector2(43,9),Vector2(52,27),Vector2(12,15),Vector2(-17,14)])
+	draw_colored_polygon(blade,Color("51695d"))
+	var outline := blade.duplicate()
+	outline.append(blade[0])
+	draw_polyline(outline,Color("ddbd77"),2.5,true)
+	draw_colored_polygon(PackedVector2Array([Vector2(-15,-7),Vector2(40,-13),Vector2(26,0),Vector2(40,13),Vector2(-15,7)]),Color("8da18e"))
+	draw_line(Vector2(-12,0),Vector2(59,0),Color("293d36"),3,true)
+	for x in [0,15,30]:
+		draw_line(Vector2(x,-9),Vector2(x+8,0),Color("c7c49b"),2,true)
+		draw_line(Vector2(x,9),Vector2(x+8,0),Color("c7c49b"),2,true)
+	draw_set_transform_matrix(world_transform)
 
 func _draw_revolver(v: Dictionary) -> void:
 	var p: Vector2 = v.position
@@ -380,7 +414,12 @@ func _draw_effect(e: Dictionary) -> void:
 	var color: Color = e.get("color", CYAN)
 	color.a *= 1.0 - t
 	var kind: String = e.get("kind", "")
-	if kind == "dry_fire":
+	if kind == "heal":
+		_text("+%d" % int(round(float(e.get("amount",0)))),position+Vector2(0,-42-age*48),19,Color(0.64,0.94,0.48,1-t),true)
+		draw_arc(position,35+t*20,0,TAU,32,Color(0.64,0.94,0.48,(1-t)*.4),2,true)
+	elif kind == "guard_start":
+		draw_arc(position,36+t*32,0,TAU,48,Color(0.98,0.81,0.45,1-t),3*(1-t)+1,true)
+	elif kind == "dry_fire":
 		var angle: float = e.get("angle",0.0)
 		var colors := [Color("ff6eac"),Color("f2d579"),Color("91e5f0"),Color("f7ebf2")]
 		for i in range(8):

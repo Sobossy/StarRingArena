@@ -541,6 +541,13 @@ func _resolve_damage() -> void:
 		if not target.alive:
 			continue
 		var incoming: float = float(event["amount"])
+		event["raw_amount"] = incoming
+		for skill in target.skills:
+			if is_instance_valid(skill) and skill.active and skill.has_method("incoming_damage_multiplier"):
+				var multiplier: float = skill.incoming_damage_multiplier(event)
+				if is_finite(multiplier):
+					incoming *= clampf(multiplier,0.0,10.0)
+		event["mitigated_amount"] = incoming
 		var absorbed: float = minf(target.shield, incoming)
 		target.shield -= absorbed
 		if target.shield <= 0.0:
@@ -566,6 +573,10 @@ func _resolve_damage() -> void:
 		})
 		_log({"kind": "damage", "source": source.side if source != null else -1,
 			"target": target.side, "amount": actual, "absorbed": absorbed, "skill_id": event["skill_id"]})
+		# State observers see every settled hit; allow_reaction still gates immediate counters.
+		for skill in target.skills:
+			if is_instance_valid(skill) and skill.active and skill.has_method("on_damage_settled"):
+				skill.on_damage_settled(event)
 		if event["allow_reaction"]:
 			for skill in target.skills:
 				if is_instance_valid(skill) and skill.active and skill.has_method("on_damage_received"):

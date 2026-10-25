@@ -29,7 +29,7 @@ func _run() -> void:
 	await process_frame
 	ui.set_process(false)
 	ui.board.set_process(false)
-	check(ui.roster.size() == 2 and ui.role_options[0].item_count == 2,"Only current two characters appear in selection")
+	check(ui.roster.size() == 3 and ui.role_options[0].item_count == 3,"Current three characters appear in selection")
 	check(ui.match_panel.slot_data[1].character_id == "sparkle","Default matchup includes Sparkle")
 	var editor = ui.workshop
 	editor.open_editor()
