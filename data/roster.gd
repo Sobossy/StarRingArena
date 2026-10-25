@@ -6,6 +6,7 @@ const CHARACTERS = [
 	preload("res://data/characters/mage.tres"),
 	preload("res://data/characters/guard.tres"),
 	preload("res://data/characters/assassin.tres"),
+	preload("res://data/characters/destruction_trailblazer.tres"),
 ]
 
 

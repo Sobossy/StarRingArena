@@ -1,4 +1,14 @@
-# Implementation contract — v0.2.0
+# Implementation contract — v0.3.0
+
+## Destruction Trailblazer
+
+The built-in roster now has five characters. destruction_trailblazer declares two explicit skill slots: bat_throw (default six seconds, editable up to sixty), collision_smash (passive).
+
+BattleArena collects enemy-only body contacts during separation and delivers on_enemy_contact once per enemy per simulation step, before skill timers advance. Clear contact arrays on every step and on Fighter teardown to break reference cycles. Sustained touching is debounced by the collision skill; a real separation is needed before another contact entry can damage.
+
+Returning bat owns its charge and flight phases. It snapshots the nearest enemy position only at launch, travels to that point, then returns to the current owner hand position. It holds the release image and the active-cast lock throughout both legs; fixed release_time must not end this image. Catch/death/end resets to held/normal. One bat exists per skill instance. Damage is swept and limited to once per enemy for the full trip. Collision resets pending charge without canceling an already airborne bat.
+
+Rendering supports bat, charge_meter and smash effects. Fighter.lift_time is visual feedback only and is cleared at match end. destruction_tests.gd covers behavior; destruction_visual.gd captures five actual render stages. Legacy tests retain the original mechanics and now include all 25 ordered pairings.
 
 Godot 4.7.2, GDScript, compatibility rendering. Version 0.1.0 is recoverable with Git tag baseline-v0.1.0; packaged baselines live in build/baselines/.
 

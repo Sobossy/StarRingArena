@@ -20,8 +20,8 @@ func _run() -> void:
 	await process_frame
 	ui.set_process(false)
 	ui.board.set_process(false)
-	verify(ui.roster.size() == 4, "Four selectable characters")
-	verify(ui.role_options[0].item_count == 4, "Roster displayed in selection")
+	verify(ui.roster.size() == 5, "Five selectable characters")
+	verify(ui.role_options[0].item_count == 5, "Roster displayed in selection")
 	verify(ui.move_options[0].item_count == 4, "Four selectable movements")
 	verify(not ui.has_started and ui.pause_button.disabled, "Initial state")
 	ui._on_role_selected(1, 0)
@@ -92,6 +92,14 @@ func _run() -> void:
 	# Editor and content persistence, using the isolated qa_mode library.
 	var editor = ui.workshop
 	editor.open_editor()
+	editor._select_character(ui.library.index_of("destruction_trailblazer"))
+	editor._select_skill(0)
+	verify(editor.charge_input.value == 6 and editor.charge_input.max_value == 60,"Destruction charge defaults to six and is editable")
+	verify(not editor.release_input.editable,"Bat-away appearance is governed by flight, not a fixed timer")
+	editor.charge_input.value = 20
+	editor._skill_changed()
+	verify(editor.draft.skill_slots[0].charge_time == 20,"Editor supports longer custom bat charge")
+	editor._select_character(0)
 	verify(editor.art_items.size() == 416, "Supplied sticker pack is indexed")
 	editor._open_art_browser("normal")
 	editor.art_search.text = "姬子"

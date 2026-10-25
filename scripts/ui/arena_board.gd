@@ -109,7 +109,7 @@ func _draw() -> void:
 		for visual in arena.get_visuals():
 			_draw_skill_visual(visual)
 		for f in arena.fighters:
-			_draw_fighter(f.definition, f.position, f.side, f.health_ratio(), f.shield, hit_flashes.get(f.side, 0.0), f.alive, f.velocity, f.statuses, f.visual_texture, TEAM_COLORS[f.team_id % TEAM_COLORS.size()], f.visual_phase)
+			_draw_fighter(f.definition, f.position, f.side, f.health_ratio(), f.shield, hit_flashes.get(f.side, 0.0), f.alive, f.velocity, f.statuses, f.visual_texture, TEAM_COLORS[f.team_id % TEAM_COLORS.size()], f.visual_phase, f.lift_time)
 	else:
 		var positions: Array = []
 		if preview_config != null:
@@ -171,11 +171,13 @@ func _draw_trail(f) -> void:
 		color.a = alpha
 		draw_line(positions[i - 1], positions[i], color, 3.0, true)
 
-func _draw_fighter(definition, position: Vector2, side: int, hp: float, shield: float, flash: float, alive: bool, velocity: Vector2, statuses: Dictionary, state_texture: Texture2D = null, team_color: Color = CYAN, phase: String = "normal") -> void:
+func _draw_fighter(definition, position: Vector2, side: int, hp: float, shield: float, flash: float, alive: bool, velocity: Vector2, statuses: Dictionary, state_texture: Texture2D = null, team_color: Color = CYAN, phase: String = "normal", lift: float = 0.0) -> void:
 	var tint: Color = definition.theme_color
 	var alpha: float = 1.0 if alive else 0.35
 	var bob: float = sin(visual_time * 4.0 + float(side) * PI) * 2.5 if alive else 0.0
 	var pos := position + Vector2(0, bob)
+	if lift > 0:
+		pos.y -= sin(clampf(lift/0.28,0,1) * PI) * 15
 	draw_circle(position + Vector2(0, 28), 34, Color(0.0, 0.025, 0.05, 0.3 * alpha))
 	draw_arc(position, 40, 0, TAU, 48, Color(tint, 0.22 * alpha), 1.5, true)
 	draw_arc(position, 45, visual_time * 0.5 + side * PI, visual_time * 0.5 + side * PI + PI * 0.65, 24, Color(tint, 0.6 * alpha), 2.0, true)
@@ -183,6 +185,8 @@ func _draw_fighter(definition, position: Vector2, side: int, hp: float, shield: 
 		draw_circle(pos, 51, Color(0.35, 0.75, 1, 0.1))
 		draw_arc(pos, 51, 0, TAU, 64, Color(0.55, 0.85, 1, 0.65), 2.0, true)
 	var tilt: float = clampf(velocity.x / 1800.0, -0.12, 0.12) if alive else 0.0
+	if lift > 0:
+		tilt += clampf(lift/0.28,0,1) * 1.15 * (-1 if velocity.x < 0 else 1)
 	var pulse: float = 1.0 + sin(visual_time * 4.0 + side) * 0.015 + flash * 0.35
 	draw_set_transform_matrix(world_transform * Transform2D(tilt, Vector2.ONE * pulse, 0.0, pos))
 	var portrait: Texture2D = state_texture if state_texture != null else definition.portrait
@@ -250,6 +254,28 @@ func _draw_skill_visual(v: Dictionary) -> void:
 		draw_line(p - direction * 7, p - direction * 17, color.darkened(0.3), 3, true)
 	elif v.get("kind", "") == "ring":
 		draw_arc(p, v.get("radius", 50.0), 0, TAU, 64, color, 2, true)
+	elif v.get("kind", "") == "charge_meter":
+		var progress: float = v.get("progress",0.0)
+		draw_arc(p,49,-PI*0.5,TAU-PI*0.5,64,Color(color,0.13),3,true)
+		if progress > 0:
+			draw_arc(p,49,-PI*0.5,-PI*0.5 + TAU*progress,64,color,3,true)
+		_text("%.1f / %.1f" % [v.get("elapsed",0),v.get("duration",6)],p+Vector2(0,104),12,Color("efd18a"),true)
+	elif v.get("kind", "") == "bat":
+		var points: Array = v.get("trail",[])
+		for i in range(1,points.size()):
+			var alpha: float = float(i) / maxf(points.size(),1) * 0.48
+			draw_line(points[i-1],points[i],Color(0.38,0.43,0.48,alpha),4,true)
+		draw_set_transform_matrix(world_transform * Transform2D(float(v.get("angle",0)),p))
+		var silhouette := PackedVector2Array([Vector2(-49,-6),Vector2(-44,-10),Vector2(-15,-9),Vector2(27,-3),Vector2(39,-3),Vector2(42,-1),Vector2(42,2),Vector2(39,4),Vector2(27,3),Vector2(-15,9),Vector2(-44,10),Vector2(-49,6)])
+		draw_colored_polygon(silhouette,Color("313842"))
+		var outline := silhouette.duplicate()
+		outline.append(silhouette[0])
+		draw_polyline(outline,Color("9a9f9d"),1.3,true)
+		draw_line(Vector2(-43,-6),Vector2(-14,-6),Color("656e76"),2,true)
+		for band in [16.0,21.0,26.0,32.0]:
+			draw_line(Vector2(band,-3),Vector2(band,3),Color("d7b875"),2,true)
+		draw_circle(Vector2(40,0),3,Color("d9bd7d"))
+		draw_set_transform_matrix(world_transform)
 
 func _draw_effect(e: Dictionary) -> void:
 	var age: float = e.get("age", 0.0)
@@ -263,9 +289,14 @@ func _draw_effect(e: Dictionary) -> void:
 		var p := position + Vector2(sin(float(e.get("amount", 0))) * 21, -37 - 50 * t)
 		_text(label, p + Vector2(1, 2), 23, Color(0.02, 0.06, 0.1, 1.0 - t), true)
 		_text(label, p, 23, Color(GOLD.lightened(0.2), 1.0 - t), true)
-	elif kind == "slash" or kind == "dash":
+	elif kind == "slash" or kind == "dash" or kind == "smash":
 		var angle: float = e.get("angle", -PI * 0.25)
 		draw_arc(position, 28 + t * 45, angle, angle + PI * 1.4, 32, color, (1.0 - t) * 6 + 1, true)
+		if kind == "smash":
+			var normal := Vector2.from_angle(angle)
+			for i in range(5):
+				var d := normal.rotated((i-2)*0.25)
+				draw_line(position+d*(12+t*50),position+d*(38+t*70),color,3*(1-t)+1,true)
 	elif kind == "shield" or kind == "heal":
 		draw_arc(position, 36 + t * 30, 0, TAU, 40, color, 2, true)
 	else:

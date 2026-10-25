@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/skills/bat_throw.gd" id="1"]
+[node name="ReturningBat" type="Node"]
+script = ExtResource("1")
+skill_id = "bat_throw"
+cooldown = 0.0

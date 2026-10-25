@@ -89,12 +89,14 @@ func validate(definition) -> String:
 	if definition.skill_slots.size() > 8:
 		return "每个角色最多配置 8 个技能。"
 	for slot in definition.skill_slots:
-		if Catalog.find(str(slot.get("template_id", ""))).is_empty():
+		var template := Catalog.find(str(slot.get("template_id", "")))
+		if template.is_empty():
 			return "角色包含未注册的技能模板。"
 		for key in ["charge_time", "release_time"]:
 			var duration_value: float = float(slot.get(key, 0))
-			if not is_finite(duration_value) or duration_value < 0 or duration_value > 10:
-				return "技能阶段时长应为 0～10 秒。"
+			var maximum: float = float(template.get("charge_max",10)) if key == "charge_time" else 10.0
+			if not is_finite(duration_value) or duration_value < 0 or duration_value > maximum:
+				return "该技能阶段时长应为 0～%d 秒。" % maximum
 	return ""
 
 func save_character(definition) -> bool:
@@ -117,7 +119,10 @@ func save_character(definition) -> bool:
 	return true
 
 func is_builtin(id: String) -> bool:
-	return id in ["sword", "mage", "guard", "assassin"]
+	for definition in Roster.get_all():
+		if definition.id == id:
+			return true
+	return false
 
 func remove_or_restore(id: String) -> bool:
 	last_error = ""

@@ -31,3 +31,9 @@ foreach ($phase in @('write','read')) {
         throw "Persistence $phase failed."
     }
 }
+$batOutput = & $GodotConsole --headless --path $ProjectRoot --script res://tests/destruction_tests.gd 2>&1
+$batExitCode = $LASTEXITCODE
+$batOutput | Tee-Object -FilePath (Join-Path $ProjectRoot 'test-results\destruction-latest.log') | Write-Host
+if ($batExitCode -ne 0 -or (($batOutput | Out-String) -match 'SCRIPT ERROR:|ERROR:|leaked at exit') -or (($batOutput | Out-String) -notmatch 'DESTRUCTION TESTS PASSED')) {
+    throw 'Destruction Trailblazer tests failed.'
+}

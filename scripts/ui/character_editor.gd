@@ -16,6 +16,7 @@ var normal_path_label: Label
 var skills_list: ItemList
 var template_option: OptionButton
 var skill_title: Label
+var skill_behavior_label: Label
 var charge_input: SpinBox
 var release_input: SpinBox
 var movement_check: CheckBox
@@ -171,6 +172,9 @@ func _build_form(parent: HBoxContainer) -> void:
 	order.add_child(ui._button("移除", _remove_skill))
 	skill_title = ui._label("选择一个技能", 15, ui.CYAN)
 	skills.add_child(skill_title)
+	skill_behavior_label = ui._label("",12,ui.MUTED)
+	skill_behavior_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	skills.add_child(skill_behavior_label)
 	charge_input = _number(skills, "蓄力时长（秒）", 0, 10, 0.05, false)
 	release_input = _number(skills, "释放形象持续时间（秒）", 0, 10, 0.05, false)
 	movement_check = CheckBox.new()
@@ -386,8 +390,11 @@ func _select_skill(index: int) -> void:
 	var slot: Dictionary = draft.skill_slots[index] if index >= 0 and index < draft.skill_slots.size() else {}
 	var item := Catalog.find(str(slot.get("template_id", "")))
 	skill_title.text = item.get("name", "尚未添加技能") + " · " + item.get("type", "")
+	var bat_skill: bool = item.get("id","") == "bat_throw"
+	skill_behavior_label.text = "无敌方接触时蓄力，碰撞后从头计时。球棒回到手中才恢复常规图，离手形象不使用固定释放时长。" if bat_skill else ("敌方碰撞时造成重击与击飞，并重置自身的球棒蓄力。" if item.get("id","") == "collision_smash" else "")
+	charge_input.max_value = float(item.get("charge_max",10))
 	charge_input.editable = item.get("type", "") == "主动"
-	release_input.editable = not item.is_empty() and item.get("type", "") != "持续"
+	release_input.editable = not item.is_empty() and item.get("type", "") != "持续" and not bat_skill
 	movement_check.disabled = not charge_input.editable
 	charge_input.value = float(slot.get("charge_time", 0))
 	release_input.value = float(slot.get("release_time", 0.3))
@@ -567,11 +574,15 @@ func play_preview() -> void:
 	preview_arena.fighters[0].position = Vector2(310,380)
 	preview_arena.fighters[1].position = Vector2(405,380)
 	var skill = preview_arena.fighters[0].skills[0]
+	if skill.skill_id == "bat_throw":
+		preview_arena.fighters[1].position = Vector2(560,380)
 	skill.cooldown_remaining = 0
 	if skill.phase_type == "主动":
 		skill.request_cast(preview_arena.fighters[1])
 	elif skill.skill_id == "counter":
 		preview_arena.apply_damage(preview_arena.fighters[1],preview_arena.fighters[0],1,"preview")
+	elif skill.skill_id == "collision_smash":
+		preview_arena.fighters[1].position = preview_arena.fighters[0].position + Vector2(50,0)
 	preview_board.arena = preview_arena
 	preview_playing = true
 	preview_clock = 0
@@ -588,5 +599,10 @@ func _process(delta: float) -> void:
 		preview_accumulator -= 1.0/60.0
 	if not preview_arena.fighters.is_empty():
 		preview_caption.text = {"charge":"蓄力中", "release":"释放中", "normal":"常规形象"}.get(preview_arena.fighters[0].visual_phase,"常规形象")
-	if preview_clock > float(draft.skill_slots[selected_skill].get("charge_time",0)) + float(draft.skill_slots[selected_skill].get("release_time",0.3)) + 1.0:
+	var flying: bool = false
+	if not preview_arena.fighters.is_empty():
+		for skill in preview_arena.fighters[0].skills:
+			if skill.has_method("is_in_flight") and skill.is_in_flight():
+				flying = true
+	if not flying and preview_clock > float(draft.skill_slots[selected_skill].get("charge_time",0)) + float(draft.skill_slots[selected_skill].get("release_time",0.3)) + 1.0:
 		_refresh_preview()

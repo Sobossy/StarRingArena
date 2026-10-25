@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=5 format=3]
+[ext_resource type="Script" path="res://scripts/core/character_definition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/stickers/063_开拓者 球棒.png" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/skills/bat_throw.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/skills/collision_smash.tscn" id="4"]
+[resource]
+script = ExtResource("1")
+id = "destruction_trailblazer"
+display_name = "毁灭主"
+description = "无敌方接触时蓄力投掷回旋球棒；碰撞敌人造成重击与击飞，并重置蓄力。球棒离手期间切换形象，接回后重新蓄力。"
+portrait = ExtResource("2")
+normal_image_path = "res://assets/stickers/063_开拓者 球棒.png"
+portrait_size = 96.0
+theme_color = Color(0.96,0.79,0.37,1)
+max_health = 1100.0
+attack = 40.0
+speed = 158.0
+radius = 28.0
+default_movement = "bounce"
+skill_scenes = Array[PackedScene]([ExtResource("3"),ExtResource("4")])
+skill_slots = Array[Dictionary]([{
+"template_id":"bat_throw", "slot_id":"destruction_bat", "charge_time":6.0, "release_time":0.3, "charge_can_move":true,
+"charge_image":"res://assets/stickers/063_开拓者 球棒.png", "release_image":"res://assets/stickers/064_开拓者 棒球.png"
+},{
+"template_id":"collision_smash", "slot_id":"destruction_contact", "charge_time":0.0, "release_time":0.0, "charge_can_move":true, "charge_image":"", "release_image":""
+}])

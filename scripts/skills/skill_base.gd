@@ -110,6 +110,9 @@ func activate(_target) -> void:
 func on_damage_received(_event: Dictionary) -> void:
 	pass
 
+func on_enemy_contact(_enemy) -> void:
+	pass
+
 
 func get_visuals() -> Array:
 	return []

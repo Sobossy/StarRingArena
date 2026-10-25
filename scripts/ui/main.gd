@@ -87,6 +87,15 @@ func _ready() -> void:
 			match_panel.slot_data[i].team = i % 4
 		match_panel.rebuild_rows()
 		_update_configuration()
+	if "--demo-bat" in args:
+		match_panel.count_input.set_value_no_signal(2)
+		match_panel.mode_option.select(0)
+		match_panel.slot_data[0].character_id = "destruction_trailblazer"
+		match_panel.slot_data[0].movement = "bounce"
+		match_panel.slot_data[1].character_id = "mage"
+		match_panel.slot_data[1].movement = "kite"
+		match_panel.rebuild_rows()
+		_update_configuration()
 	if "--demo" in args or smoke_mode:
 		_start_battle()
 	if "--editor-demo" in args:

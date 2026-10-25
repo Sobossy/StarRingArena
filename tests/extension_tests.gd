@@ -73,7 +73,7 @@ func passive(config) -> void:
 	arena.start_match(config)
 
 func _test_library() -> void:
-	check(library.characters.size() == 4,"Built-in defaults load")
+	check(library.characters.size() == 5,"Built-in defaults load")
 	for definition in library.characters:
 		check(definition.portrait != null and not definition.normal_image_path.is_empty(),"Supplied PNG is connected for " + definition.id)
 	check(library.get_character("guard").skill_slots.size() == 3,"Guardian has independent melee shield counter slots")

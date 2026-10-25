@@ -158,11 +158,19 @@ func step(delta: float) -> void:
 	var step_delta: float = minf(delta, maxf(0.0, duration - elapsed))
 	elapsed = minf(duration, elapsed + step_delta)
 	for fighter in fighters:
+		fighter.contact_enemies.clear()
 		if not fighter.alive:
 			continue
 		_update_timers(fighter, step_delta)
 		_move_fighter(fighter, step_delta)
 	_separate_fighters()
+	# Contact events are delivered once per pair before charge timers advance.
+	for fighter in fighters:
+		if fighter.alive:
+			for skill in fighter.skills:
+				if is_instance_valid(skill) and skill.active and skill.has_method("on_enemy_contact"):
+					for enemy in fighter.contact_enemies:
+						skill.on_enemy_contact(enemy)
 	for fighter in fighters:
 		if fighter.alive:
 			for skill in fighter.skills:
@@ -317,6 +325,7 @@ func _exit_tree() -> void:
 	projectiles.clear()
 
 func _update_timers(fighter, delta: float) -> void:
+	fighter.lift_time = maxf(0, fighter.lift_time - delta)
 	if fighter.visual_remaining > 0 and (fighter.casting_skill == null):
 		fighter.visual_remaining = maxf(0, fighter.visual_remaining - delta)
 		if fighter.visual_remaining <= 0:
@@ -395,6 +404,11 @@ func _separate_pair(first, second) -> void:
 	for iteration in range(2):
 		var offset: Vector2 = first.position - second.position
 		var distance: float = offset.length()
+		if distance <= minimum_distance + 0.05 and is_enemy(first, second):
+			if not first.contact_enemies.has(second):
+				first.contact_enemies.append(second)
+			if not second.contact_enemies.has(first):
+				second.contact_enemies.append(first)
 		if distance >= minimum_distance:
 			break
 		var normal: Vector2 = offset / distance if distance > 0.001 else Vector2.LEFT
@@ -569,6 +583,7 @@ func _finish_team(team: int, reason: String) -> void:
 	for fighter in fighters:
 		fighter.velocity = Vector2.ZERO
 		fighter.dash_remaining = 0
+		fighter.lift_time = 0
 		for skill in fighter.skills:
 			if skill.has_method("cancel_cast"):
 				skill.cancel_cast()

@@ -22,7 +22,7 @@ func _run() -> void:
 	arena = ArenaScript.new()
 	root.add_child(arena)
 	roster = RosterScript.get_all()
-	_check(roster.size() == 4, "Default roster has four characters")
+	_check(roster.size() == 5, "Default roster includes destruction Trailblazer")
 	_test_pairings()
 	_test_movement_swaps()
 	_test_determinism()
@@ -92,12 +92,12 @@ func _test_pairings() -> void:
 			_check(not arena.running and arena.winner in [-1, 0, 1], "Pairing finishes: %s vs %s" % [first.id, second.id])
 			_check(arena.elapsed <= 90.0, "Pairing obeys time limit")
 			_check(arena.projectiles.is_empty(), "Result clears active projectiles")
-	print("PASS GROUP: all 16 pairings including mirrors")
+	print("PASS GROUP: all 25 pairings including mirrors")
 
 func _test_determinism() -> void:
-	for first_index in range(4):
-		var first: Dictionary = _run_match(roster[first_index], roster[(first_index + 1) % 4], 42891)
-		var second: Dictionary = _run_match(roster[first_index], roster[(first_index + 1) % 4], 42891)
+	for first_index in range(roster.size()):
+		var first: Dictionary = _run_match(roster[first_index], roster[(first_index + 1) % roster.size()], 42891)
+		var second: Dictionary = _run_match(roster[first_index], roster[(first_index + 1) % roster.size()], 42891)
 		_check(first == second, "Same seed reproduces result and event log for kit %d" % first_index)
 	# Presentation grouping differs, but the same fixed simulation ticks must match.
 	arena.start_battle([roster[1], roster[3]], ["kite", "wander"], 71)
@@ -312,5 +312,5 @@ func _test_extension() -> void:
 		if event.kind == "damage" and str(event.get("skill_id", "")).contains("wind"):
 			used_new_skill = true
 	_check(used_new_skill, "Fifth character's new skill actually deals damage")
-	_check(RosterScript.get_all().size() == 4, "Extension example does not silently change default roster")
+	_check(RosterScript.get_all().size() == 5, "Extension example does not silently change default roster")
 	print("PASS GROUP: extension example")
