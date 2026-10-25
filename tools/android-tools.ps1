@@ -23,7 +23,9 @@ function Ensure-Android {
 function Start-AndroidServer {
     # Separate log handles keep the persistent daemon from holding a build's output pipe.
     $starter = Start-Process -FilePath $AndroidAdb -ArgumentList 'start-server' -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $AndroidRoot 'adb-start.log') -RedirectStandardError (Join-Path $AndroidRoot 'adb-start-errors.log')
-    if (-not $starter.WaitForExit(10000) -or $starter.ExitCode -ne 0) { throw 'Android debugging service did not start.' }
+    if (-not $starter.WaitForExit(10000)) { throw 'Android debugging service did not start.' }
+    $starter.Refresh()
+    if ($null -ne $starter.ExitCode -and $starter.ExitCode -ne 0) { throw 'Android debugging service did not start.' }
 }
 
 function Set-AndroidEditorSettings {

@@ -33,6 +33,7 @@ var impact_recovery: float = 0.0
 var impact_recovery_start: float = 0.0
 var impact_recovery_target: float = 0.0
 var last_hit_direction: Vector2 = Vector2.ZERO
+var facing: float = 1.0
 var damage_dealt: float = 0.0
 var damage_taken: float = 0.0
 var healing_done: float = 0.0

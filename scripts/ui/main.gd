@@ -123,8 +123,8 @@ func _ready() -> void:
 		match_panel.mode_option.select(0)
 		match_panel.slot_data[0].character_id = "destruction_trailblazer"
 		match_panel.slot_data[0].movement = "bounce"
-		match_panel.slot_data[1].character_id = "mage"
-		match_panel.slot_data[1].movement = "kite"
+		match_panel.slot_data[1].character_id = "sparkle"
+		match_panel.slot_data[1].movement = "bounce"
 		match_panel.rebuild_rows()
 		_update_configuration()
 	if "--demo" in args or smoke_mode:
@@ -658,6 +658,8 @@ func _set_backgrounded(backgrounded: bool) -> void:
 			_toggle_pause()
 	game_audio.music_player.stream_paused = backgrounded
 	game_audio.cheer_player.stream_paused = backgrounded
+	for player in game_audio.weapon_players:
+		player.stream_paused = backgrounded
 	for player in audio_players:
 		player.stream_paused = backgrounded
 
@@ -688,6 +690,7 @@ func _process(delta: float) -> void:
 			var events: Array = arena.drain_events()
 			board.ingest(events)
 			for e in events:
+				game_audio.play_weapon_event(str(e.get("kind","")))
 				if e.get("kind", "") == "hit" and audio_wait <= 0:
 					_play_hit()
 		var seconds: int = maxi(0, int(ceil(arena.duration - arena.elapsed)))

@@ -11,6 +11,7 @@ func _initialize() -> void:
 		definition.max_health = 3456
 		definition.attack = 78
 		definition.speed = 210
+		definition.skill_slots.append(load("res://scripts/core/skill_catalog.gd").new_slot("sparkle_revolver"))
 		DirAccess.make_dir_recursive_absolute(library.storage_root)
 		var image := Image.create(32,64,false,Image.FORMAT_RGBA8)
 		image.fill(Color(0.4,0.8,0.9,0.5))

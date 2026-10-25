@@ -45,7 +45,7 @@ func reset_visuals() -> void:
 
 func ingest(items: Array) -> void:
 	for event in items:
-		if event.get("kind", "") == "end":
+		if event.get("kind", "") in ["end","revolver_reload"]:
 			continue
 		if event.get("kind", "") == "death":
 			var origin: Vector2 = event.get("position",Vector2.ZERO)
@@ -144,13 +144,17 @@ func _draw() -> void:
 			_draw_trail(f)
 		_draw_projectiles()
 		for visual in arena.get_visuals():
-			_draw_skill_visual(visual)
+			if visual.get("kind","") != "revolver":
+				_draw_skill_visual(visual)
 		for f in arena.fighters:
 			if f.alive:
-				_draw_fighter(f.definition, f.position, f.side, f.health_ratio(), f.shield, hit_flashes.get(f.side, 0.0), true, f.velocity, f.statuses, f.visual_texture, TEAM_COLORS[f.team_id % TEAM_COLORS.size()], f.visual_phase, f.lift_time, f.impact_angle)
+				_draw_fighter(f.definition, f.position, f.side, f.health_ratio(), f.shield, hit_flashes.get(f.side, 0.0), true, f.velocity, f.statuses, f.visual_texture, TEAM_COLORS[f.team_id % TEAM_COLORS.size()], f.visual_phase, f.lift_time, f.impact_angle, false, f.facing)
 			elif departures.has(f.side) and not departures[f.side].done:
 				var pose: Dictionary = departure_pose(f.side)
 				_draw_fighter(f.definition, pose.position, f.side, 0.0, 0.0, 0.0, false, Vector2.ZERO, {}, null, TEAM_COLORS[f.team_id % TEAM_COLORS.size()], "normal", 0.0, pose.angle, true)
+		for visual in arena.get_visuals():
+			if visual.get("kind","") == "revolver":
+				_draw_skill_visual(visual)
 	else:
 		var positions: Array = []
 		if preview_config != null:
@@ -163,6 +167,9 @@ func _draw() -> void:
 				p += Vector2.from_angle(TAU * i / preview_definitions.size()) * 150
 			var team_id: int = int(preview_config.participants[i].team) if preview_config != null and preview_config.mode == "teams" else i
 			_draw_fighter(preview_definitions[i],p,i,1.0,0.0,0.0,true,Vector2.ZERO,{},null,TEAM_COLORS[team_id % 8])
+			for slot in preview_definitions[i].skill_slots:
+				if slot.get("template_id","") == "sparkle_revolver":
+					_draw_revolver({"position":p,"angle":0.0,"facing":1.0,"loaded":-1,"chamber":0,"reload":true,"progress":0.0})
 		if preview_definitions.size() > 1:
 			_text("配置完成后，开始自动对战",Vector2(world_size.x * 0.5,world_size.y - 100),16,Color("677f96"),true)
 	for e in effects:
@@ -212,7 +219,7 @@ func _draw_trail(f) -> void:
 		color.a = alpha
 		draw_line(positions[i - 1], positions[i], color, 3.0, true)
 
-func _draw_fighter(definition, position: Vector2, side: int, hp: float, shield: float, flash: float, alive: bool, velocity: Vector2, statuses: Dictionary, state_texture: Texture2D = null, team_color: Color = CYAN, phase: String = "normal", lift: float = 0.0, impact_angle: float = 0.0, departing: bool = false) -> void:
+func _draw_fighter(definition, position: Vector2, side: int, hp: float, shield: float, flash: float, alive: bool, velocity: Vector2, statuses: Dictionary, state_texture: Texture2D = null, team_color: Color = CYAN, phase: String = "normal", lift: float = 0.0, impact_angle: float = 0.0, departing: bool = false, facing: float = 1.0) -> void:
 	var tint: Color = definition.theme_color
 	var alpha: float = 1.0 if alive or departing else 0.35
 	var bob: float = sin(visual_time * 4.0 + float(side) * PI) * 2.5 if alive else 0.0
@@ -227,7 +234,7 @@ func _draw_fighter(definition, position: Vector2, side: int, hp: float, shield: 
 	if not is_zero_approx(impact_angle) or departing:
 		tilt = impact_angle
 	var pulse: float = 1.0 + sin(visual_time * 4.0 + side) * 0.015 + flash * 0.35
-	draw_set_transform_matrix(world_transform * Transform2D(tilt, Vector2.ONE * pulse, 0.0, pos))
+	draw_set_transform_matrix(world_transform * Transform2D(tilt, Vector2(facing,1.0) * pulse, 0.0, pos))
 	var portrait: Texture2D = state_texture if state_texture != null else definition.portrait
 	if portrait != null:
 		var image_size: Vector2 = portrait.get_size()
@@ -246,6 +253,8 @@ func _draw_fighter(definition, position: Vector2, side: int, hp: float, shield: 
 		_box(Rect2(bar.position + Vector2(0, 10), Vector2(92 * minf(shield / definition.max_health, 1), 3)), Color("88bdff"), 1)
 	_text(str(int(ceil(hp * definition.max_health))), position + Vector2(46, 47), 12, Color("d6e8ee"))
 	var tags := "蓄力 " if phase == "charge" else ""
+	if phase == "charge" and definition.skill_slots.any(func(slot): return slot.get("template_id","") == "sparkle_revolver"):
+		tags = "上膛 "
 	if statuses.has("burn"):
 		tags += "灼烧 "
 	if statuses.has("slow"):
@@ -275,6 +284,12 @@ func _draw_projectiles() -> void:
 		var velocity: Vector2 = p.get("velocity", Vector2.RIGHT)
 		var radius: float = p.get("radius", 8.0)
 		var color: Color = p.get("color", Color("ffac6d"))
+		if p.get("visual_type","") == "red_bullet":
+			var direction: Vector2 = velocity.normalized()
+			draw_line(position-direction*22,position+direction*8,Color("9e193b"),9,true)
+			draw_line(position-direction*14,position+direction*7,Color("ff4260"),6,true)
+			draw_line(position-direction*6,position+direction*5,Color("ffd0be"),2,true)
+			continue
 		draw_line(position - velocity.normalized() * 28, position, Color(color, 0.3), radius, true)
 		draw_circle(position, radius * 1.9, Color(color, 0.08))
 		draw_circle(position, radius, color)
@@ -283,7 +298,9 @@ func _draw_projectiles() -> void:
 func _draw_skill_visual(v: Dictionary) -> void:
 	var p: Vector2 = v.get("position", Vector2.ZERO)
 	var color: Color = v.get("color", CYAN)
-	if v.get("kind", "") == "sword":
+	if v.get("kind", "") == "revolver":
+		_draw_revolver(v)
+	elif v.get("kind", "") == "sword":
 		var direction := Vector2.from_angle(float(v.get("angle", 0.0)))
 		var normal := direction.orthogonal()
 		draw_line(p - direction * 34, p - direction * 13, Color(color, 0.25), 5, true)
@@ -315,6 +332,47 @@ func _draw_skill_visual(v: Dictionary) -> void:
 		draw_circle(Vector2(40,0),3,Color("d9bd7d"))
 		draw_set_transform_matrix(world_transform)
 
+func _draw_revolver(v: Dictionary) -> void:
+	var p: Vector2 = v.position
+	var facing: float = v.get("facing",1.0)
+	var angle: float = v.get("angle",0.0)
+	var cylinder: Vector2 = p + Vector2(-40*facing,16)
+	draw_circle(cylinder,26,Color("ead4d3"))
+	draw_circle(cylinder,24,Color("97142e"))
+	var loaded: int = v.get("loaded",-1)
+	var current: int = v.get("chamber",0)
+	for i in range(6):
+		var point: Vector2 = cylinder + Vector2.from_angle(-PI/2 + TAU*i/6.0 + float(v.get("cylinder_angle",0.0))) * 15
+		draw_circle(point,6,Color("390b18"))
+		if i == loaded:
+			draw_circle(point,4.8,Color("f2d16b"))
+			draw_circle(point,2.5,Color("fff2a6"))
+		if not v.get("reload",true) and i == current:
+			draw_arc(point,7.4,0,TAU,20,Color("fff3df"),1.2,true)
+	draw_circle(cylinder,4,Color("671326"))
+	if v.get("reload",false):
+		draw_arc(cylinder,28,-PI/2,-PI/2 + TAU*maxf(.01,float(v.get("progress",0))),40,Color("efb98a"),2,true)
+	var hand: Vector2 = p + Vector2(29*facing,8)
+	draw_set_transform_matrix(world_transform * Transform2D(angle,Vector2(1,facing),0,hand))
+	var grip := PackedVector2Array([Vector2(-9,3),Vector2(-5,25),Vector2(7,25),Vector2(10,5)])
+	draw_colored_polygon(grip,Color("761b30"))
+	draw_polyline(PackedVector2Array([Vector2(-9,3),Vector2(-5,25),Vector2(7,25),Vector2(10,5)]),Color("fff0e8"),2,true)
+	var frame := PackedVector2Array([Vector2(-15,-8),Vector2(12,-9),Vector2(17,-5),Vector2(38,-5),Vector2(40,4),Vector2(15,5),Vector2(10,11),Vector2(-12,10)])
+	draw_colored_polygon(frame,Color("fff0e7"))
+	draw_colored_polygon(PackedVector2Array([Vector2(-12,-6),Vector2(10,-7),Vector2(12,7),Vector2(-11,8)]),Color("b91c3d"))
+	draw_line(Vector2(17,-2),Vector2(36,-2),Color("a61231"),4,true)
+	draw_line(Vector2(26,-6),Vector2(29,3),Color("ae1834"),3,true)
+	draw_line(Vector2(34,-6),Vector2(37,3),Color("ae1834"),3,true)
+	draw_circle(Vector2(-2,0),5,Color("561027"))
+	draw_arc(Vector2(6,11),7,0,PI,16,Color("fff1df"),2,true)
+	if float(v.get("flag",0)) > 0:
+		draw_line(Vector2(40,0),Vector2(49,-24),Color("f5e9df"),2,true)
+		var wave: float = sin(visual_time*25)*2
+		draw_colored_polygon(PackedVector2Array([Vector2(49,-24),Vector2(70,-22+wave),Vector2(67,-11+wave),Vector2(53,-14)]),Color("fffaf1"))
+	if float(v.get("flash",0)) > 0:
+		draw_colored_polygon(PackedVector2Array([Vector2(39,0),Vector2(49,-9),Vector2(47,-3),Vector2(61,0),Vector2(47,4),Vector2(50,10)]),Color("ffce6e"))
+	draw_set_transform_matrix(world_transform)
+
 func _draw_effect(e: Dictionary) -> void:
 	var age: float = e.get("age", 0.0)
 	var t: float = age / e.get("life", 0.5)
@@ -322,7 +380,18 @@ func _draw_effect(e: Dictionary) -> void:
 	var color: Color = e.get("color", CYAN)
 	color.a *= 1.0 - t
 	var kind: String = e.get("kind", "")
-	if kind == "hit":
+	if kind == "dry_fire":
+		var angle: float = e.get("angle",0.0)
+		var colors := [Color("ff6eac"),Color("f2d579"),Color("91e5f0"),Color("f7ebf2")]
+		for i in range(8):
+			var direction := Vector2.from_angle(angle + (i-3.5)*0.22)
+			var at: Vector2 = position + direction*(8+age*110) + Vector2(0,age*age*80)
+			draw_line(at,at+direction.rotated(1.0)*6,Color(colors[i%4],1-t),2.5,true)
+	elif kind == "revolver_shot":
+		if age < 0.12:
+			var direction := Vector2.from_angle(float(e.get("angle",0)))
+			draw_line(position,position+direction*24,Color("ffe3a0"),4,true)
+	elif kind == "hit":
 		var label := str(int(round(float(e.get("amount", 0)))))
 		var p := position + Vector2(sin(float(e.get("amount", 0))) * 21, -37 - 50 * t)
 		_text(label, p + Vector2(1, 2), 23, Color(0.02, 0.06, 0.1, 1.0 - t), true)

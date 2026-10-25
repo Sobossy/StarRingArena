@@ -1,4 +1,14 @@
-# Implementation contract — v0.5.0
+# Implementation contract — v0.6.0
+
+## Current roster, numeric authoring and Sparkle
+
+Production built-ins are destruction_trailblazer and sparkle only. Retired sword/mage/guard/assassin overrides must not re-register those roles; retain old files for recovery. Missing selection IDs fall back to current roles with their default movement. New definitions default to HP1000, speed160, bounce and no skills/contact damage. Legacy default destruction overrides 1100/158 migrate to 1000/160; preserve other authored values.
+
+Skill slots now optionally carry a parameters dictionary. SkillCatalog introspects exported SCRIPT_VARIABLE numeric/bool properties only, reads export-range metadata, validates values and applies only these properties to a fresh skill instance. Never expose Node process configuration or arbitrary saved property paths. Character editor generates numeric fields, saves them per role and snapshots them at match start. Future exported numeric fields appear automatically; register Chinese labels in PARAMETER_NAMES.
+
+Bat snapshots a launch direction, then targets hand_origin + direction * throw_distance (default360). It does not stop at the enemy position. Reset hit_targets only at the outbound-to-return transition so each enemy can be hit once on each leg, with independent absolute outbound_damage/return_damage (default60 each). Collision smash uses independent damage120 and contact_extra24; the arena collects owner-specific extended proximity before skill ticks without changing body separation or adding generic contact damage.
+
+Sparkle has six chambers with exactly one uniformly random live chamber per completed reload (arena.rng). Fire sequentially from chamber0 at shot_interval until the live round, then reload. Defaults: reload1.2s, interval0.35s, damage200, speed1400. Empty shots emit dry_fire without a projectile; live rounds emit red projectiles and return to reload. Aim updates to nearest living enemy each step, fighter.facing mirrors body art, gun and rotating cylinder are drawn independently. Audio consumes dry_fire/revolver_shot/revolver_reload events through bounded players, independent from battle time. Current fast Test.ps1 runs current_rules/current_ui_smoke/mobile_tests and persistence; historical old-roster assertions remain references for their old tags.
 
 ## Android and iterative mobile testing
 

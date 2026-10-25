@@ -50,7 +50,7 @@ func build(host, content_library) -> void:
 	scroll.add_child(rows)
 	for i in range(8):
 		slot_data.append({"character_id":library.characters[i % library.characters.size()].id, "movement":"", "team":i % 2})
-	slot_data[1].character_id = "assassin"
+	slot_data[1].character_id = library.characters[mini(1,library.characters.size()-1)].id
 	rebuild_rows()
 	mode_option.item_selected.connect(func(_index): rebuild_rows(); configuration_changed.emit())
 	count_input.value_changed.connect(func(_value): rebuild_rows(); configuration_changed.emit())
@@ -95,8 +95,9 @@ func rebuild_rows() -> void:
 			role.add_item(definition.display_name)
 		var index: int = library.index_of(slot_data[i].character_id)
 		if index < 0:
-			index = 0
-			slot_data[i].character_id = library.characters[0].id
+			index = i % library.characters.size()
+			slot_data[i].character_id = library.characters[index].id
+			slot_data[i].movement = library.characters[index].default_movement
 		role.select(index)
 		top.add_child(role)
 		role_options.append(role)
@@ -169,7 +170,7 @@ func restore(data: Dictionary) -> void:
 	if slots is Array:
 		for i in range(mini(8, slots.size())):
 			if slots[i] is Dictionary:
-				slot_data[i] = {"character_id":str(slots[i].get("character_id", "sword")), "movement":str(slots[i].get("movement", "bounce")), "team":clampi(int(slots[i].get("team", i % 2)), 0, 3)}
+				slot_data[i] = {"character_id":str(slots[i].get("character_id", library.characters[i % library.characters.size()].id)), "movement":str(slots[i].get("movement", "bounce")), "team":clampi(int(slots[i].get("team", i % 2)), 0, 3)}
 				if not slot_data[i].movement in MOVE_IDS:
 					slot_data[i].movement = "bounce"
 	rebuild_rows()

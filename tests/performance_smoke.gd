@@ -5,7 +5,7 @@ var time_passed: float = 0
 var measured_time: float = 0
 var frames: int = 0
 var started: bool = false
-var kit: String = "sword"
+var kit: String = "destruction_trailblazer"
 
 func _initialize() -> void:
 	_run.call_deferred()
@@ -15,8 +15,8 @@ func _run() -> void:
 		print("Native rendering required for performance test.")
 		quit(1)
 		return
-	if "--fireball" in OS.get_cmdline_user_args():
-		kit = "mage"
+	if "--sparkle" in OS.get_cmdline_user_args():
+		kit = "sparkle"
 	if "--bat" in OS.get_cmdline_user_args():
 		kit = "destruction_trailblazer"
 	ui = load("res://main.tscn").instantiate()
@@ -34,7 +34,7 @@ func _run() -> void:
 	definition.attack = 0.1
 	for slot in ui.match_panel.slot_data:
 		slot.character_id = kit
-		slot.movement = "kite" if kit == "mage" else "bounce"
+		slot.movement = "bounce"
 	ui.match_panel.rebuild_rows()
 	ui._update_configuration()
 	ui._set_speed(2)

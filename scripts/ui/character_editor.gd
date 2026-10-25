@@ -41,6 +41,8 @@ var art_list: ItemList
 var art_items: Array = []
 var filtered_art: Array = []
 var mobile_pages: TabContainer
+var parameter_container: VBoxContainer
+var parameter_fields: Dictionary = {}
 
 func build(host, content_library) -> void:
 	ui = host
@@ -144,7 +146,7 @@ func _build_form(parent: HBoxContainer) -> void:
 	basic.add_child(move)
 	fields.movement = move
 	move.item_selected.connect(func(_i): _changed())
-	var note = ui._label("修改基础攻击力会影响技能伤害倍率。\n当前战斗使用开局快照，修改从下一局生效。", 12, ui.MUTED)
+	var note = ui._label("独立伤害、距离与速度在“技能与状态”下调整。\n当前战斗使用开局快照，修改从下一局生效。", 12, ui.MUTED)
 	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	basic.add_child(note)
 	var art := _tab(tabs, "常规形象")
@@ -200,6 +202,10 @@ func _build_form(parent: HBoxContainer) -> void:
 	release_input.value_changed.connect(func(_value): _skill_changed())
 	charge_path_label = _image_row(skills, "蓄力形象", "charge")
 	release_path_label = _image_row(skills, "释放形象", "release")
+	skills.add_child(ui._label("技能数值 · 单独保存到当前角色",16,ui.CYAN))
+	parameter_container = VBoxContainer.new()
+	parameter_container.add_theme_constant_override("separation",8)
+	skills.add_child(parameter_container)
 	var info = ui._label("主动技能：蓄力结束才出手。\n被动技能无蓄力，触发时可显示释放形象。\n飞剑持续运行，不强加施法停顿。", 12, ui.MUTED)
 	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	skills.add_child(info)
@@ -410,6 +416,8 @@ func _select_skill(index: int) -> void:
 	skill_title.text = item.get("name", "尚未添加技能") + " · " + item.get("type", "")
 	var bat_skill: bool = item.get("id","") == "bat_throw"
 	skill_behavior_label.text = "无敌方接触时蓄力，碰撞后从头计时。球棒回到手中才恢复常规图，离手形象不使用固定释放时长。" if bat_skill else ("敌方碰撞时造成重击与击飞，并重置自身的球棒蓄力。" if item.get("id","") == "collision_smash" else "")
+	if item.get("id","") == "sparkle_revolver":
+		skill_behavior_label.text = "上膛时间在下方技能数值设置；每次随机装入一发子弹，逐膛扣扳机，实弹射出后重新上膛。"
 	charge_input.max_value = float(item.get("charge_max",10))
 	charge_input.editable = item.get("type", "") == "主动"
 	release_input.editable = not item.is_empty() and item.get("type", "") != "持续" and not bat_skill
@@ -419,7 +427,37 @@ func _select_skill(index: int) -> void:
 	movement_check.button_pressed = bool(slot.get("charge_can_move", true))
 	charge_path_label.text = _image_description(str(slot.get("charge_image", "")))
 	release_path_label.text = _image_description(str(slot.get("release_image", "")))
+	_build_parameter_fields(slot)
 	loading = false
+	_refresh_preview()
+
+func _build_parameter_fields(slot: Dictionary) -> void:
+	for child in parameter_container.get_children():
+		child.free()
+	parameter_fields.clear()
+	var parameters: Dictionary = slot.get("parameters",{})
+	for entry in Catalog.parameter_definitions(str(slot.get("template_id",""))):
+		if entry.type == TYPE_BOOL:
+			var check := CheckBox.new()
+			check.text = entry.name
+			check.button_pressed = bool(parameters.get(entry.key,entry.default))
+			parameter_container.add_child(check)
+			check.toggled.connect(func(value,key=entry.key): _parameter_changed(key,value))
+			parameter_fields[entry.key] = check
+		else:
+			var field := _number(parameter_container,entry.name,entry.min,entry.max,entry.step,false)
+			field.value = float(parameters.get(entry.key,entry.default))
+			field.value_changed.connect(func(value,key=entry.key): _parameter_changed(key,value))
+			parameter_fields[entry.key] = field
+
+func _parameter_changed(key: String,value) -> void:
+	if loading or selected_skill < 0 or selected_skill >= draft.skill_slots.size():
+		return
+	var slot: Dictionary = draft.skill_slots[selected_skill]
+	if not slot.has("parameters"):
+		slot["parameters"] = {}
+	slot.parameters[key] = value
+	_mark_dirty()
 	_refresh_preview()
 
 func _skill_changed() -> void:
@@ -619,7 +657,10 @@ func _process(delta: float) -> void:
 	preview_accumulator += minf(delta,0.1)
 	while preview_accumulator >= 1.0/60.0 and preview_arena.running:
 		preview_arena.step(1.0/60.0)
-		preview_board.ingest(preview_arena.drain_events())
+		var events: Array = preview_arena.drain_events()
+		preview_board.ingest(events)
+		for event in events:
+			ui.game_audio.play_weapon_event(str(event.get("kind","")))
 		preview_accumulator -= 1.0/60.0
 	if not preview_arena.fighters.is_empty():
 		preview_caption.text = {"charge":"蓄力中", "release":"释放中", "normal":"常规形象"}.get(preview_arena.fighters[0].visual_phase,"常规形象")

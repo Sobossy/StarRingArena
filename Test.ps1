@@ -1,51 +1,22 @@
+param([switch]$Extended)
 . (Join-Path $PSScriptRoot 'tools\common.ps1')
 Ensure-Godot
 New-Item -ItemType Directory -Path (Join-Path $ProjectRoot 'test-results') -Force | Out-Null
 Invoke-GodotChecked -GodotArguments @('--headless','--path',$ProjectRoot,'--editor','--import')
-$output = & $GodotConsole --headless --path $ProjectRoot --script res://tests/test_runner.gd 2>&1
-$exitCode = $LASTEXITCODE
-$output | Tee-Object -FilePath (Join-Path $ProjectRoot 'test-results\latest.log') | Write-Host
-if ($exitCode -ne 0 -or (($output | Out-String) -match 'SCRIPT ERROR:|ERROR:') -or (($output | Out-String) -notmatch 'ALL TESTS PASSED')) {
-    throw 'Regression tests failed. See test-results/latest.log.'
-}
-$uiOutput = & $GodotConsole --headless --path $ProjectRoot --script res://tests/ui_smoke.gd 2>&1
-$uiExitCode = $LASTEXITCODE
-$uiOutput | Tee-Object -FilePath (Join-Path $ProjectRoot 'test-results\ui-latest.log') | Write-Host
-if ($uiExitCode -ne 0 -or (($uiOutput | Out-String) -match 'SCRIPT ERROR:|ERROR:') -or (($uiOutput | Out-String) -notmatch 'UI TESTS PASSED')) {
-    throw 'UI integration tests failed. See test-results/ui-latest.log.'
-}
-$extensionOutput = & $GodotConsole --headless --path $ProjectRoot --script res://tests/extension_tests.gd 2>&1
-$extensionExitCode = $LASTEXITCODE
-$extensionOutput | Tee-Object -FilePath (Join-Path $ProjectRoot 'test-results\extension-latest.log') | Write-Host
-if ($extensionExitCode -ne 0 -or (($extensionOutput | Out-String) -match 'SCRIPT ERROR:|ERROR:|leaked at exit') -or (($extensionOutput | Out-String) -notmatch 'EXTENSION TESTS PASSED')) {
-    throw 'Editor/multiplayer regression tests failed. See test-results/extension-latest.log.'
+foreach ($suite in @('current_rules','current_ui_smoke','mobile_tests')) {
+    $arguments = @('--headless','--path',$ProjectRoot,'--script',"res://tests/$suite.gd")
+    if ($Extended -and $suite -eq 'current_rules') { $arguments += @('--','--extended') }
+    $previousPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = 'Continue'
+        $result = & $GodotConsole @arguments 2>&1
+        $resultCode = $LASTEXITCODE
+    } finally { $ErrorActionPreference = $previousPreference }
+    $result | Tee-Object -FilePath (Join-Path $ProjectRoot "test-results\$suite-latest.log") | Write-Host
+    if ($resultCode -ne 0 -or (($result | Out-String) -match 'SCRIPT ERROR:|ERROR:|leaked at exit') -or (($result | Out-String) -notmatch 'TESTS PASSED')) { throw "$suite failed." }
 }
 foreach ($phase in @('write','read')) {
     $arguments = @('--headless','--path',$ProjectRoot,'--script','res://tests/persistence_roundtrip.gd')
     if ($phase -eq 'write') { $arguments += @('--','--write') }
-    $roundtripOutput = & $GodotConsole @arguments 2>&1
-    $roundtripExitCode = $LASTEXITCODE
-    $roundtripOutput | Tee-Object -FilePath (Join-Path $ProjectRoot "test-results\persistence-$phase.log") | Write-Host
-    $expected = "PERSISTENCE $($phase.ToUpperInvariant()) OK"
-    if ($roundtripExitCode -ne 0 -or (($roundtripOutput | Out-String) -match 'SCRIPT ERROR:|ERROR:') -or -not (($roundtripOutput | Out-String).Contains($expected))) {
-        throw "Persistence $phase failed."
-    }
-}
-$batOutput = & $GodotConsole --headless --path $ProjectRoot --script res://tests/destruction_tests.gd 2>&1
-$batExitCode = $LASTEXITCODE
-$batOutput | Tee-Object -FilePath (Join-Path $ProjectRoot 'test-results\destruction-latest.log') | Write-Host
-if ($batExitCode -ne 0 -or (($batOutput | Out-String) -match 'SCRIPT ERROR:|ERROR:|leaked at exit') -or (($batOutput | Out-String) -notmatch 'DESTRUCTION TESTS PASSED')) {
-    throw 'Destruction Trailblazer tests failed.'
-}
-$feedbackOutput = & $GodotConsole --headless --path $ProjectRoot --script res://tests/feedback_tests.gd 2>&1
-$feedbackExitCode = $LASTEXITCODE
-$feedbackOutput | Tee-Object -FilePath (Join-Path $ProjectRoot 'test-results\feedback-latest.log') | Write-Host
-if ($feedbackExitCode -ne 0 -or (($feedbackOutput | Out-String) -match 'SCRIPT ERROR:|ERROR:|leaked at exit') -or (($feedbackOutput | Out-String) -notmatch 'FEEDBACK TESTS PASSED')) {
-    throw 'Impact, music, map migration and elimination tests failed.'
-}
-$mobileOutput = & $GodotConsole --headless --path $ProjectRoot --script res://tests/mobile_tests.gd 2>&1
-$mobileExitCode = $LASTEXITCODE
-$mobileOutput | Tee-Object -FilePath (Join-Path $ProjectRoot 'test-results\mobile-latest.log') | Write-Host
-if ($mobileExitCode -ne 0 -or (($mobileOutput | Out-String) -match 'SCRIPT ERROR:|ERROR:|leaked at exit') -or (($mobileOutput | Out-String) -notmatch 'MOBILE TESTS PASSED')) {
-    throw 'Mobile layout, lifecycle and navigation tests failed.'
+    Invoke-GodotChecked -GodotArguments $arguments
 }

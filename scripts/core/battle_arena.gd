@@ -434,10 +434,10 @@ func _separate_pair(first, second) -> void:
 	for iteration in range(2):
 		var offset: Vector2 = first.position - second.position
 		var distance: float = offset.length()
-		if distance <= minimum_distance + 0.05 and is_enemy(first, second):
-			if not first.contact_enemies.has(second):
+		if is_enemy(first, second):
+			if distance <= minimum_distance + 0.05 + _contact_bonus(first) and not first.contact_enemies.has(second):
 				first.contact_enemies.append(second)
-			if not second.contact_enemies.has(first):
+			if distance <= minimum_distance + 0.05 + _contact_bonus(second) and not second.contact_enemies.has(first):
 				second.contact_enemies.append(first)
 		if distance >= minimum_distance:
 			break
@@ -460,6 +460,13 @@ func _separate_pair(first, second) -> void:
 		if iteration == 0:
 			first.movement.on_collision(normal)
 			second.movement.on_collision(-normal)
+
+func _contact_bonus(fighter) -> float:
+	var extra: float = 0.0
+	for skill in fighter.skills:
+		if skill.active and skill.has_method("contact_distance_bonus"):
+			extra = maxf(extra,float(skill.contact_distance_bonus()))
+	return extra
 
 func _update_projectiles(delta: float) -> void:
 	var remaining: Array = []
@@ -502,7 +509,7 @@ func _projectile_impact(projectile: Dictionary, direct_target) -> void:
 			if target != direct_target and target.position.distance_to(hit_position) <= blast_radius + target.definition.radius:
 				targets.append(target)
 	for target in targets:
-		apply_damage(source, target, float(projectile["damage"]), projectile["skill_id"])
+		apply_damage(source, target, float(projectile["damage"]), projectile["skill_id"], true, projectile["velocity"].normalized() * float(projectile.get("knockback",0.0)))
 		var status_id: String = str(projectile.get("status_id", ""))
 		if not status_id.is_empty():
 			apply_status(source, target, status_id, float(projectile.get("status_duration", 2.0)), float(projectile.get("status_power", 0.0)))

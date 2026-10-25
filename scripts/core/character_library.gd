@@ -3,6 +3,7 @@ extends RefCounted
 const Definition = preload("res://scripts/core/character_definition.gd")
 const Roster = preload("res://data/roster.gd")
 const Catalog = preload("res://scripts/core/skill_catalog.gd")
+const RETIRED_IDS := ["sword","mage","guard","assassin"]
 var storage_root: String = "user://characters"
 var characters: Array = []
 var last_error: String = ""
@@ -41,6 +42,8 @@ func reload() -> Array:
 			if not parsed is Dictionary or int(parsed.get("version", 0)) != 1:
 				continue
 			var loaded = from_data(parsed)
+			if loaded != null and loaded.id in RETIRED_IDS:
+				continue
 			if loaded == null or not validate(loaded).is_empty():
 				continue
 			var index: int = index_of(loaded.id)
@@ -64,7 +67,6 @@ func make_new():
 	var definition = Definition.new()
 	definition.id = "custom_" + str(Time.get_unix_time_from_system()).replace(".", "_") + "_" + str(randi())
 	definition.display_name = "新角色"
-	definition.skill_slots.append(Catalog.new_slot("fireball"))
 	return definition
 
 func make_copy(original):
@@ -78,6 +80,8 @@ func make_copy(original):
 func validate(definition) -> String:
 	if definition.id.is_empty() or not definition.id.is_valid_identifier():
 		return "角色标识无效。"
+	if definition.id in RETIRED_IDS:
+		return "该示例角色已从角色库移除。"
 	if definition.display_name.strip_edges().is_empty():
 		return "请填写角色名称。"
 	if not is_finite(definition.max_health) or definition.max_health < 1 or definition.max_health > 100000:
@@ -92,6 +96,9 @@ func validate(definition) -> String:
 		var template := Catalog.find(str(slot.get("template_id", "")))
 		if template.is_empty():
 			return "角色包含未注册的技能模板。"
+		var error: String = Catalog.validate_parameters(slot)
+		if not error.is_empty():
+			return error
 		for key in ["charge_time", "release_time"]:
 			var duration_value: float = float(slot.get(key, 0))
 			var maximum: float = float(template.get("charge_max",10)) if key == "charge_time" else 10.0
@@ -183,7 +190,12 @@ static func from_data(data: Dictionary):
 	definition.description = str(data.get("description", ""))
 	definition.max_health = float(data.get("max_health", 1000))
 	definition.attack = float(data.get("attack", 38))
-	definition.speed = float(data.get("speed", 150))
+	definition.speed = float(data.get("speed", 160))
+	if definition.id == "destruction_trailblazer":
+		if definition.max_health == 1100:
+			definition.max_health = 1000
+		if definition.speed == 158:
+			definition.speed = 160
 	definition.radius = clampf(float(data.get("radius", 28)), 8, 80)
 	definition.portrait_size = clampf(float(data.get("portrait_size", 82)), 24, 180)
 	definition.portrait_offset = Vector2(clampf(float(data.get("offset_x", 0)), -150, 150), clampf(float(data.get("offset_y", 0)), -150, 150))

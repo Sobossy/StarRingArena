@@ -12,7 +12,7 @@ extends Resource
 @export var theme_color: Color = Color("69d9ff")
 @export_range(1.0, 100000.0, 1.0) var max_health: float = 1000.0
 @export_range(0.0, 10000.0, 1.0) var attack: float = 38.0
-@export_range(0.0, 1000.0, 1.0) var speed: float = 150.0
+@export_range(0.0, 1000.0, 1.0) var speed: float = 160.0
 @export_range(8.0, 80.0, 1.0) var radius: float = 28.0
 @export_enum("bounce", "chase", "kite", "wander") var default_movement: String = "bounce"
 @export var skill_scenes: Array[PackedScene] = []

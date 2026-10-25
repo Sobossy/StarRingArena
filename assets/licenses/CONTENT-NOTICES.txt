@@ -24,6 +24,8 @@ HOYO-MiX《上上下下左左右右 / Up-Up-Down-Down-Left-Left-Right-Right》�
 
 ## 淘汰欢呼
 
+花火左轮、六膛转盘、白旗和彩带按用户提供截图/视频由程序绘制；未从视频提取贴图或音轨。空枪、实弹、上膛三个短音效由程序合成，位于`assets/audio/`。花火本体使用用户提供的`280_花火 嘿嘿.png`，原始PNG未修改。
+
 “BerlinGameScene.com Crowd Cheer 1”，作者 BerlinGameScene（BerlinGameScene.com），2015-03-17，CC0 1.0。工程文件 `assets/audio/elimination_cheer.ogg` 使用公开高质量试听版本，转为双声道 OGG 并截取前 2.7 秒、添加淡入淡出。
 
 - 原页面：https://freesound.org/people/BerlinGameScene/sounds/267249/

@@ -2,7 +2,9 @@ extends "res://scripts/skills/skill_base.gd"
 ## A single bat: hold/charge -> fixed launch point -> return to moving owner.
 @export var outbound_speed: float = 700.0
 @export var return_speed: float = 900.0
-@export var damage_multiplier: float = 1.5
+@export_range(1,2400,1) var throw_distance: float = 360.0
+@export_range(0,100000,1) var outbound_damage: float = 60.0
+@export_range(0,100000,1) var return_damage: float = 60.0
 @export var hit_radius: float = 18.0
 @export var spin_speed: float = 12.0
 @export var knockback_strength: float = 900.0
@@ -53,9 +55,12 @@ func request_cast(target) -> bool:
 func activate(target) -> void:
 	if target == null or not target.alive or not can_act() or is_in_flight():
 		return
-	launch_point = target.position
 	bat_position = _hand_position()
-	bat_angle = bat_position.direction_to(launch_point).angle()
+	var direction: Vector2 = bat_position.direction_to(target.position)
+	if direction.is_zero_approx():
+		direction = Vector2.RIGHT
+	launch_point = bat_position + direction * throw_distance
+	bat_angle = direction.angle()
 	bat_state = "outbound"
 	charge_elapsed = 0
 	phase = "release"
@@ -103,6 +108,7 @@ func _advance_bat(delta: float) -> void:
 		if bat_position.distance_to(destination) <= 0.001:
 			if bat_state == "outbound":
 				bat_state = "returning"
+				hit_targets.clear()
 			else:
 				cancel_cast()
 				return
@@ -127,7 +133,7 @@ func _damage_on_segment(start: Vector2, finish: Vector2) -> void:
 				direction = fighter.position.direction_to(target.position)
 			if direction.is_zero_approx():
 				direction = Vector2.RIGHT if fighter.fighter_id < target.fighter_id else Vector2.LEFT
-			arena.apply_damage(fighter,target,fighter.definition.attack * damage_multiplier,skill_id,true,direction * knockback_strength)
+			arena.apply_damage(fighter,target,outbound_damage if bat_state == "outbound" else return_damage,skill_id,true,direction * knockback_strength)
 			arena.emit_effect("burst",target.position,Color("efd18a"),{"radius":45.0})
 
 func get_visuals() -> Array:
