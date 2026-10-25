@@ -1,5 +1,14 @@
 # 星环竞技场
 
+## 下载安装
+
+- [安卓 APK（竖屏）](https://github.com/Sobossy/StarRingArena/releases/latest/download/StarRingArena.apk)
+- [Windows 运行包](https://github.com/Sobossy/StarRingArena/releases/latest/download/StarRingArena-Windows.zip)：完整解压后运行 `Windows/SpiritArena.exe`。
+- [完整源码包](https://github.com/Sobossy/StarRingArena/releases/latest/download/StarRingArena-Source.zip)
+- [版本发布与更新记录](https://github.com/Sobossy/StarRingArena/releases)
+
+安卓覆盖安装可保留角色和设置。Windows 请保留同目录的 `SpiritArena.pck`；手机与电脑的存档暂不自动同步。
+
 Windows / 安卓本地 2D 自动对战游戏，当前版本 **0.6.0**。支持角色编辑、多状态形象、矩形地图、2～8 人个人竞技和 2～4 队组队对战。
 
 **安卓竖屏测试版：** `build/Android/StarRingArena.apk`，竖屏适配基线已在realme Neo5（安卓16）实测。手机采用“配置 / 对战”分页、大触屏按钮和角色编辑标签页，切后台自动暂停。电脑继续使用原布局，两端共用战斗代码。双击`UpdatePhone.cmd`可重新打包并覆盖安装到USB调试手机，保留角色与设置；带检查构建用`BuildAndroid.cmd`，电脑竖屏预览用`PreviewMobile.cmd`。详见 [安卓测试说明](docs/安卓测试说明.md)。
