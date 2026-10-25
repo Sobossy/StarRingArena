@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/fireball.gd" id="1"]
+
+[node name="Fireball" type="Node"]
+script = ExtResource("1")
+skill_id = "fireball"
+cooldown = 1.25
+projectile_speed = 390.0
+damage_multiplier = 1.65

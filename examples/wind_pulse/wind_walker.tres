@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/core/character_definition.gd" id="1"]
+[ext_resource type="PackedScene" path="res://examples/wind_pulse/wind_pulse.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "wind_walker"
+display_name = "风行者（扩展示例）"
+description = "以风压脉冲攻击并击退附近对手，同时少量恢复生命。此示例未加入默认选角列表。"
+portrait_size = 82.0
+theme_color = Color(0.35, 1, 0.7, 1)
+max_health = 1000.0
+attack = 38.0
+speed = 150.0
+radius = 28.0
+default_movement = "chase"
+skill_scenes = Array[PackedScene]([ExtResource("2")])

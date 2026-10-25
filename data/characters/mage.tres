@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/core/character_definition.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/skills/fireball.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "mage"
+display_name = "炎术师"
+description = "保持距离发射火球，爆炸后施加灼烧。火球会预判对手短时间内的移动。"
+portrait_size = 82.0
+theme_color = Color(1, 0.43, 0.24, 1)
+max_health = 900.0
+attack = 42.0
+speed = 138.0
+radius = 28.0
+default_movement = "kite"
+skill_scenes = Array[PackedScene]([ExtResource("2")])

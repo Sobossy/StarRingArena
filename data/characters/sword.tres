@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/core/character_definition.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/skills/orbit_blades.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "sword"
+display_name = "飞剑使"
+description = "三柄飞剑环绕自身，擦过对手时连续造成伤害。擅长在竞技场中反弹穿行。"
+portrait_size = 82.0
+theme_color = Color(0.2, 0.86, 1, 1)
+max_health = 1000.0
+attack = 38.0
+speed = 168.0
+radius = 28.0
+default_movement = "bounce"
+skill_scenes = Array[PackedScene]([ExtResource("2")])

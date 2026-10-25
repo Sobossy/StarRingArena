@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/core/character_definition.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/skills/dash_slash.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "assassin"
+display_name = "影刃"
+description = "游走寻找时机，高速冲刺穿过敌人并斩击。命中后短暂减速，同次冲刺仅命中一次。"
+portrait_size = 82.0
+theme_color = Color(0.72, 0.53, 1, 1)
+max_health = 920.0
+attack = 40.0
+speed = 163.0
+radius = 27.0
+default_movement = "wander"
+skill_scenes = Array[PackedScene]([ExtResource("2")])

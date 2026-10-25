@@ -1,0 +1,9 @@
+.godot/
+tools/cache/
+tools/godot/
+tools/templates/
+build/
+test-results/
+*.tmp
+*.log
+

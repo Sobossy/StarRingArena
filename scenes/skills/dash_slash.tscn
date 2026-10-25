@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/dash_slash.gd" id="1"]
+
+[node name="DashSlash" type="Node"]
+script = ExtResource("1")
+skill_id = "dash_slash"
+cooldown = 2.1
+dash_speed = 800.0
+dash_duration = 0.3
+damage_multiplier = 2.5

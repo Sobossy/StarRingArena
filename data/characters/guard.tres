@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/core/character_definition.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/skills/guardian.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "guard"
+display_name = "铁卫"
+description = "追击对手并挥击；定时获得护盾，受击后释放反击。反击不会再次触发反击。"
+portrait_size = 86.0
+theme_color = Color(1, 0.77, 0.3, 1)
+max_health = 1200.0
+attack = 34.0
+speed = 153.0
+radius = 30.0
+default_movement = "chase"
+skill_scenes = Array[PackedScene]([ExtResource("2")])

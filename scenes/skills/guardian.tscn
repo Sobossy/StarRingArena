@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/skills/guardian.gd" id="1"]
+
+[node name="Guardian" type="Node"]
+script = ExtResource("1")
+skill_id = "guardian"
+cooldown = 0.85
+melee_range = 100.0
+shield_amount = 115.0
+shield_interval = 5.5

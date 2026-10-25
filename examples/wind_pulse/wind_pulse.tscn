@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://examples/wind_pulse/wind_pulse.gd" id="1"]
+
+[node name="WindPulse" type="Node"]
+script = ExtResource("1")
+skill_id = "wind_pulse"
+cooldown = 1.8
+pulse_radius = 200.0
+damage_multiplier = 1.3
