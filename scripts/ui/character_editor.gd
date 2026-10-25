@@ -570,7 +570,12 @@ func play_preview() -> void:
 	dummy.display_name = "测试目标"
 	dummy.max_health = 100000
 	dummy.speed = 0
-	preview_arena.start_battle([sample,dummy],["chase","chase"],42)
+	var config = load("res://scripts/core/match_config.gd").new()
+	# The workshop has its own roomy demonstration stage, independent of match size.
+	config.width = 664
+	config.height = 664
+	config.participants = [{"definition":sample,"movement":"chase","team":0},{"definition":dummy,"movement":"chase","team":1}]
+	preview_arena.start_match(config)
 	preview_arena.fighters[0].position = Vector2(310,380)
 	preview_arena.fighters[1].position = Vector2(405,380)
 	var skill = preview_arena.fighters[0].skills[0]

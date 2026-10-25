@@ -41,9 +41,8 @@ func tick(delta: float) -> void:
 func activate(target) -> void:
 	if not can_act() or target == null:
 		return
-	arena.apply_damage(fighter, target, fighter.definition.attack * melee_damage_multiplier, skill_id)
 	var direction: Vector2 = fighter.position.direction_to(target.position)
-	target.knockback += direction * 95.0
+	arena.apply_damage(fighter, target, fighter.definition.attack * melee_damage_multiplier, skill_id, true, direction * 95.0)
 	arena.emit_effect("slash", fighter.position.lerp(target.position, 0.5), fighter.definition.theme_color, {
 		"angle": direction.angle(), "radius": 65.0,
 	})

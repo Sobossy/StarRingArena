@@ -37,3 +37,9 @@ $batOutput | Tee-Object -FilePath (Join-Path $ProjectRoot 'test-results\destruct
 if ($batExitCode -ne 0 -or (($batOutput | Out-String) -match 'SCRIPT ERROR:|ERROR:|leaked at exit') -or (($batOutput | Out-String) -notmatch 'DESTRUCTION TESTS PASSED')) {
     throw 'Destruction Trailblazer tests failed.'
 }
+$feedbackOutput = & $GodotConsole --headless --path $ProjectRoot --script res://tests/feedback_tests.gd 2>&1
+$feedbackExitCode = $LASTEXITCODE
+$feedbackOutput | Tee-Object -FilePath (Join-Path $ProjectRoot 'test-results\feedback-latest.log') | Write-Host
+if ($feedbackExitCode -ne 0 -or (($feedbackOutput | Out-String) -match 'SCRIPT ERROR:|ERROR:|leaked at exit') -or (($feedbackOutput | Out-String) -notmatch 'FEEDBACK TESTS PASSED')) {
+    throw 'Impact, music, map migration and elimination tests failed.'
+}

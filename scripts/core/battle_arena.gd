@@ -26,7 +26,7 @@ var winner_team: int = -2
 var result: Dictionary = {}
 var mode: String = "ffa"
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
-var bounds: Rect2 = Rect2(48.0, 48.0, 664.0, 664.0)
+var bounds: Rect2 = Rect2(48.0, 48.0, 500.0, 500.0)
 var events: Array = []
 var event_log: Array = []
 var tick_count: int = 0
@@ -203,16 +203,18 @@ func get_targets(fighter) -> Array:
 			targets.append(other)
 	return targets
 
-func apply_damage(source, target, amount: float, skill_id: String, allow_reaction: bool = true) -> void:
+func apply_damage(source, target, amount: float, skill_id: String, allow_reaction: bool = true, impulse: Vector2 = Vector2.ZERO) -> void:
 	if not running or target == null or not target.alive or amount <= 0.0 or not is_finite(amount):
 		return
 	if source != null and (not source.alive or not is_enemy(source, target)):
 		return
 	if _damage_queue.size() >= MAX_DAMAGE_EVENTS_PER_STEP:
 		return
+	if not impulse.is_finite():
+		return
 	_damage_queue.append({
 		"source": source, "target": target, "amount": amount,
-		"skill_id": skill_id, "allow_reaction": allow_reaction,
+		"skill_id": skill_id, "allow_reaction": allow_reaction, "impulse": impulse,
 	})
 
 func heal(target, amount: float) -> void:
@@ -358,10 +360,38 @@ func _move_fighter(fighter, delta: float) -> void:
 	if fighter.dash_remaining > 0.0:
 		desired = fighter.dash_velocity
 		fighter.dash_remaining = maxf(0.0, fighter.dash_remaining - delta)
+	if fighter.impact_remaining > 0.0:
+		desired = Vector2.ZERO
 	fighter.velocity = desired + fighter.knockback
 	fighter.position += fighter.velocity * delta
 	fighter.knockback *= exp(-8.0 * delta)
 	_constrain_fighter(fighter)
+	_update_impact(fighter, delta)
+
+func _apply_impact(fighter, impulse: Vector2) -> void:
+	fighter.knockback = impulse
+	fighter.last_hit_direction = impulse.normalized()
+	fighter.impact_remaining = 0.6
+	fighter.impact_recovery = 0.0
+	fighter.lift_time = 0.28
+	emit_effect("impact", fighter.position, Color("ffe4a0"), {"side":fighter.side, "angle":impulse.angle()})
+
+func _update_impact(fighter, delta: float) -> void:
+	if fighter.impact_remaining > 0.0:
+		fighter.impact_angle -= deg_to_rad(720.0) * delta
+		fighter.impact_remaining = maxf(0.0, fighter.impact_remaining - delta)
+		if fighter.knockback.length() < 60.0 or fighter.impact_remaining <= 0.0:
+			fighter.knockback = Vector2.ZERO
+			fighter.impact_remaining = 0.0
+			fighter.impact_recovery = 0.12
+			fighter.impact_recovery_start = fighter.impact_angle
+			fighter.impact_recovery_target = floorf(fighter.impact_angle / TAU) * TAU
+	elif fighter.impact_recovery > 0.0:
+		fighter.impact_recovery = maxf(0.0, fighter.impact_recovery - delta)
+		var progress: float = 1.0 - fighter.impact_recovery / 0.12
+		fighter.impact_angle = lerpf(fighter.impact_recovery_start, fighter.impact_recovery_target, smoothstep(0.0,1.0,progress))
+		if fighter.impact_recovery <= 0.0:
+			fighter.impact_angle = 0.0
 
 func _constrain_fighter(fighter) -> void:
 	var radius: float = fighter.definition.radius
@@ -512,6 +542,12 @@ func _resolve_damage() -> void:
 		target.health = maxf(0.0, target.health - actual)
 		target.hit_flash = 0.14
 		target.damage_taken += actual + absorbed
+		if actual + absorbed > 0.0:
+			var impulse: Vector2 = event.get("impulse", Vector2.ZERO)
+			if not impulse.is_zero_approx():
+				_apply_impact(target, impulse)
+			elif source != null:
+				target.last_hit_direction = source.position.direction_to(target.position)
 		if source != null:
 			source.damage_dealt += actual + absorbed
 		event["amount"] = actual
@@ -542,7 +578,7 @@ func _resolve_deaths_and_result() -> void:
 				if skill.has_method("cancel_cast"):
 					skill.cancel_cast()
 				skill.active = false
-			emit_effect("death", fighter.position, fighter.definition.theme_color, {"side":fighter.side})
+			emit_effect("death", fighter.position, fighter.definition.theme_color, {"side":fighter.side, "direction":fighter.last_hit_direction, "angle":fighter.impact_angle})
 			_log({"kind":"death", "side":fighter.side})
 		if fighter.alive:
 			alive_teams[fighter.team_id] = true
@@ -584,6 +620,10 @@ func _finish_team(team: int, reason: String) -> void:
 		fighter.velocity = Vector2.ZERO
 		fighter.dash_remaining = 0
 		fighter.lift_time = 0
+		fighter.knockback = Vector2.ZERO
+		fighter.impact_remaining = 0.0
+		fighter.impact_recovery = 0.0
+		fighter.impact_angle = 0.0
 		for skill in fighter.skills:
 			if skill.has_method("cancel_cast"):
 				skill.cancel_cast()

@@ -77,9 +77,16 @@ func _run() -> void:
 		var screenshot := ProjectSettings.globalize_path("res://test-results/ui-png-branch.png")
 		DirAccess.make_dir_recursive_absolute(screenshot.get_base_dir())
 		verify(root.get_texture().get_image().save_png(screenshot) == OK, "PNG portrait branch renders to viewport")
+	ui._set_speed(1.0)
 	ui.arena.fighters[1].health = 0.0
 	ui._process(0.1)
-	verify(ui.result_shown and ui.result_panel.visible and not ui.arena.running, "Death opens result panel")
+	verify(not ui.result_shown and not ui.arena.running and ui.board.has_departures(), "Death immediately settles combat and waits for departure")
+	ui.board._process(0.49)
+	ui._process(0.01)
+	verify(not ui.result_shown,"Death holds for half a second")
+	ui.board._process(0.47)
+	ui._process(0.01)
+	verify(ui.result_shown and ui.result_panel.visible, "Departure opens result panel")
 	verify(ui.result_detail.text.contains("2718"), "Result displays actual match seed")
 	ui.board._process(1.0)
 	verify(ui.board.hit_flashes.get(0, 0.0) == 0.0, "Hit flash fades after simulation ends")
@@ -188,6 +195,8 @@ func _run() -> void:
 		if fighter.team_id != 2:
 			fighter.health = 0
 	ui._process(0.1)
+	ui.board._process(1.0)
+	ui._process(0.01)
 	verify(ui.result_title.text == "C 队获胜", "Team winner is displayed by team, not actor index")
 	ui._return_to_selection()
 	var restored = load("res://scripts/core/character_library.gd").new(ui.library.storage_root)

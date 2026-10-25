@@ -17,19 +17,24 @@ func _run() -> void:
 		return
 	if "--fireball" in OS.get_cmdline_user_args():
 		kit = "mage"
+	if "--bat" in OS.get_cmdline_user_args():
+		kit = "destruction_trailblazer"
 	ui = load("res://main.tscn").instantiate()
 	ui.qa_mode = true
 	root.add_child(ui)
 	await process_frame
 	ui.match_panel.count_input.set_value_no_signal(8)
-	ui.match_panel.width_input.set_value_no_signal(1000)
-	ui.match_panel.height_input.set_value_no_signal(700)
+	var compact: bool = "--compact" in OS.get_cmdline_user_args()
+	ui.match_panel.width_input.set_value_no_signal(500 if compact else 1000)
+	ui.match_panel.height_input.set_value_no_signal(500 if compact else 700)
+	if "--teams" in OS.get_cmdline_user_args():
+		ui.match_panel.mode_option.select(1)
 	var definition = ui.library.get_character(kit)
 	definition.max_health = 100000
 	definition.attack = 0.1
 	for slot in ui.match_panel.slot_data:
 		slot.character_id = kit
-		slot.movement = "bounce" if kit == "sword" else "kite"
+		slot.movement = "kite" if kit == "mage" else "bounce"
 	ui.match_panel.rebuild_rows()
 	ui._update_configuration()
 	ui._set_speed(2)
@@ -50,7 +55,7 @@ func _process(delta: float) -> bool:
 		for fighter in ui.arena.fighters:
 			if fighter.alive:
 				alive += 1
-		print("PERFORMANCE kit=",kit," actors=",alive," speed=2x fps=",snappedf(fps,0.1)," projectiles=",ui.arena.projectiles.size())
+		print("PERFORMANCE kit=",kit," actors=",alive," mode=",ui.arena.mode," map=",ui.arena.bounds.size," speed=2x fps=",snappedf(fps,0.1)," projectiles=",ui.arena.projectiles.size())
 		_capture_and_quit.call_deferred(fps,alive)
 	return false
 

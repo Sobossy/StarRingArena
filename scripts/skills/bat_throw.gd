@@ -5,6 +5,7 @@ extends "res://scripts/skills/skill_base.gd"
 @export var damage_multiplier: float = 1.5
 @export var hit_radius: float = 18.0
 @export var spin_speed: float = 12.0
+@export var knockback_strength: float = 900.0
 var bat_state: String = "held"
 var charge_elapsed: float = 0.0
 var bat_position: Vector2 = Vector2.ZERO
@@ -118,7 +119,15 @@ func _damage_on_segment(start: Vector2, finish: Vector2) -> void:
 		var radius: float = target.definition.radius + hit_radius
 		if arena._segment_circle_contact(start,finish,target.position,radius) >= 0:
 			hit_targets[target.fighter_id] = true
-			arena.apply_damage(fighter,target,fighter.definition.attack * damage_multiplier,skill_id)
+			var direction: Vector2 = start.direction_to(finish)
+			if direction.is_zero_approx():
+				var destination: Vector2 = launch_point if bat_state == "outbound" else _hand_position()
+				direction = bat_position.direction_to(destination)
+			if direction.is_zero_approx():
+				direction = fighter.position.direction_to(target.position)
+			if direction.is_zero_approx():
+				direction = Vector2.RIGHT if fighter.fighter_id < target.fighter_id else Vector2.LEFT
+			arena.apply_damage(fighter,target,fighter.definition.attack * damage_multiplier,skill_id,true,direction * knockback_strength)
 			arena.emit_effect("burst",target.position,Color("efd18a"),{"radius":45.0})
 
 func get_visuals() -> Array:

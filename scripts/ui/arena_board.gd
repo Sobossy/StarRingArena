@@ -1,16 +1,18 @@
 extends Control
 ## Presentation only: all combat state belongs to BattleArena.
+signal death_ejected(fighter_id: int)
 
 var arena
 var preview_definitions: Array = []
 var preview_config = null
 var preview_positions: Array = []
-var world_size := Vector2(760,760)
+var world_size := Vector2(596,596)
 var render_scale: float = 1.0
 const TEAM_COLORS := [Color("78e5dc"),Color("dec58d"),Color("bb96ff"),Color("ff92ae"),Color("91dda2"),Color("8abfff"),Color("ffa16a"),Color("d8e3ef")]
 var effects: Array = []
 var trails: Dictionary = {}
 var hit_flashes: Dictionary = {}
+var departures: Dictionary = {}
 var world_transform := Transform2D.IDENTITY
 var visual_time: float = 0.0
 var frozen: bool = false
@@ -36,6 +38,7 @@ func reset_visuals() -> void:
 	effects.clear()
 	trails.clear()
 	hit_flashes.clear()
+	departures.clear()
 	visual_time = 0.0
 	_trail_timer = 0.0
 	queue_redraw()
@@ -44,11 +47,23 @@ func ingest(items: Array) -> void:
 	for event in items:
 		if event.get("kind", "") == "end":
 			continue
+		if event.get("kind", "") == "death":
+			var origin: Vector2 = event.get("position",Vector2.ZERO)
+			var direction: Vector2 = event.get("direction",Vector2.ZERO)
+			if direction.is_zero_approx():
+				var center: Vector2 = arena.bounds.get_center() if arena != null else world_size * 0.5
+				direction = center.direction_to(origin)
+			if direction.is_zero_approx():
+				direction = Vector2.UP
+			departures[int(event.get("side",0))] = {"age":0.0,"origin":origin,"direction":direction.normalized(),"angle":float(event.get("angle",0)),"cheered":false,"done":false}
+			continue
 		if event.get("kind", "") == "hit":
 			hit_flashes[int(event.get("side", 0))] = 0.14
 		var e: Dictionary = event.duplicate()
 		e["age"] = 0.0
 		e["life"] = 0.85 if e.get("kind", "") == "hit" else 0.5
+		if e.get("kind", "") == "impact":
+			e["life"] = 0.18
 		if e.get("kind", "") == "death":
 			e["life"] = 1.2
 		effects.append(e)
@@ -62,6 +77,16 @@ func _process(delta: float) -> void:
 		hit_flashes[side] = maxf(0.0, hit_flashes[side] - step)
 	for e in effects:
 		e["age"] += step
+	for side in departures:
+		var departure: Dictionary = departures[side]
+		if departure.done:
+			continue
+		departure.age += step
+		if departure.age >= 0.5 and not departure.cheered:
+			departure.cheered = true
+			death_ejected.emit(int(side))
+		if departure.age >= 0.95:
+			departure.done = true
 	effects = effects.filter(func(e): return e["age"] < e["life"])
 	_trail_timer += step
 	if arena != null and arena.running and _trail_timer >= 0.04:
@@ -73,6 +98,18 @@ func _process(delta: float) -> void:
 			if trails[f.side].size() > 15:
 				trails[f.side].pop_front()
 	queue_redraw()
+
+func has_departures() -> bool:
+	for departure in departures.values():
+		if not departure.done:
+			return true
+	return false
+
+func departure_pose(side: int) -> Dictionary:
+	var departure: Dictionary = departures[side]
+	var t: float = clampf((departure.age - 0.5) / 0.45,0.0,1.0)
+	var travel: float = (world_size.length() + 220.0) * t * t
+	return {"position":departure.origin + departure.direction * travel,"angle":departure.angle - TAU * 2.0 * t}
 
 func _box(rect: Rect2, color: Color, radius: int, border: Color = Color.TRANSPARENT, width: int = 1) -> void:
 	var s := StyleBoxFlat.new()
@@ -91,7 +128,7 @@ func _text(text: String, at: Vector2, size_px: int, color: Color, centered: bool
 	draw_string(font, p, text, HORIZONTAL_ALIGNMENT_LEFT, -1, size_px, color)
 
 func _draw() -> void:
-	world_size = Vector2(760,760)
+	world_size = Vector2(596,596)
 	if arena != null and not arena.fighters.is_empty():
 		world_size = arena.bounds.end + Vector2(48,48)
 	elif preview_config != null:
@@ -109,7 +146,11 @@ func _draw() -> void:
 		for visual in arena.get_visuals():
 			_draw_skill_visual(visual)
 		for f in arena.fighters:
-			_draw_fighter(f.definition, f.position, f.side, f.health_ratio(), f.shield, hit_flashes.get(f.side, 0.0), f.alive, f.velocity, f.statuses, f.visual_texture, TEAM_COLORS[f.team_id % TEAM_COLORS.size()], f.visual_phase, f.lift_time)
+			if f.alive:
+				_draw_fighter(f.definition, f.position, f.side, f.health_ratio(), f.shield, hit_flashes.get(f.side, 0.0), true, f.velocity, f.statuses, f.visual_texture, TEAM_COLORS[f.team_id % TEAM_COLORS.size()], f.visual_phase, f.lift_time, f.impact_angle)
+			elif departures.has(f.side) and not departures[f.side].done:
+				var pose: Dictionary = departure_pose(f.side)
+				_draw_fighter(f.definition, pose.position, f.side, 0.0, 0.0, 0.0, false, Vector2.ZERO, {}, null, TEAM_COLORS[f.team_id % TEAM_COLORS.size()], "normal", 0.0, pose.angle, true)
 	else:
 		var positions: Array = []
 		if preview_config != null:
@@ -162,7 +203,7 @@ func _draw_field() -> void:
 	_text("STAR RING",Vector2(w*0.5,90),11,Color("4d748c"),true)
 
 func _draw_trail(f) -> void:
-	if not trails.has(f.side):
+	if not f.alive or not trails.has(f.side):
 		return
 	var positions: Array = trails[f.side]
 	for i in range(1, positions.size()):
@@ -171,22 +212,20 @@ func _draw_trail(f) -> void:
 		color.a = alpha
 		draw_line(positions[i - 1], positions[i], color, 3.0, true)
 
-func _draw_fighter(definition, position: Vector2, side: int, hp: float, shield: float, flash: float, alive: bool, velocity: Vector2, statuses: Dictionary, state_texture: Texture2D = null, team_color: Color = CYAN, phase: String = "normal", lift: float = 0.0) -> void:
+func _draw_fighter(definition, position: Vector2, side: int, hp: float, shield: float, flash: float, alive: bool, velocity: Vector2, statuses: Dictionary, state_texture: Texture2D = null, team_color: Color = CYAN, phase: String = "normal", lift: float = 0.0, impact_angle: float = 0.0, departing: bool = false) -> void:
 	var tint: Color = definition.theme_color
-	var alpha: float = 1.0 if alive else 0.35
+	var alpha: float = 1.0 if alive or departing else 0.35
 	var bob: float = sin(visual_time * 4.0 + float(side) * PI) * 2.5 if alive else 0.0
 	var pos := position + Vector2(0, bob)
 	if lift > 0:
 		pos.y -= sin(clampf(lift/0.28,0,1) * PI) * 15
 	draw_circle(position + Vector2(0, 28), 34, Color(0.0, 0.025, 0.05, 0.3 * alpha))
-	draw_arc(position, 40, 0, TAU, 48, Color(tint, 0.22 * alpha), 1.5, true)
-	draw_arc(position, 45, visual_time * 0.5 + side * PI, visual_time * 0.5 + side * PI + PI * 0.65, 24, Color(tint, 0.6 * alpha), 2.0, true)
 	if shield > 0:
 		draw_circle(pos, 51, Color(0.35, 0.75, 1, 0.1))
 		draw_arc(pos, 51, 0, TAU, 64, Color(0.55, 0.85, 1, 0.65), 2.0, true)
 	var tilt: float = clampf(velocity.x / 1800.0, -0.12, 0.12) if alive else 0.0
-	if lift > 0:
-		tilt += clampf(lift/0.28,0,1) * 1.15 * (-1 if velocity.x < 0 else 1)
+	if not is_zero_approx(impact_angle) or departing:
+		tilt = impact_angle
 	var pulse: float = 1.0 + sin(visual_time * 4.0 + side) * 0.015 + flash * 0.35
 	draw_set_transform_matrix(world_transform * Transform2D(tilt, Vector2.ONE * pulse, 0.0, pos))
 	var portrait: Texture2D = state_texture if state_texture != null else definition.portrait
@@ -206,7 +245,6 @@ func _draw_fighter(definition, position: Vector2, side: int, hp: float, shield: 
 	if shield > 0:
 		_box(Rect2(bar.position + Vector2(0, 10), Vector2(92 * minf(shield / definition.max_health, 1), 3)), Color("88bdff"), 1)
 	_text(str(int(ceil(hp * definition.max_health))), position + Vector2(46, 47), 12, Color("d6e8ee"))
-	_text("%02d · %s" % [side+1,definition.display_name], position + Vector2(0, -54), maxi(14,ceili(10/maxf(render_scale,0.1))), Color("e2edf2"), true)
 	var tags := "蓄力 " if phase == "charge" else ""
 	if statuses.has("burn"):
 		tags += "灼烧 "
@@ -289,10 +327,10 @@ func _draw_effect(e: Dictionary) -> void:
 		var p := position + Vector2(sin(float(e.get("amount", 0))) * 21, -37 - 50 * t)
 		_text(label, p + Vector2(1, 2), 23, Color(0.02, 0.06, 0.1, 1.0 - t), true)
 		_text(label, p, 23, Color(GOLD.lightened(0.2), 1.0 - t), true)
-	elif kind == "slash" or kind == "dash" or kind == "smash":
+	elif kind == "slash" or kind == "dash" or kind == "smash" or kind == "impact":
 		var angle: float = e.get("angle", -PI * 0.25)
 		draw_arc(position, 28 + t * 45, angle, angle + PI * 1.4, 32, color, (1.0 - t) * 6 + 1, true)
-		if kind == "smash":
+		if kind == "smash" or kind == "impact":
 			var normal := Vector2.from_angle(angle)
 			for i in range(5):
 				var d := normal.rotated((i-2)*0.25)

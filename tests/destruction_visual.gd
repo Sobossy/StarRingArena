@@ -32,6 +32,8 @@ func _run() -> void:
 	dummy.skill_slots.clear()
 	dummy.skill_scenes.clear()
 	ui.match_panel.slot_data[0].character_id = "destruction_trailblazer"
+	ui.match_panel.width_input.set_value_no_signal(664)
+	ui.match_panel.height_input.set_value_no_signal(664)
 	ui.match_panel.slot_data[1].character_id = "mage"
 	ui.match_panel.rebuild_rows()
 	ui._update_configuration()

@@ -43,6 +43,12 @@ var result_title: Label
 var result_detail: Label
 var volume_slider: HSlider
 var volume_label: Label
+var music_toggle: CheckButton
+var music_slider: HSlider
+var music_label: Label
+var game_audio
+var map_default_migrated: bool = true
+var settings_path: String = "user://settings.cfg"
 var fullscreen_button: Button
 var audio_players: Array[AudioStreamPlayer] = []
 var hit_sound: AudioStreamWAV
@@ -72,8 +78,14 @@ func _ready() -> void:
 	_build_theme()
 	_build_ui()
 	_build_audio()
+	game_audio = load("res://scripts/ui/game_audio.gd").new()
+	add_child(game_audio)
+	game_audio.setup()
+	board.death_ejected.connect(game_audio.play_cheer)
 	if not qa_mode:
 		_load_settings()
+	_update_music()
+	game_audio.start_music()
 	_update_configuration()
 	_set_speed(1.0)
 	var args := OS.get_cmdline_user_args()
@@ -130,9 +142,9 @@ func _build_theme() -> void:
 	t.set_stylebox("focus", "LineEdit", _style(Color("112133"), CYAN, 7, 10, 7))
 	t.set_color("font_color", "LineEdit", TEXT)
 	t.set_color("caret_color", "LineEdit", CYAN)
-	t.set_stylebox("slider", "HSlider", _style(Color("293d50"), Color.TRANSPARENT, 3, 0, 0))
-	t.set_stylebox("grabber_area", "HSlider", _style(Color("68cfc7"), Color.TRANSPARENT, 3, 0, 0))
-	t.set_stylebox("grabber_area_highlight", "HSlider", _style(CYAN, Color.TRANSPARENT, 3, 0, 0))
+	t.set_stylebox("slider", "HSlider", _style(Color("293d50"), Color.TRANSPARENT, 3, 0, 3))
+	t.set_stylebox("grabber_area", "HSlider", _style(Color("68cfc7"), Color.TRANSPARENT, 3, 0, 3))
+	t.set_stylebox("grabber_area_highlight", "HSlider", _style(CYAN, Color.TRANSPARENT, 3, 0, 3))
 	t.set_stylebox("panel", "ItemList", _style(Color("0e1b2b"), LINE, 8, 8, 8))
 	t.set_stylebox("selected", "ItemList", _style(Color("29484d"), Color("59958c"), 5, 4, 3))
 	t.set_stylebox("selected_focus", "ItemList", _style(Color("29484d"), CYAN, 5, 4, 3))
@@ -368,7 +380,7 @@ func _build_sidebar(parent: HBoxContainer) -> void:
 	var volume_row := HBoxContainer.new()
 	volume_row.add_theme_constant_override("separation",8)
 	v.add_child(volume_row)
-	volume_label = _label("音量 35%",11,MUTED)
+	volume_label = _label("总音量 35%",11,MUTED)
 	volume_label.custom_minimum_size.x = 75
 	volume_row.add_child(volume_label)
 	volume_slider = HSlider.new()
@@ -378,6 +390,25 @@ func _build_sidebar(parent: HBoxContainer) -> void:
 	volume_slider.custom_minimum_size.y = 25
 	volume_slider.value_changed.connect(_set_volume)
 	volume_row.add_child(volume_slider)
+	var music_row := HBoxContainer.new()
+	music_row.add_theme_constant_override("separation",8)
+	v.add_child(music_row)
+	music_toggle = CheckButton.new()
+	music_toggle.text = "背景音乐"
+	music_toggle.button_pressed = true
+	music_toggle.add_theme_font_size_override("font_size",12)
+	music_toggle.toggled.connect(func(_on): _update_music())
+	music_row.add_child(music_toggle)
+	music_slider = HSlider.new()
+	music_slider.max_value = 100
+	music_slider.value = 50
+	music_slider.custom_minimum_size = Vector2(55,25)
+	music_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	music_slider.value_changed.connect(func(_value): _update_music())
+	music_row.add_child(music_slider)
+	music_label = _label("50%",11,MUTED)
+	music_label.custom_minimum_size.x = 33
+	music_row.add_child(music_label)
 	live_roster_label = _label("最多 8 人 · 角色形象可在编辑页导入",11,MUTED)
 	live_roster_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	v.add_child(live_roster_label)
@@ -412,6 +443,7 @@ func _on_role_selected(index: int, side: int) -> void:
 
 func _start_battle() -> void:
 	_save_settings()
+	game_audio.stop_cheers()
 	board.reset_visuals()
 	result_panel.hide()
 	result_shown = false
@@ -442,6 +474,7 @@ func _start_battle() -> void:
 
 func _return_to_selection() -> void:
 	arena.clear_battle()
+	game_audio.stop_cheers()
 	board.reset_visuals()
 	board.frozen = false
 	result_panel.hide()
@@ -466,7 +499,7 @@ func _return_to_selection() -> void:
 	_update_configuration()
 
 func _toggle_pause() -> void:
-	if not has_started or not arena.running:
+	if not has_started or (not arena.running and not board.has_departures()):
 		return
 	paused = not paused
 	board.frozen = paused
@@ -527,7 +560,10 @@ func _process(delta: float) -> void:
 			live_roster_label.text += "\n" + "  ".join(team_text)
 		live_roster_label.tooltip_text = "\n".join(names)
 	if has_started and not arena.running and not result_shown:
-		_show_result()
+		if not board.has_departures():
+			_show_result()
+		else:
+			phase_label.text = "Ⅱ  已暂停" if paused else "◆  淘汰退场中"
 	_tick_smoke()
 
 func _tick_smoke() -> void:
@@ -618,27 +654,40 @@ func _exit_tree() -> void:
 	hit_sound = null
 
 func _set_volume(value: float) -> void:
-	volume_label.text = "音量  %d%%" % value
+	volume_label.text = "总音量 %d%%" % value
 	AudioServer.set_bus_volume_db(0, linear_to_db(maxf(value / 100.0, 0.0001)))
 	AudioServer.set_bus_mute(0, value <= 0)
+
+func _update_music() -> void:
+	if music_label != null:
+		music_label.text = "%d%%" % music_slider.value
+	if game_audio != null:
+		game_audio.apply_music_settings(music_toggle.button_pressed,music_slider.value)
 
 func _save_settings() -> void:
 	if qa_mode:
 		return
 	var config := ConfigFile.new()
 	config.set_value("audio","volume",volume_slider.value)
+	config.set_value("audio","music_enabled",music_toggle.button_pressed)
+	config.set_value("audio","music_volume",music_slider.value)
+	config.set_value("migration","map_default_500",map_default_migrated)
 	config.set_value("match","seed",int(seed_input.value))
 	config.set_value("match","configuration_v2",match_panel.serialize())
-	config.save("user://settings.cfg")
+	config.save(settings_path)
 
 func _load_settings() -> void:
 	var config := ConfigFile.new()
-	if config.load("user://settings.cfg") != OK:
+	if config.load(settings_path) != OK:
 		return
 	volume_slider.value = float(config.get_value("audio","volume",35))
+	music_toggle.set_pressed_no_signal(bool(config.get_value("audio","music_enabled",true)))
+	music_slider.set_value_no_signal(clampf(float(config.get_value("audio","music_volume",50)),0,100))
+	_update_music()
 	seed_input.value = int(config.get_value("match","seed",42))
 	var match_data = config.get_value("match","configuration_v2",{})
 	if match_data is Dictionary and not match_data.is_empty():
+		match_data = load("res://scripts/core/settings_migration.gd").map_configuration(match_data,bool(config.get_value("migration","map_default_500",false)))
 		match_panel.restore(match_data)
 	else:
 		# Old selections were roster indices. Resolve them once into stable IDs.
@@ -650,6 +699,9 @@ func _load_settings() -> void:
 			if old_moves is Array and old_moves.size() > i:
 				match_panel.slot_data[i].movement = MOVE_IDS[clampi(int(old_moves[i]),0,3)]
 		match_panel.rebuild_rows()
+	map_default_migrated = true
+	if not config.has_section_key("migration","map_default_500"):
+		_save_settings()
 
 func _capture_smoke() -> void:
 	await RenderingServer.frame_post_draw

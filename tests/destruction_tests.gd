@@ -43,6 +43,8 @@ func start(charge: float = 6.0, ally: bool = false) -> void:
 	dummy.max_health = 10000
 	dummy.speed = 0
 	var config = Config.new()
+	config.width = 664
+	config.height = 664
 	config.mode = "teams" if ally else "ffa"
 	config.participants = [{"definition":definition,"movement":"bounce","team":0},{"definition":dummy,"movement":"bounce","team":0 if ally else 1}]
 	if ally:

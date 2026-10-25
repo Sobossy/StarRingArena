@@ -67,10 +67,9 @@ func activate(target) -> void:
 func _hit_target(target) -> void:
 	strike_hit = true
 	hit_targets[target.fighter_id] = true
-	arena.apply_damage(fighter, target, fighter.definition.attack * damage_multiplier, skill_id)
 	arena.apply_status(fighter, target, "slow", slow_duration, slow_power)
 	var direction: Vector2 = fighter.dash_velocity.normalized()
-	target.knockback += direction * 120.0
+	arena.apply_damage(fighter, target, fighter.definition.attack * damage_multiplier, skill_id, true, direction * 120.0)
 	arena.emit_effect("slash", target.position, fighter.definition.theme_color, {
 		"angle": direction.angle(), "radius": 83.0,
 	})

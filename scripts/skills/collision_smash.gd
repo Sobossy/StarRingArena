@@ -18,9 +18,7 @@ func on_enemy_contact(enemy) -> void:
 	var direction: Vector2 = fighter.position.direction_to(enemy.position)
 	if direction.is_zero_approx():
 		direction = Vector2.RIGHT if fighter.fighter_id < enemy.fighter_id else Vector2.LEFT
-	arena.apply_damage(fighter,enemy,fighter.definition.attack * damage_multiplier,skill_id)
-	enemy.knockback += direction * knockback_strength
-	enemy.lift_time = 0.28
+	arena.apply_damage(fighter,enemy,fighter.definition.attack * damage_multiplier,skill_id,true,direction * knockback_strength)
 	target_cooldowns[enemy.fighter_id] = rehit_interval
 	arena.emit_effect("smash",(fighter.position + enemy.position) * 0.5,fighter.definition.theme_color,{"angle":direction.angle(),"radius":85.0})
 

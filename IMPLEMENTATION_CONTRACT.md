@@ -1,4 +1,14 @@
-# Implementation contract — v0.3.0
+# Implementation contract — v0.4.0
+
+## Impact, audio and elimination presentation
+
+MatchConfig and selection default to a 500 by 500 playable rectangle, excluding the 48-unit frame. settings_migration changes only the legacy 664-square default before the persisted map_default_500 marker; custom maps remain intact.
+
+BattleArena.apply_damage keeps allow_reaction as argument five and appends an optional Vector2 impulse. Accepted damage, including shield absorption, applies the impulse in _resolve_damage; invalid/friendly events never move the target. During impact, movement strategies and skill timers still advance but impulse overrides requested/dash velocity. Exponential decay remains 8 per second; end below speed 60 or after 0.6 seconds. Sprite rotation is negative 720 degrees per second, then continues negative to an upright equivalent over 0.12 seconds. Continuous hits redirect impulse without resetting angle. Board rendering leaves health bars and hitboxes upright.
+
+Death affects combat eligibility and results immediately. The death event contains its origin, last hit direction and angle; ArenaBoard owns a separate departure timeline (0.5-second hold, 0.45-second outward flight), independent of arena.running. The final overlay waits for all departures; pause and playback speed affect their clock. Board emits death_ejected once at flight start; simultaneous cheers merge. New match/selection clears these visuals and cheer playback. Default stationary character circles and overhead actor labels are removed; functional skill visuals remain.
+
+GameAudio owns one looping OGG music player and a bounded cheer player. Load saved enabled/volume before starting music; mute changes gain without stopping playback. Audio is independent from battle pause/speed. Master gain remains global. Assets and third-party credits ship in source and runtime packages. feedback_tests covers 100 complete eight-player matches on the 500-square map, migrations, impacts, audio preferences and death timelines; feedback_visual verifies real playback, looping and rendered stages.
 
 ## Destruction Trailblazer
 

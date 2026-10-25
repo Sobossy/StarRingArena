@@ -34,9 +34,9 @@ func build(host, content_library) -> void:
 	map_row.add_theme_constant_override("separation", 6)
 	add_child(map_row)
 	map_row.add_child(ui._label("地图", 12, ui.MUTED))
-	width_input = _number(map_row, 480, 2400, 664)
+	width_input = _number(map_row, 480, 2400, 500)
 	map_row.add_child(ui._label("×", 12, ui.MUTED))
-	height_input = _number(map_row, 480, 2400, 664)
+	height_input = _number(map_row, 480, 2400, 500)
 	var note = ui._label("宽 × 高 · 90 秒限时 · 组队无友伤", 11, ui.MUTED)
 	add_child(note)
 	var scroll := ScrollContainer.new()
@@ -157,8 +157,8 @@ func serialize() -> Dictionary:
 func restore(data: Dictionary) -> void:
 	mode_option.select(clampi(int(data.get("mode", 0)), 0, 1))
 	count_input.set_value_no_signal(clampi(int(data.get("count", 2)), 2, 8))
-	width_input.set_value_no_signal(clampf(float(data.get("width", 664)), 480, 2400))
-	height_input.set_value_no_signal(clampf(float(data.get("height", 664)), 480, 2400))
+	width_input.set_value_no_signal(clampf(float(data.get("width", 500)), 480, 2400))
+	height_input.set_value_no_signal(clampf(float(data.get("height", 500)), 480, 2400))
 	var slots = data.get("slots", [])
 	if slots is Array:
 		for i in range(mini(8, slots.size())):

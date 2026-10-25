@@ -26,8 +26,7 @@ func activate(_target) -> void:
 		return
 	for target in arena.get_targets(fighter):
 		if fighter.position.distance_to(target.position) <= pulse_radius:
-			arena.apply_damage(fighter, target, fighter.definition.attack * damage_multiplier, skill_id)
-			target.knockback += fighter.position.direction_to(target.position) * push_strength
+			arena.apply_damage(fighter, target, fighter.definition.attack * damage_multiplier, skill_id, true, fighter.position.direction_to(target.position) * push_strength)
 	arena.heal(fighter, recovery)
 	arena.emit_effect("burst", fighter.position, fighter.definition.theme_color, {"radius": pulse_radius})
 	restart_cooldown()
