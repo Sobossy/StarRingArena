@@ -43,3 +43,9 @@ $feedbackOutput | Tee-Object -FilePath (Join-Path $ProjectRoot 'test-results\fee
 if ($feedbackExitCode -ne 0 -or (($feedbackOutput | Out-String) -match 'SCRIPT ERROR:|ERROR:|leaked at exit') -or (($feedbackOutput | Out-String) -notmatch 'FEEDBACK TESTS PASSED')) {
     throw 'Impact, music, map migration and elimination tests failed.'
 }
+$mobileOutput = & $GodotConsole --headless --path $ProjectRoot --script res://tests/mobile_tests.gd 2>&1
+$mobileExitCode = $LASTEXITCODE
+$mobileOutput | Tee-Object -FilePath (Join-Path $ProjectRoot 'test-results\mobile-latest.log') | Write-Host
+if ($mobileExitCode -ne 0 -or (($mobileOutput | Out-String) -match 'SCRIPT ERROR:|ERROR:|leaked at exit') -or (($mobileOutput | Out-String) -notmatch 'MOBILE TESTS PASSED')) {
+    throw 'Mobile layout, lifecycle and navigation tests failed.'
+}

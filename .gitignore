@@ -2,6 +2,7 @@
 tools/cache/
 tools/godot/
 tools/templates/
+tools/android/
 build/
 test-results/
 *.tmp

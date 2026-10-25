@@ -40,6 +40,7 @@ var art_search: LineEdit
 var art_list: ItemList
 var art_items: Array = []
 var filtered_art: Array = []
+var mobile_pages: TabContainer
 
 func build(host, content_library) -> void:
 	ui = host
@@ -65,10 +66,24 @@ func build(host, content_library) -> void:
 	_build_library_column(columns)
 	_build_form(columns)
 	_build_preview(columns)
+	if ui.mobile_mode:
+		mobile_pages = TabContainer.new()
+		mobile_pages.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		root_v.add_child(mobile_pages)
+		var pages: Array = columns.get_children()
+		var names: Array = ["角色库","属性与技能","形象预览"]
+		for i in range(pages.size()):
+			pages[i].reparent(mobile_pages)
+			pages[i].name = names[i]
+			pages[i].custom_minimum_size = Vector2.ZERO
+		columns.free()
+		preview_board.custom_minimum_size = Vector2(260,180)
+		# Keep the preview big while its controls remain visible on a phone.
+		preview_board.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	file_dialog = FileDialog.new()
 	file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 	file_dialog.access = FileDialog.ACCESS_FILESYSTEM
-	file_dialog.filters = PackedStringArray(["*.png ; PNG 透明图片"])
+	file_dialog.filters = PackedStringArray(["*.png;PNG 透明图片;image/png"])
 	file_dialog.use_native_dialog = true
 	file_dialog.title = "导入角色 PNG"
 	file_dialog.file_selected.connect(import_image)
@@ -191,6 +206,7 @@ func _build_form(parent: HBoxContainer) -> void:
 
 func _tab(parent: TabContainer, title: String) -> VBoxContainer:
 	var scroll := ScrollContainer.new()
+	scroll.follow_focus = true
 	scroll.name = title
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	parent.add_child(scroll)
@@ -221,6 +237,8 @@ func _number(parent: Node, text: String, minimum: float, maximum: float, step_va
 	field.max_value = maximum
 	field.step = step_value
 	field.custom_minimum_size.y = 35
+	if ui.mobile_mode:
+		field.custom_minimum_size.y = 48
 	field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if bind_changes:
 		field.value_changed.connect(func(_value): _changed())
@@ -469,7 +487,7 @@ func _build_art_browser() -> void:
 	art_browser.confirmed.connect(_use_browser_image)
 	add_child(art_browser)
 	var v := VBoxContainer.new()
-	v.custom_minimum_size = Vector2(850,540)
+	v.custom_minimum_size = Vector2(600,600) if ui.mobile_mode else Vector2(850,540)
 	v.add_theme_constant_override("separation",10)
 	art_browser.add_child(v)
 	art_search = LineEdit.new()
@@ -477,7 +495,7 @@ func _build_art_browser() -> void:
 	art_search.text_changed.connect(func(_text): _filter_art())
 	v.add_child(art_search)
 	art_list = ItemList.new()
-	art_list.max_columns = 5
+	art_list.max_columns = 3 if ui.mobile_mode else 5
 	art_list.fixed_column_width = 154
 	art_list.fixed_icon_size = Vector2i(96,96)
 	art_list.icon_mode = ItemList.ICON_MODE_TOP
@@ -497,7 +515,8 @@ func _open_art_browser(kind: String) -> void:
 	art_search.text = ""
 	_filter_art()
 	art_browser.popup_centered()
-	art_search.grab_focus()
+	if not ui.mobile_mode:
+		art_search.grab_focus()
 
 func _filter_art() -> void:
 	art_list.clear()

@@ -63,6 +63,8 @@ func _number(parent: Node, minimum: float, maximum: float, value: float) -> Spin
 	number.max_value = maximum
 	number.value = value
 	number.custom_minimum_size.x = 82
+	if ui.mobile_mode:
+		number.custom_minimum_size.y = 48
 	number.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	parent.add_child(number)
 	return number
@@ -87,6 +89,8 @@ func rebuild_rows() -> void:
 		var role := OptionButton.new()
 		role.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		role.add_theme_font_size_override("font_size", 13)
+		if ui.mobile_mode:
+			role.custom_minimum_size.y = 48
 		for definition in library.characters:
 			role.add_item(definition.display_name)
 		var index: int = library.index_of(slot_data[i].character_id)
@@ -105,6 +109,8 @@ func rebuild_rows() -> void:
 		var movement := OptionButton.new()
 		movement.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		movement.add_theme_font_size_override("font_size", 12)
+		if ui.mobile_mode:
+			movement.custom_minimum_size.y = 48
 		for name_text in MOVE_NAMES:
 			movement.add_item(name_text)
 		if slot_data[i].movement.is_empty():

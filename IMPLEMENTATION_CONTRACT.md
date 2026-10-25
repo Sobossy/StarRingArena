@@ -1,4 +1,10 @@
-# Implementation contract — v0.4.0
+# Implementation contract — v0.5.0
+
+## Android and iterative mobile testing
+
+Windows retains its desktop layout. OS.has_feature("android"), a mobile_mode override or --mobile enables the shared portrait presentation: 720x1280 logical viewport with expand aspect, sensor portrait, safe-area padding, config/battle pages, touch toolbar, paged character editor and a 3-column art picker. Normal game controls and model instances are shared, not duplicated. Opening config pauses a running battle; starting opens battle; back follows popup/editor/config/exit ordering. Android background saves settings and pauses combat/audio. Foreground restores audio but never silently resumes combat. Native PNG selection uses ACCESS_FILESYSTEM + image/png MIME and copies bytes into app-owned storage. Windows and phone data are intentionally independent.
+
+BuildAndroid uses matching APK templates, ARM64, SDK36 and a persistent local development key under ignored tools/android. The stable package ID is com.starringarena.game. TestOnPhone resolves the actual launcher activity and uses non-streaming adb install -r, preserving user data. Never auto-uninstall, clear app data or replace the signing key to work around update failures. Setup pins and verifies tool archives; Android helper modifies only named export settings after backing up the editor settings file. UpdatePhone is the quick debug loop; BuildAndroid defaults to full regression. Include Android tools helper in the source package, exclude SDK/JDK/key caches; include licenses in the APK. mobile_tests verifies shared layout/navigation/lifecycle; actual phone checks complement desktop previews.
 
 ## Impact, audio and elimination presentation
 

@@ -17,8 +17,13 @@ function Ensure-Godot {
 
 function Invoke-GodotChecked {
     param([string[]]$GodotArguments)
-    $engineOutput = & $GodotConsole @GodotArguments 2>&1
-    $engineExitCode = $LASTEXITCODE
+    $previousPreference = $ErrorActionPreference
+    try {
+        # Native stderr includes harmless editor warnings; inspect the completed output.
+        $ErrorActionPreference = 'Continue'
+        $engineOutput = & $GodotConsole @GodotArguments 2>&1
+        $engineExitCode = $LASTEXITCODE
+    } finally { $ErrorActionPreference = $previousPreference }
     $engineOutput | Write-Host
     if ($engineExitCode -ne 0 -or (($engineOutput | Out-String) -match 'SCRIPT ERROR:|ERROR:')) {
         throw "Godot failed (exit code $engineExitCode). See the diagnostic output above."

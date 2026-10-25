@@ -64,9 +64,28 @@ var smoke_mode: bool = false
 var capture_done: bool = false
 var font: Font
 var qa_mode: bool = false
+var mobile_mode: bool = false
+var mobile_page: String = "config"
+var main_margin: MarginContainer
+var arena_column: VBoxContainer
+var config_panel: PanelContainer
+var mobile_toolbar: HBoxContainer
+var mobile_page_button: Button
+var mobile_exit_dialog: ConfirmationDialog
+var mobile_metrics_clock: float = 0.0
 
 func _ready() -> void:
 	qa_mode = qa_mode or "--qa" in OS.get_cmdline_user_args()
+	mobile_mode = mobile_mode or OS.has_feature("android") or "--mobile" in OS.get_cmdline_user_args()
+	if mobile_mode:
+		get_tree().quit_on_go_back = false
+		if OS.has_feature("android"):
+			DisplayServer.screen_set_orientation(DisplayServer.SCREEN_SENSOR_PORTRAIT)
+			Engine.max_fps = 60
+		get_window().content_scale_size = Vector2i(720,1280)
+		get_window().content_scale_aspect = Window.CONTENT_SCALE_ASPECT_EXPAND
+		get_window().min_size = Vector2i(540,960)
+		get_tree().auto_accept_quit = false
 	var font_variation := FontVariation.new()
 	font_variation.base_font = load("res://assets/fonts/NotoSansSC.ttf")
 	font_variation.variation_opentype = {TextServerManager.get_primary_interface().name_to_tag("wght"): 500}
@@ -112,9 +131,14 @@ func _ready() -> void:
 		_start_battle()
 	if "--editor-demo" in args:
 		workshop.open_editor()
-	get_window().min_size = Vector2i(1020,675)
+	if not mobile_mode:
+		get_window().min_size = Vector2i(1020,675)
 	get_tree().auto_accept_quit = false
 	get_window().close_requested.connect(_on_close_requested)
+	if mobile_mode:
+		get_viewport().size_changed.connect(_update_safe_area)
+		get_window().go_back_requested.connect(_handle_mobile_back)
+		_update_safe_area()
 
 func _build_theme() -> void:
 	var t := Theme.new()
@@ -177,6 +201,8 @@ func _button(text: String, callback: Callable, primary: bool = false) -> Button:
 	var b := Button.new()
 	b.text = text
 	b.custom_minimum_size.y = 42
+	if mobile_mode:
+		b.custom_minimum_size.y = 48
 	b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	b.pressed.connect(callback)
 	if primary:
@@ -195,6 +221,7 @@ func _build_ui() -> void:
 	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(backdrop)
 	var margin := MarginContainer.new()
+	main_margin = margin
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	margin.add_theme_constant_override("margin_left", 30)
 	margin.add_theme_constant_override("margin_right", 30)
@@ -202,7 +229,7 @@ func _build_ui() -> void:
 	margin.add_theme_constant_override("margin_bottom", 18)
 	add_child(margin)
 	var stack := VBoxContainer.new()
-	stack.add_theme_constant_override("separation", 20)
+	stack.add_theme_constant_override("separation", 10 if mobile_mode else 20)
 	margin.add_child(stack)
 	_build_header(stack)
 	var content := HBoxContainer.new()
@@ -211,16 +238,37 @@ func _build_ui() -> void:
 	stack.add_child(content)
 	_build_arena_column(content)
 	_build_sidebar(content)
+	if mobile_mode:
+		mobile_toolbar = HBoxContainer.new()
+		mobile_toolbar.add_theme_constant_override("separation",12)
+		stack.add_child(mobile_toolbar)
+		var playback: Node = pause_button.get_parent()
+		playback.reparent(mobile_toolbar)
+		playback.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var speed_row: Node = speed_buttons[0].get_parent()
+		speed_row.reparent(mobile_toolbar)
+		speed_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		mobile_toolbar.add_child(_button("重开",_start_battle))
+		_show_mobile_page("config")
 	var footer := HBoxContainer.new()
 	stack.add_child(footer)
 	var left_note := _label("星环竞技场  /  本地自动对战", 11, Color("546c81"))
 	left_note.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	footer.add_child(left_note)
 	footer.add_child(_label("SPACE  暂停     R  重开     F11  全屏", 11, Color("6a8296")))
+	footer.visible = not mobile_mode
 	workshop = WorkshopScript.new()
 	add_child(workshop)
 	workshop.build(self,library)
 	workshop.library_changed.connect(_library_changed)
+	if mobile_mode:
+		mobile_exit_dialog = ConfirmationDialog.new()
+		mobile_exit_dialog.title = "退出游戏"
+		mobile_exit_dialog.dialog_text = "确定退出星环竞技场吗？角色与设置会保留。"
+		mobile_exit_dialog.ok_button_text = "退出"
+		mobile_exit_dialog.cancel_button_text = "取消"
+		mobile_exit_dialog.confirmed.connect(_on_close_requested)
+		add_child(mobile_exit_dialog)
 
 
 func _build_header(parent: VBoxContainer) -> void:
@@ -241,6 +289,8 @@ func _build_header(parent: VBoxContainer) -> void:
 	title.add_child(_label("S T A R   R I N G   /   A U T O   B A T T L E", 10, MUTED))
 	editor_button = _button("角色编辑", func(): workshop.open_editor())
 	editor_button.custom_minimum_size.y = 37
+	if mobile_mode:
+		editor_button.custom_minimum_size.y = 48
 	editor_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(editor_button)
 	var badge := PanelContainer.new()
@@ -253,9 +303,14 @@ func _build_header(parent: VBoxContainer) -> void:
 	fullscreen_button.custom_minimum_size = Vector2(105, 37)
 	fullscreen_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(fullscreen_button)
+	fullscreen_button.visible = not mobile_mode
+	if mobile_mode:
+		mobile_page_button = _button("看对战",func(): _show_mobile_page("battle" if mobile_page == "config" else "config"))
+		row.add_child(mobile_page_button)
 
 func _build_arena_column(parent: HBoxContainer) -> void:
 	var column := VBoxContainer.new()
+	arena_column = column
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	column.add_theme_constant_override("separation", 10)
 	parent.add_child(column)
@@ -325,17 +380,31 @@ func _build_arena_column(parent: HBoxContainer) -> void:
 
 func _build_sidebar(parent: HBoxContainer) -> void:
 	var panel := PanelContainer.new()
+	config_panel = panel
 	panel.custom_minimum_size.x = 360
+	if mobile_mode:
+		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	panel.add_theme_stylebox_override("panel", _style(PANEL, LINE, 14, 16, 15))
 	parent.add_child(panel)
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 8)
-	panel.add_child(v)
+	if mobile_mode:
+		var scroll := ScrollContainer.new()
+		scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		scroll.follow_focus = true
+		panel.add_child(scroll)
+		scroll.add_child(v)
+		v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		v.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	else:
+		panel.add_child(v)
 	v.add_child(_label("对战配置", 20))
 	match_panel = MatchPanelScript.new()
 	match_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	v.add_child(match_panel)
 	match_panel.build(self,library)
+	if mobile_mode:
+		match_panel.custom_minimum_size.y = 340
 	match_panel.configuration_changed.connect(_update_configuration)
 	match_error_label = _label("", 11, Color("ffb7a4"))
 	match_error_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -466,6 +535,8 @@ func _start_battle() -> void:
 	seed_input.editable = false
 	random_button.disabled = true
 	start_button.text = "重新开局  ↻"
+	if mobile_mode:
+		_show_mobile_page("battle")
 	pause_button.text = "暂停"
 	pause_button.disabled = false
 	return_button.disabled = false
@@ -497,6 +568,8 @@ func _return_to_selection() -> void:
 	phase_label.text = "●  准备就绪"
 	timer_label.text = "01:30"
 	_update_configuration()
+	if mobile_mode:
+		_show_mobile_page("config")
 
 func _toggle_pause() -> void:
 	if not has_started or (not arena.running and not board.has_departures()):
@@ -521,8 +594,88 @@ func _toggle_fullscreen() -> void:
 	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED if full else DisplayServer.WINDOW_MODE_FULLSCREEN)
 	fullscreen_button.text = "全屏  F11" if full else "窗口  F11"
 
+func _show_mobile_page(page: String) -> void:
+	if not mobile_mode:
+		return
+	if page == "config" and has_started and not paused and (arena.running or board.has_departures()):
+		_toggle_pause()
+	mobile_page = page
+	arena_column.visible = page == "battle"
+	config_panel.visible = page == "config"
+	if mobile_toolbar != null:
+		mobile_toolbar.visible = page == "battle"
+	if mobile_page_button != null:
+		mobile_page_button.text = "看对战" if page == "config" else "配置 / 声音"
+
+func _update_safe_area() -> void:
+	if not mobile_mode or main_margin == null:
+		return
+	var padding := Vector4(12,12,12,12)
+	if OS.has_feature("android") and DisplayServer.has_method("get_display_safe_area"):
+		var safe: Rect2i = DisplayServer.call("get_display_safe_area")
+		var window_size := Vector2(DisplayServer.window_get_size())
+		if window_size.x > 0 and window_size.y > 0 and safe.has_area():
+			var ratio: Vector2 = get_viewport_rect().size / window_size
+			padding.x += maxf(0,safe.position.x) * ratio.x
+			padding.y += maxf(0,safe.position.y) * ratio.y
+			padding.z += maxf(0,window_size.x-safe.end.x) * ratio.x
+			padding.w += maxf(0,window_size.y-safe.end.y) * ratio.y
+	main_margin.add_theme_constant_override("margin_left",ceili(padding.x))
+	main_margin.add_theme_constant_override("margin_top",ceili(padding.y))
+	main_margin.add_theme_constant_override("margin_right",ceili(padding.z))
+	main_margin.add_theme_constant_override("margin_bottom",ceili(padding.w))
+	if workshop != null:
+		workshop.offset_left = padding.x - 12
+		workshop.offset_top = padding.y - 12
+		workshop.offset_right = -(padding.z - 12)
+		workshop.offset_bottom = -(padding.w - 12)
+
+func _handle_mobile_back() -> void:
+	if workshop.visible:
+		if workshop.art_browser.visible:
+			workshop.art_browser.hide()
+		elif workshop.delete_dialog.visible:
+			workshop.delete_dialog.hide()
+		elif workshop.file_dialog.visible:
+			workshop.file_dialog.hide()
+		elif workshop.leave_dialog.visible:
+			workshop.leave_dialog.hide()
+		else:
+			workshop._guard(workshop._close_editor)
+	elif mobile_exit_dialog.visible:
+		mobile_exit_dialog.hide()
+	elif mobile_page == "battle":
+		_show_mobile_page("config")
+	else:
+		mobile_exit_dialog.popup_centered()
+
+func _set_backgrounded(backgrounded: bool) -> void:
+	if not mobile_mode or game_audio == null:
+		return
+	if backgrounded:
+		_save_settings()
+		if has_started and not paused and (arena.running or board.has_departures()):
+			_toggle_pause()
+	game_audio.music_player.stream_paused = backgrounded
+	game_audio.cheer_player.stream_paused = backgrounded
+	for player in audio_players:
+		player.stream_paused = backgrounded
+
+func _notification(what: int) -> void:
+	if not mobile_mode:
+		return
+	if what == NOTIFICATION_APPLICATION_PAUSED:
+		_set_backgrounded(true)
+	elif what == NOTIFICATION_APPLICATION_RESUMED:
+		_set_backgrounded(false)
+
 func _process(delta: float) -> void:
 	boot_time += delta
+	if mobile_mode and OS.has_feature("android") and OS.is_debug_build():
+		mobile_metrics_clock += delta
+		if mobile_metrics_clock >= 5.0:
+			mobile_metrics_clock = 0.0
+			print("PHONE_PERF fps=",Engine.get_frames_per_second()," actors=",arena.fighters.size()," page=",mobile_page," paused=",paused)
 	if workshop.visible:
 		_tick_smoke()
 		return
@@ -705,7 +858,7 @@ func _load_settings() -> void:
 
 func _capture_smoke() -> void:
 	await RenderingServer.frame_post_draw
-	var path := ProjectSettings.globalize_path("res://build/ui-smoke.png")
+	var path := ProjectSettings.globalize_path("user://ui-smoke.png" if OS.has_feature("android") else "res://build/ui-smoke.png")
 	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
 	get_viewport().get_texture().get_image().save_png(path)
 	print("UI_CAPTURE ", path)

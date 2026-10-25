@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="星环竞技场"
-config/version="0.4.0"
+config/version="0.5.0"
 config/description="可扩展的 2D 自动对战竞技场"
 run/main_scene="res://main.tscn"
 config/use_custom_user_dir=true
@@ -32,6 +32,11 @@ window/size/window_height_override=900
 window/stretch/mode="canvas_items"
 window/size/min_width=1020
 window/size/min_height=675
+window/handheld/orientation=5
+
+[input_devices]
+
+pointing/emulate_mouse_from_touch=true
 
 [gui]
 
@@ -41,4 +46,5 @@ theme/default_font_multichannel_signed_distance_field=true
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true
 environment/defaults/default_clear_color=Color(0.024, 0.039, 0.067, 1)
