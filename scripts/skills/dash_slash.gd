@@ -29,7 +29,7 @@ func tick(delta: float) -> void:
 		return
 	var target = arena.opponent(fighter)
 	if strike_remaining > 0.0:
-		for enemy in arena.get_targets(fighter):
+		for enemy in arena.get_collision_targets(fighter):
 			if hit_targets.has(enemy.fighter_id):
 				continue
 			var closest: Vector2 = Geometry2D.get_closest_point_to_segment(enemy.position, previous_position, fighter.position)

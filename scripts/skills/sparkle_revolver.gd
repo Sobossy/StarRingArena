@@ -73,7 +73,7 @@ func _fire() -> void:
 	else:
 		dry_count += 1
 		flag_remaining = 0.30
-		arena.emit_effect("dry_fire",muzzle,Color.WHITE,{"angle":aim_angle,"side":fighter.side})
+		arena.emit_effect("dry_fire",muzzle-Vector2(0,fighter.airborne_height),Color.WHITE,{"angle":aim_angle,"side":fighter.side})
 		chamber = (chamber + 1) % 6
 		shot_remaining = shot_interval
 

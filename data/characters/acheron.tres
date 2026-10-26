@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/core/character_definition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/stickers/262_黄泉 斩断.png" id="2"]
+[resource]
+script = ExtResource("1")
+id = "acheron"
+display_name = "黄泉"
+description = "蓄力7秒，身体从下向上转为红白色；预警线围绕敌人小幅摆动，追踪与旋转逐渐减速，蓄满后锁定1.5秒再斩击，造成10000伤害并切开整个棋盘。全画面灰白扩散0.5秒，再保持1.5秒后恢复并重新蓄力。每次碰外墙或切面有1.5%概率迷路，立即判负，沿原速度离场。"
+portrait = ExtResource("2")
+normal_image_path = "res://assets/stickers/262_黄泉 斩断.png"
+portrait_size = 96.0
+theme_color = Color(0.80,0.38,0.61,1)
+skill_slots = Array[Dictionary]([{"template_id":"acheron_slash","slot_id":"acheron_slash","charge_time":7.0,"release_time":0.0,"charge_can_move":true,"charge_image":"","release_image":"","parameters":{}}])

@@ -21,7 +21,7 @@ func desired_velocity(delta: float) -> Vector2:
 			direction = direction.rotated(arena.rng.randf_range(-0.28, 0.28))
 		else:
 			direction = Vector2.RIGHT.rotated(arena.rng.randf_range(-PI, PI))
-	return direction * fighter.definition.speed
+	return direction * fighter.movement_speed()
 
 func on_collision(normal: Vector2) -> void:
 	if direction.dot(normal) < 0.0:

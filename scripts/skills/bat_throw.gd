@@ -2,12 +2,12 @@ extends "res://scripts/skills/skill_base.gd"
 ## A single bat: hold/charge -> fixed launch point -> return to moving owner.
 @export var outbound_speed: float = 700.0
 @export var return_speed: float = 900.0
-@export_range(1,2400,1) var throw_distance: float = 360.0
-@export_range(0,100000,1) var outbound_damage: float = 60.0
-@export_range(0,100000,1) var return_damage: float = 60.0
-@export var hit_radius: float = 18.0
+@export_range(1,2400,1) var throw_distance: float = 500.0
+@export_range(0,100000,1) var outbound_damage: float = 80.0
+@export_range(0,100000,1) var return_damage: float = 80.0
+@export var hit_radius: float = 30.0
 @export var spin_speed: float = 12.0
-@export var knockback_strength: float = 900.0
+@export var knockback_strength: float = 1000.0
 var bat_state: String = "held"
 var charge_elapsed: float = 0.0
 var bat_position: Vector2 = Vector2.ZERO
@@ -98,7 +98,7 @@ func _advance_bat(delta: float) -> void:
 		if remaining <= 0 or not is_in_flight():
 			break
 		var destination: Vector2 = launch_point if bat_state == "outbound" else _hand_position()
-		var speed: float = maxf(1,outbound_speed) if bat_state == "outbound" else maxf(return_speed,fighter.definition.speed * 1.8 + 200)
+		var speed: float = maxf(1,outbound_speed) if bat_state == "outbound" else maxf(return_speed,fighter.movement_speed() * 1.8 + 200)
 		var distance: float = bat_position.distance_to(destination)
 		var travel_time: float = minf(remaining,distance / speed)
 		var previous: Vector2 = bat_position
@@ -119,7 +119,7 @@ func _advance_bat(delta: float) -> void:
 			trail.pop_front()
 
 func _damage_on_segment(start: Vector2, finish: Vector2) -> void:
-	for target in arena.get_targets(fighter):
+	for target in arena.get_collision_targets(fighter):
 		if hit_targets.has(target.fighter_id):
 			continue
 		var radius: float = target.definition.radius + hit_radius

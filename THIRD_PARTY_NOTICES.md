@@ -1,5 +1,9 @@
 # 第三方组件与素材说明
 
+## 玩法与演出参考
+
+本游戏参考了B站UP主的视频制作，原作者主页：https://space.bilibili.com/282618110 。感谢原作者的创意与演示。本项目为独立制作的非官方同人游戏，不代表原作者或素材权利人的官方作品。
+
 ## Godot Engine 4.7.2
 
 使用 Godot Engine，遵循 MIT 许可证。引擎版权为 Juan Linietsky、Ariel Manzur 及 Godot contributors。
@@ -33,3 +37,22 @@ HOYO-MiX《上上下下左左右右 / Up-Up-Down-Down-Left-Left-Right-Right》�
 - 原页面：https://freesound.org/people/BerlinGameScene/sounds/267249/
 - 音频来源：https://cdn.freesound.org/previews/267/267249_5052946-hq.mp3
 - 许可：https://creativecommons.org/publicdomain/zero/1.0/
+
+
+## 阿格莱雅金线
+
+阿格莱雅使用用户提供素材库中的 `153_阿格莱雅 设计.png` 和 `152_阿格莱雅 不.png`，原始 PNG 未修改。金线、锚点和冲刺拖尾由程序绘制，表现参考用户提供的 `QQ20261026-102846.mp4`，未从该视频提取贴图或音轨。
+
+
+## 绯英与吐司
+
+绯英使用用户提供素材库中的 `039_绯英 好累.png` 与 `042_绯英 摄取知识.png`，原始PNG未修改。吐司、蓄力指示及飞行落地反馈由程序绘制，参考用户提供的 `绯英vs赛飞儿.mp4`，未提取视频音轨或贴图。
+
+
+## 记忆·星、迷迷与遐蝶
+
+使用用户提供素材库中的 `106_迷迷 睡觉.png`、`105_迷迷 攻击.png`、`156_开拓者 记录.png`、`083_开拓者 重写.png`、`117_遐蝶 脸红.png`，未修改原始PNG。拳击虚影 `assets/effects/mimi_punch.png` 与灰黯之手 `assets/effects/ashen_hand.png` 按用户确认的参考通过内置imagegen生成，提示词与参考记录保存在 `assets/effects/README.md`。机制表现参考用户提供的 `记忆主vs瑕蝶.mp4`，没有提取音轨或贴图。
+
+## 黄泉
+
+使用用户提供的 `262_黄泉 斩断.png` 和 `261_黄泉 迷茫.png`，原始PNG未修改；红白变色、预警线、切面墙与圆形灰白扩散由着色器和程序绘制。表现参考用户提供的 `QQ20261026-145904.mp4` 及截图，没有从视频提取音轨或制作发行贴图。

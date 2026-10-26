@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/core/character_definition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/stickers/153_阿格莱雅 设计.png" id="2"]
+[resource]
+script = ExtResource("1")
+id = "aglaea"
+display_name = "阿格莱雅"
+description = "碰墙牵起金线，金线及身体碰撞造成50伤害。达到1＋本局累计移速提升×0.05段金线后，沿金线倒序不可阻挡地冲刺，每段伤害140＋累计移速提升。每轮冲刺结束后移速永久增加20，持续至本局结束。"
+portrait = ExtResource("2")
+normal_image_path = "res://assets/stickers/153_阿格莱雅 设计.png"
+portrait_size = 96.0
+theme_color = Color(1,0.82,0.35,1)
+skill_slots = Array[Dictionary]([{"template_id":"aglaea_threads","slot_id":"aglaea_weave","charge_time":0.0,"release_time":0.0,"charge_can_move":true,"charge_image":"","release_image":"res://assets/stickers/152_阿格莱雅 不.png","parameters":{}}])

@@ -7,7 +7,6 @@ extends "res://scripts/skills/skill_base.gd"
 @export_range(0,10,0.05) var counter_damage_ratio: float = 0.4
 @export_range(100,5000,10) var sword_speed: float = 850.0
 @export_range(1,200,1) var sword_radius: float = 24.0
-@export_range(0.1,10,0.1) var sword_lifetime: float = 4.0
 @export_range(0,3000,10) var sword_knockback: float = 1000.0
 @export_range(-50,50,0.1) var sword_spin_speed: float = 10.0
 var guarding: bool = false
@@ -62,7 +61,12 @@ func _throw_sword() -> void:
 	var direction: Vector2 = fighter.position.direction_to(target.position)
 	if direction.is_zero_approx():
 		direction = Vector2.RIGHT
-	arena.spawn_projectile(fighter,{"position":fighter.position + direction * 30,"velocity":direction*sword_speed,"damage":damage,"radius":sword_radius,"lifetime":sword_lifetime,"color":Color("eabf68"),"skill_id":skill_id,"visual_type":"laotie","knockback":sword_knockback,"spin_speed":sword_spin_speed})
+	# Size the safety lifetime for the whole map; bounds, never a short timer or
+	# contact, end this throw. Its direction remains fixed after release.
+	var exit_margin: float = maxf(84.0,sword_radius)
+	var speed: float = maxf(1.0,sword_speed)
+	var flight_budget: float = (arena.bounds.size.length() + exit_margin * 2 + 30) / speed + 1.0
+	arena.spawn_projectile(fighter,{"position":fighter.position + direction * 30,"velocity":direction*speed,"damage":damage,"radius":sword_radius,"lifetime":flight_budget,"color":Color("eabf68"),"skill_id":skill_id,"visual_type":"laotie","knockback":sword_knockback,"spin_speed":sword_spin_speed,"piercing":true,"exit_margin":exit_margin})
 	throws_count += 1
 	arena.emit_effect("slash",fighter.position,Color("ecc777"),{"angle":direction.angle(),"radius":85.0})
 

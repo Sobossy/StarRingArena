@@ -30,7 +30,7 @@ func tick(delta: float) -> void:
 		target_timers[key] = maxf(0, target_timers[key] - delta)
 	for index in range(blade_count):
 		blade_hit_timers[index] = maxf(0.0, blade_hit_timers[index] - delta)
-		for target in arena.get_targets(fighter):
+		for target in arena.get_collision_targets(fighter):
 			var key := str(index) + "_" + str(target.fighter_id)
 			if float(target_timers.get(key, 0)) > 0:
 				continue

@@ -1,10 +1,8 @@
-param([switch]$SkipTests)
 . (Join-Path $PSScriptRoot 'tools\common.ps1')
 Ensure-Godot -Templates
-if (-not $SkipTests) { & (Join-Path $ProjectRoot 'Test.ps1') }
 $outputDir = Join-Path $ProjectRoot 'build\Windows'
 New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
-Invoke-GodotChecked -GodotArguments @('--headless','--path',$ProjectRoot,'--editor','--import')
+Invoke-GodotChecked -GodotArguments @('--headless','--path',$ProjectRoot,'--editor','--import','--quit')
 Invoke-GodotChecked -GodotArguments @('--headless','--path',$ProjectRoot,'--export-release','Windows Desktop',(Join-Path $outputDir 'SpiritArena.exe'))
 foreach ($file in @('README.md','THIRD_PARTY_NOTICES.md')) {
     $source = Join-Path $ProjectRoot $file

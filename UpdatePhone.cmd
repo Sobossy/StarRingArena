@@ -1,3 +1,3 @@
 @echo off
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0BuildAndroid.ps1" -SkipTests -Install
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0BuildAndroid.ps1" -Install
 pause

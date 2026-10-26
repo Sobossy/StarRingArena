@@ -7,13 +7,24 @@ const ITEMS := [
 	{"id":"shield", "name":"周期护盾", "type":"被动", "scene":"res://scenes/skills/shield.tscn"},
 	{"id":"counter", "name":"受击反击", "type":"被动", "scene":"res://scenes/skills/counter.tscn"},
 	{"id":"dash", "name":"冲刺斩击", "type":"主动", "scene":"res://scenes/skills/dash_slash.tscn"},
-	{"id":"bat_throw", "name":"毁灭主 · 蓄力回旋球棒", "type":"主动", "scene":"res://scenes/skills/bat_throw.tscn", "charge_max":60.0, "default_charge":6.0},
-	{"id":"collision_smash", "name":"毁灭主 · 碰撞重击", "type":"被动", "scene":"res://scenes/skills/collision_smash.tscn"},
+	{"id":"bat_throw", "name":"毁灭·星 · 蓄力回旋球棒", "type":"主动", "scene":"res://scenes/skills/bat_throw.tscn", "charge_max":60.0, "default_charge":6.0},
+	{"id":"collision_smash", "name":"毁灭·星 · 碰撞重击", "type":"被动", "scene":"res://scenes/skills/collision_smash.tscn"},
 	{"id":"sparkle_revolver", "name":"花火 · 六膛惊喜左轮", "type":"持续", "scene":"res://scenes/skills/sparkle_revolver.tscn"},
 	{"id":"yunli_guard", "name":"云璃 · 吃串防反与老铁", "type":"被动", "scene":"res://scenes/skills/yunli_guard.tscn"},
+	{"id":"aglaea_threads", "name":"阿格莱雅 · 金线织途", "type":"持续", "scene":"res://scenes/skills/aglaea_threads.tscn"},
+	{"id":"feiying_toast", "name":"绯英 · 吐司与大运", "type":"主动", "scene":"res://scenes/skills/feiying_toast.tscn", "default_charge":1.5},
+	{"id":"memory_mimi", "name":"记忆·星 · 迷迷与时停", "type":"持续", "scene":"res://scenes/skills/memory_mimi.tscn"},
+	{"id":"castorice_aura", "name":"遐蝶 · 泰坦印记与灰黯之手", "type":"持续", "scene":"res://scenes/skills/castorice_aura.tscn"},
+	{"id":"acheron_slash", "name":"黄泉 · 斩断棋盘", "type":"主动", "scene":"res://scenes/skills/acheron_slash.tscn", "default_charge":7.0, "charge_max":60.0},
 ]
 static var _parameter_cache: Dictionary = {}
 const PARAMETER_NAMES := {
+	"aim_wobble_degrees":"蓄力初始预警线摆动幅度（度）", "aim_jitter_interval":"预警线随机摆动间隔（秒）",
+	"warning_lock_time":"蓄满后锁线预警（秒）", "slash_damage":"斩击伤害", "slash_half_width":"斩击判定半宽", "cut_wall_half_width":"切面墙半宽", "colour_expand_time":"灰白色扩散时间（秒）", "colour_hold_time":"完全灰白保持时间（秒）", "aim_tracking_speed":"预警线初始追踪速度", "aim_rotation_speed":"预警线初始旋转限速（度/秒）", "lost_chance_percent":"每次碰墙迷路概率（%）",
+	"mimi_move_speed":"迷迷出击移动速度", "mimi_return_speed":"迷迷返回头顶速度",
+	"punch_range":"迷迷攻击距离（双方碰撞边缘间距）", "punches_per_second":"迷迷每秒拳击次数", "punch_damage":"每次拳击伤害", "ally_hit_charge":"同阵营每次有效伤害充能（%）", "mimi_hit_charge":"自己的迷迷每拳充能（%）", "time_stop_duration":"时停持续时间（秒）", "stopped_range_bonus":"时停攻击距离增加", "mimi_size":"迷迷显示大小", "aura_radius":"伤害圈半径", "aura_damage":"伤害圈单次伤害", "aura_tick_interval":"伤害圈叠层间隔（秒）", "maximum_marks":"终结所需印记层数", "slow_base_percent":"印记基础减速（%）", "slow_per_mark_percent":"每层增加总减速（%）", "execution_damage":"碰撞终结伤害", "retreat_distance":"受伤额外后退距离", "shrink_interval":"灰黯之手缩圈间隔（秒）", "shrink_fraction":"每次缩小原场地比例", "minimum_arena_scale":"场地最小宽高比例",
+	"toast_respawn_delay":"冲刺结束后吐司刷新延迟（秒）", "toast_radius":"吐司拾取判定半径", "toast_healing":"拾取吐司回复生命", "toast_seek_delay":"常态后主动找吐司的延迟（秒）", "ram_speed":"大运冲撞速度", "ram_hit_radius":"冲撞判定半径", "ram_damage":"大运冲撞伤害", "launch_strength":"大运击飞强度", "flight_duration":"腾空时间（秒）", "flight_height":"腾空最高高度", "fall_damage":"落地摔落伤害",
+	"initial_thread_count":"初始所需金线段数", "threads_per_speed":"每点移速提升增加的金线段数", "speed_gain_per_dash":"每轮冲刺后移速提升", "thread_dash_speed":"沿金线冲刺速度", "thread_damage":"金线触碰伤害", "collision_damage":"身体碰撞伤害", "thread_hit_interval":"金线再次触碰间隔（秒）", "collision_hit_interval":"身体碰撞伤害间隔（秒）", "thread_dash_damage":"冲刺基础伤害", "speed_damage_ratio":"移速提升转冲刺伤害倍率", "thread_hit_radius":"金线判定宽度", "thread_dash_radius":"冲刺判定半径", "thread_dash_knockback":"冲刺击退强度",
 	"cooldown":"技能冷却（秒）", "throw_distance":"球棒固定飞行距离", "outbound_speed":"球棒去程速度", "return_speed":"球棒回程速度",
 	"outbound_damage":"球棒去程伤害", "return_damage":"球棒回程伤害", "damage":"单次伤害", "damage_multiplier":"伤害倍率",
 	"hit_radius":"攻击判定半径", "spin_speed":"旋转速度（弧度/秒）", "knockback_strength":"击退强度", "rehit_interval":"同目标重击间隔（秒）", "contact_extra":"碰撞触发额外距离",
@@ -38,7 +49,7 @@ static func parameter_definitions(template_id: String) -> Array:
 		if not (int(property.usage) & PROPERTY_USAGE_EDITOR) or not (int(property.usage) & PROPERTY_USAGE_SCRIPT_VARIABLE) or int(property.type) not in [TYPE_INT,TYPE_FLOAT,TYPE_BOOL]:
 			continue
 		var key := str(property.name)
-		if key == "cooldown" and template_id in ["bat_throw","collision_smash","sparkle_revolver","yunli_guard"]:
+		if key == "cooldown" and template_id in ["bat_throw","collision_smash","sparkle_revolver","yunli_guard","aglaea_threads","feiying_toast","memory_mimi","castorice_aura","acheron_slash"]:
 			continue
 		var minimum: float = 0.0
 		var maximum: float = 100000.0
@@ -80,6 +91,7 @@ static func new_slot(template_id: String, slot_id: String = "") -> Dictionary:
 	return {"template_id":template_id, "slot_id": slot_id if not slot_id.is_empty() else str(Time.get_ticks_usec()) + "_" + str(randi()), "charge_time":float(item.get("default_charge",0.0)), "release_time":0.3, "charge_can_move":true, "charge_image":"", "release_image":"", "parameters":{}}
 
 static func instantiate(slot: Dictionary):
+	slot = migrate_slot(slot)
 	var item := find(str(slot.get("template_id", "")))
 	if item.is_empty():
 		return null
@@ -101,3 +113,19 @@ static func instantiate(slot: Dictionary):
 				elif (value is float or value is int) and is_finite(float(value)):
 					skill.set(entry.key,clampf(float(value),entry.min,entry.max))
 	return skill
+
+static func migrate_slot(original: Dictionary) -> Dictionary:
+	var slot: Dictionary = original.duplicate(true)
+	if slot.get("template_id","") != "acheron_slash":
+		return slot
+	if not slot.get("parameters",{}) is Dictionary:
+		return slot
+	var params: Dictionary = slot.get("parameters",{})
+	if params.has("colour_recovery_time"):
+		if not params.has("colour_hold_time"):
+			var old: float = float(params.colour_recovery_time)
+			var expand: float = float(params.get("colour_expand_time",.5))
+			params.colour_hold_time = 1.5 if is_equal_approx(old,1.0) and is_equal_approx(expand,.5) else clampf(old-expand,0,10)
+		params.erase("colour_recovery_time")
+	slot.parameters = params
+	return slot

@@ -22,6 +22,7 @@ var release_texture: Texture2D
 var phase: String = "normal"
 var phase_remaining: float = 0.0
 var _phase_target = null
+var _reported_phase: String = "normal"
 
 
 func setup(owner_fighter, battle_arena) -> void:
@@ -79,6 +80,9 @@ func _perform_cast() -> void:
 		cancel_cast()
 
 func _set_visual(kind: String, texture: Texture2D, seconds: float) -> void:
+	if arena != null and (kind != _reported_phase or fighter.visual_skill != self or fighter.visual_phase != kind):
+		arena.record_event({"kind":"skill_phase","source":fighter.side,"skill_id":skill_id,"slot_id":slot_id,"phase":kind,"duration":seconds})
+	_reported_phase = kind
 	fighter.visual_skill = self
 	fighter.visual_phase = kind
 	fighter.visual_remaining = seconds
@@ -90,6 +94,9 @@ func flash_release() -> void:
 	_set_visual("release", release_texture, release_time)
 
 func cancel_cast() -> void:
+	if _reported_phase != "normal" and arena != null and fighter != null:
+		arena.record_event({"kind":"skill_phase","source":fighter.side,"skill_id":skill_id,"slot_id":slot_id,"phase":"normal"})
+	_reported_phase = "normal"
 	phase = "normal"
 	phase_remaining = 0.0
 	_phase_target = null
@@ -116,8 +123,32 @@ func incoming_damage_multiplier(_event: Dictionary) -> float:
 func on_damage_settled(_event: Dictionary) -> void:
 	pass
 
+func on_battle_damage(_event: Dictionary) -> void:
+	pass
+
+func before_step(_delta: float) -> void:
+	pass
+
+func cleanup_spatial_effects() -> void:
+	pass
+
+func on_time_stop_started() -> void:
+	pass
+
+func on_time_stop_ended() -> void:
+	pass
+
 func on_enemy_contact(_enemy) -> void:
 	pass
+
+func on_wall_contact(_normal: Vector2) -> void:
+	pass
+
+func desired_velocity_override():
+	return null
+
+func resists_displacement() -> bool:
+	return false
 
 
 func get_visuals() -> Array:

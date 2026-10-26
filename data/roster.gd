@@ -5,6 +5,11 @@ const CHARACTERS = [
 	preload("res://data/characters/destruction_trailblazer.tres"),
 	preload("res://data/characters/sparkle.tres"),
 	preload("res://data/characters/yunli.tres"),
+	preload("res://data/characters/aglaea.tres"),
+	preload("res://data/characters/feiying.tres"),
+	preload("res://data/characters/memory_trailblazer.tres"),
+	preload("res://data/characters/castorice.tres"),
+	preload("res://data/characters/acheron.tres"),
 ]
 
 

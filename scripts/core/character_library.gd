@@ -187,6 +187,8 @@ static func from_data(data: Dictionary):
 	var definition = Definition.new()
 	definition.id = str(data.get("id", ""))
 	definition.display_name = str(data.get("name", "新角色"))
+	if definition.id == "destruction_trailblazer" and definition.display_name == "毁灭主":
+		definition.display_name = "毁灭·星"
 	definition.description = str(data.get("description", ""))
 	definition.max_health = float(data.get("max_health", 1000))
 	definition.attack = float(data.get("attack", 38))
@@ -211,5 +213,5 @@ static func from_data(data: Dictionary):
 	for slot in slots:
 		if not slot is Dictionary:
 			return null
-		definition.skill_slots.append(slot.duplicate(true))
+		definition.skill_slots.append(Catalog.migrate_slot(slot))
 	return definition

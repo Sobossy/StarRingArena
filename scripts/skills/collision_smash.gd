@@ -1,8 +1,8 @@
 extends "res://scripts/skills/skill_base.gd"
-@export_range(0,100000,1) var damage: float = 120.0
+@export_range(0,100000,1) var damage: float = 80.0
 @export_range(0,500,1) var contact_extra: float = 24.0
-@export var knockback_strength: float = 1100.0
-@export var rehit_interval: float = 0.65
+@export var knockback_strength: float = 2400.0
+@export var rehit_interval: float = 0.1
 var previous_contacts: Dictionary = {}
 var current_contacts: Dictionary = {}
 var target_cooldowns: Dictionary = {}

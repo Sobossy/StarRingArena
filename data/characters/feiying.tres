@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/core/character_definition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/stickers/039_绯英 好累.png" id="2"]
+[resource]
+script = ExtResource("1")
+id = "feiying"
+display_name = "绯英"
+description = "全场共享一片吐司，拾取回复125生命并化身大运。蓄力1.5秒后朝敌人方向直线冲刺，命中造成150伤害并击飞，继续冲到墙壁才恢复常态；冲刺结束1秒后随机刷新吐司。目标腾空无碰撞、不能自主移动但仍可攻击，落地受到75伤害。常态满5秒后主动寻找吐司。"
+portrait = ExtResource("2")
+normal_image_path = "res://assets/stickers/039_绯英 好累.png"
+portrait_size = 96.0
+theme_color = Color(1,0.66,0.79,1)
+skill_slots = Array[Dictionary]([{"template_id":"feiying_toast","slot_id":"feiying_dayun","charge_time":1.5,"release_time":0.0,"charge_can_move":false,"charge_image":"res://assets/stickers/042_绯英 摄取知识.png","release_image":"res://assets/stickers/042_绯英 摄取知识.png","parameters":{}}])

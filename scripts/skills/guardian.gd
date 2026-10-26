@@ -34,12 +34,12 @@ func tick(delta: float) -> void:
 	var target = arena.opponent(fighter)
 	if target == null or not target.alive or cooldown_remaining > 0.0:
 		return
-	if fighter.position.distance_to(target.position) <= melee_range:
+	if target.airborne_remaining <= 0 and fighter.position.distance_to(target.position) <= melee_range:
 		request_cast(target)
 
 
 func activate(target) -> void:
-	if not can_act() or target == null:
+	if not can_act() or target == null or target.airborne_remaining > 0:
 		return
 	var direction: Vector2 = fighter.position.direction_to(target.position)
 	arena.apply_damage(fighter, target, fighter.definition.attack * melee_damage_multiplier, skill_id, true, direction * 95.0)

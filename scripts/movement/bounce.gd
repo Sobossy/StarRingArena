@@ -10,7 +10,7 @@ func setup(owner_fighter, battle_arena) -> void:
 		direction.x *= -1.0
 
 func desired_velocity(_delta: float) -> Vector2:
-	return direction * fighter.definition.speed
+	return direction * fighter.movement_speed()
 
 func on_collision(normal: Vector2) -> void:
 	if direction.dot(normal) < 0.0:

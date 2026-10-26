@@ -1,16 +1,32 @@
-[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="CharacterDefinition" format=3]
+
 [ext_resource type="Script" path="res://scripts/core/character_definition.gd" id="1"]
 [ext_resource type="Texture2D" path="res://assets/stickers/280_花火 嘿嘿.png" id="2"]
+
 [resource]
 script = ExtResource("1")
 id = "sparkle"
 display_name = "花火"
-description = "六膛左轮随机装入一发子弹，空枪弹出白旗和彩带；枪口持续瞄准最近敌人，实弹造成200伤害。"
+description = "六膛左轮随机装入一发子弹，空枪弹出白旗和彩带；枪口持续瞄准最近敌人，实弹造成180伤害。"
 portrait = ExtResource("2")
 normal_image_path = "res://assets/stickers/280_花火 嘿嘿.png"
 portrait_size = 96.0
-theme_color = Color(0.96,0.25,0.40,1)
-max_health = 1000.0
-speed = 160.0
-default_movement = "bounce"
-skill_slots = Array[Dictionary]([{"template_id":"sparkle_revolver","slot_id":"sparkle_gun","charge_time":0.0,"release_time":0.3,"charge_can_move":true,"charge_image":"","release_image":"","parameters":{}}])
+theme_color = Color(0.9607843, 0.2509804, 0.4, 1)
+skill_slots = Array[Dictionary]([{
+"charge_can_move": true,
+"charge_image": "",
+"charge_time": 0.0,
+"parameters": {
+"bullet_damage": 180.0,
+"bullet_knockback": 450.0,
+"bullet_lifetime": 4.0,
+"bullet_radius": 6.0,
+"bullet_speed": 1400.0,
+"reload_time": 0.1,
+"shot_interval": 1.6
+},
+"release_image": "",
+"release_time": 0.3,
+"slot_id": "sparkle_gun",
+"template_id": "sparkle_revolver"
+}])

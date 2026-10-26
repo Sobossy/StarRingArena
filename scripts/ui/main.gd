@@ -6,6 +6,8 @@ const Roster = preload("res://data/roster.gd")
 const LibraryScript = preload("res://scripts/core/character_library.gd")
 const MatchPanelScript = preload("res://scripts/ui/match_panel.gd")
 const WorkshopScript = preload("res://scripts/ui/character_editor.gd")
+const HistoryStore = preload("res://scripts/core/match_history.gd")
+const HistoryPanel = preload("res://scripts/ui/history_panel.gd")
 const BG := Color("080f1b")
 const PANEL := Color("111e2e")
 const LINE := Color("263a50")
@@ -29,8 +31,15 @@ var live_roster_label: Label
 var role_options: Array[OptionButton] = []
 var move_options: Array[OptionButton] = []
 var matchup_labels: Array[Label] = []
-var seed_input: SpinBox
-var random_button: Button
+var seed_label: Label
+var last_seed: int = 0
+var seed_rng := RandomNumberGenerator.new()
+var history_store
+var history_panel
+var history_button: Button
+var current_record_button: Button
+var history_notice: Label
+var current_record_id: String = ""
 var phase_label: Label
 var timer_label: Label
 var hint_label: Label
@@ -59,6 +68,8 @@ var speed: float = 1.0
 var accumulator: float = 0.0
 var has_started: bool = false
 var result_shown: bool = false
+var result_wait_remaining: float = 4.0
+var post_motion_accumulator: float = 0.0
 var boot_time: float = 0.0
 var smoke_mode: bool = false
 var capture_done: bool = false
@@ -73,6 +84,7 @@ var mobile_toolbar: HBoxContainer
 var mobile_page_button: Button
 var mobile_exit_dialog: ConfirmationDialog
 var mobile_metrics_clock: float = 0.0
+var screen_effects
 
 func _ready() -> void:
 	qa_mode = qa_mode or "--qa" in OS.get_cmdline_user_args()
@@ -94,8 +106,15 @@ func _ready() -> void:
 	roster = library.reload()
 	arena = ArenaScript.new()
 	add_child(arena)
+	seed_rng.randomize()
+	history_store = HistoryStore.new("user://qa_match_history/ui" if qa_mode else "user://match_history")
+	arena.combat_event.connect(history_store.append_event)
+	arena.battle_ended.connect(_on_match_completed)
 	_build_theme()
 	_build_ui()
+	screen_effects = load("res://scripts/ui/screen_effects.gd").new()
+	screen_effects.ui = self
+	add_child(screen_effects)
 	_build_audio()
 	game_audio = load("res://scripts/ui/game_audio.gd").new()
 	add_child(game_audio)
@@ -261,6 +280,9 @@ func _build_ui() -> void:
 	add_child(workshop)
 	workshop.build(self,library)
 	workshop.library_changed.connect(_library_changed)
+	history_panel = HistoryPanel.new()
+	add_child(history_panel)
+	history_panel.build(self,history_store)
 	if mobile_mode:
 		mobile_exit_dialog = ConfirmationDialog.new()
 		mobile_exit_dialog.title = "退出游戏"
@@ -293,6 +315,10 @@ func _build_header(parent: VBoxContainer) -> void:
 		editor_button.custom_minimum_size.y = 48
 	editor_button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(editor_button)
+	if not mobile_mode:
+		history_button = _button("对局记录",_open_history)
+		history_button.custom_minimum_size.y = 37
+		row.add_child(history_button)
 	var badge := PanelContainer.new()
 	badge.add_theme_stylebox_override("panel", _style(Color("142630"), Color("284850"), 16, 13, 6))
 	badge.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -373,6 +399,11 @@ func _build_arena_column(parent: HBoxContainer) -> void:
 	result_detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	results.add_child(result_detail)
 	results.add_child(_button("再战一局", _start_battle, true))
+	current_record_button = _button("查看本局记录",func(): _open_history(current_record_id))
+	results.add_child(current_record_button)
+	history_notice = _label("",12,MUTED)
+	history_notice.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	results.add_child(history_notice)
 	results.add_child(_button("返回选角", _return_to_selection))
 	hint_label = _label("双角色自动对战  ·  角色图片待替换", 12, MUTED)
 	hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -399,6 +430,9 @@ func _build_sidebar(parent: HBoxContainer) -> void:
 	else:
 		panel.add_child(v)
 	v.add_child(_label("对战配置", 20))
+	if mobile_mode:
+		history_button = _button("对局记录",_open_history)
+		v.add_child(history_button)
 	match_panel = MatchPanelScript.new()
 	match_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	v.add_child(match_panel)
@@ -409,20 +443,8 @@ func _build_sidebar(parent: HBoxContainer) -> void:
 	match_error_label = _label("", 11, Color("ffb7a4"))
 	match_error_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	v.add_child(match_error_label)
-	var seed_row := HBoxContainer.new()
-	seed_row.add_theme_constant_override("separation", 8)
-	v.add_child(seed_row)
-	seed_row.add_child(_label("随机种子", 12, MUTED))
-	seed_input = SpinBox.new()
-	seed_input.min_value = 1
-	seed_input.max_value = 999999
-	seed_input.value = 42
-	seed_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	seed_row.add_child(seed_input)
-	random_button = _button("换一组", func(): seed_input.value = randi_range(1,999999); _update_configuration())
-	random_button.custom_minimum_size.y = 33
-	random_button.add_theme_font_size_override("font_size",12)
-	seed_row.add_child(random_button)
+	seed_label = _label("随机种子 · 每局开始时自动生成",12,MUTED)
+	v.add_child(seed_label)
 	start_button = _button("开始对战  →", _start_battle, true)
 	start_button.custom_minimum_size.y = 47
 	v.add_child(start_button)
@@ -488,7 +510,7 @@ func _update_configuration() -> void:
 	roster = library.characters
 	role_options = match_panel.role_options
 	move_options = match_panel.move_options
-	var config = match_panel.get_config(int(seed_input.value))
+	var config = match_panel.get_config(last_seed if last_seed > 0 else 42)
 	board.preview_config = config
 	board.preview_positions = arena._spawn_layout(config)
 	board.queue_redraw()
@@ -511,19 +533,36 @@ func _on_role_selected(index: int, side: int) -> void:
 	match_panel._select_role(index,side)
 
 func _start_battle() -> void:
-	_save_settings()
+	var candidate_seed: int = seed_rng.randi_range(1,999999)
+	if candidate_seed == last_seed:
+		candidate_seed = candidate_seed%999999+1
+	var config = match_panel.get_config(candidate_seed)
+	var validation: String = arena.validate_config(config)
+	if not validation.is_empty():
+		match_error_label.text = validation
+		return
+	history_store.discard()
+	arena.clear_battle()
+	history_store.begin(config)
 	game_audio.stop_cheers()
 	board.reset_visuals()
 	result_panel.hide()
 	result_shown = false
+	result_wait_remaining = 4.0
+	post_motion_accumulator = 0
 	paused = false
 	accumulator = 0.0
 	has_started = true
-	var error: String = arena.start_match(match_panel.get_config(int(seed_input.value)))
+	var error: String = arena.start_match(config)
 	if not error.is_empty():
 		has_started = false
 		match_error_label.text = error
+		history_store.discard()
 		return
+	last_seed = candidate_seed
+	seed_label.text = "本局种子 · %d（每局自动更换）" % last_seed
+	current_record_id = ""
+	_save_settings()
 	match_panel.set_locked(true)
 	editor_button.disabled = true
 	board.ingest(arena.drain_events())
@@ -532,8 +571,7 @@ func _start_battle() -> void:
 		option.disabled = true
 	for option in move_options:
 		option.disabled = true
-	seed_input.editable = false
-	random_button.disabled = true
+	_refresh_history_state()
 	start_button.text = "重新开局  ↻"
 	if mobile_mode:
 		_show_mobile_page("battle")
@@ -544,6 +582,7 @@ func _start_battle() -> void:
 	hint_label.text = "全自动交锋中  ·  可随时暂停、变速或重新开局"
 
 func _return_to_selection() -> void:
+	history_store.discard()
 	arena.clear_battle()
 	game_audio.stop_cheers()
 	board.reset_visuals()
@@ -551,6 +590,8 @@ func _return_to_selection() -> void:
 	result_panel.hide()
 	has_started = false
 	result_shown = false
+	result_wait_remaining = 4.0
+	post_motion_accumulator = 0
 	paused = false
 	accumulator = 0.0
 	for option in role_options:
@@ -559,8 +600,9 @@ func _return_to_selection() -> void:
 		option.disabled = false
 	match_panel.set_locked(false)
 	editor_button.disabled = false
-	seed_input.editable = true
-	random_button.disabled = false
+	seed_label.text = "随机种子 · 每局开始时自动生成"
+	current_record_id = ""
+	_refresh_history_state()
 	start_button.text = "开始对战  →"
 	pause_button.disabled = true
 	pause_button.text = "暂停"
@@ -571,8 +613,11 @@ func _return_to_selection() -> void:
 	if mobile_mode:
 		_show_mobile_page("config")
 
+func _waiting_for_result() -> bool:
+	return has_started and not arena.running and not result_shown
+
 func _toggle_pause() -> void:
-	if not has_started or (not arena.running and not board.has_departures()):
+	if not has_started or (not arena.running and not _waiting_for_result() and not board.has_departures()):
 		return
 	paused = not paused
 	board.frozen = paused
@@ -597,7 +642,7 @@ func _toggle_fullscreen() -> void:
 func _show_mobile_page(page: String) -> void:
 	if not mobile_mode:
 		return
-	if page == "config" and has_started and not paused and (arena.running or board.has_departures()):
+	if page == "config" and has_started and not paused and (arena.running or _waiting_for_result() or board.has_departures()):
 		_toggle_pause()
 	mobile_page = page
 	arena_column.visible = page == "battle"
@@ -629,9 +674,16 @@ func _update_safe_area() -> void:
 		workshop.offset_top = padding.y - 12
 		workshop.offset_right = -(padding.z - 12)
 		workshop.offset_bottom = -(padding.w - 12)
+	if history_panel != null:
+		history_panel.offset_left = padding.x-12
+		history_panel.offset_top = padding.y-12
+		history_panel.offset_right = -(padding.z-12)
+		history_panel.offset_bottom = -(padding.w-12)
 
 func _handle_mobile_back() -> void:
-	if workshop.visible:
+	if history_panel.visible:
+		history_panel.go_back()
+	elif workshop.visible:
 		if workshop.art_browser.visible:
 			workshop.art_browser.hide()
 		elif workshop.delete_dialog.visible:
@@ -654,7 +706,7 @@ func _set_backgrounded(backgrounded: bool) -> void:
 		return
 	if backgrounded:
 		_save_settings()
-		if has_started and not paused and (arena.running or board.has_departures()):
+		if has_started and not paused and (arena.running or _waiting_for_result() or board.has_departures()):
 			_toggle_pause()
 	game_audio.music_player.stream_paused = backgrounded
 	game_audio.cheer_player.stream_paused = backgrounded
@@ -678,7 +730,7 @@ func _process(delta: float) -> void:
 		if mobile_metrics_clock >= 5.0:
 			mobile_metrics_clock = 0.0
 			print("PHONE_PERF fps=",Engine.get_frames_per_second()," actors=",arena.fighters.size()," page=",mobile_page," paused=",paused)
-	if workshop.visible:
+	if workshop.visible or history_panel.visible:
 		_tick_smoke()
 		return
 	audio_wait = maxf(0, audio_wait - delta)
@@ -716,10 +768,19 @@ func _process(delta: float) -> void:
 			live_roster_label.text += "\n" + "  ".join(team_text)
 		live_roster_label.tooltip_text = "\n".join(names)
 	if has_started and not arena.running and not result_shown:
-		if not board.has_departures():
+		if not paused:
+			var active_delta: float = minf(maxf(0,delta),result_wait_remaining)
+			result_wait_remaining = maxf(0,result_wait_remaining-active_delta)
+			post_motion_accumulator += active_delta*speed
+			while post_motion_accumulator >= STEP-.000001:
+				arena.step_post_result_motion(STEP)
+				post_motion_accumulator = maxf(0,post_motion_accumulator-STEP)
+		if result_wait_remaining <= .000001:
+			for fighter in arena.fighters:
+				fighter.velocity = Vector2.ZERO
 			_show_result()
 		else:
-			phase_label.text = "Ⅱ  已暂停" if paused else "◆  淘汰退场中"
+			phase_label.text = "Ⅱ  已暂停" if paused else "◆  胜负已定 · %.1f秒后结算" % result_wait_remaining
 	_tick_smoke()
 
 func _tick_smoke() -> void:
@@ -752,9 +813,36 @@ func _show_result() -> void:
 	pause_button.disabled = true
 	phase_label.text = "◆  对战结束"
 	hint_label.text = "每一种搭配，都有新的可能。"
+	_refresh_history_state()
+
+func _on_match_completed(_winner: int) -> void:
+	var saved_id: String = history_store.complete(arena)
+	if not saved_id.is_empty():
+		current_record_id = saved_id
+	if not history_store.pending.is_empty():
+		hint_label.text = "记录保存未完成，可在对局记录中重试。"
+	_refresh_history_state()
+
+func _refresh_history_state() -> void:
+	if history_button != null:
+		history_button.disabled = has_started and not result_shown
+		history_button.text = "对局记录" if history_store.pending.is_empty() else "对局记录 · 待保存"
+	if current_record_button != null:
+		current_record_button.disabled = current_record_id.is_empty() or not history_store.has_record(current_record_id)
+	if history_notice != null:
+		history_notice.text = "本局记录已保存" if not current_record_id.is_empty() and history_store.has_record(current_record_id) else ""
+		if history_store.pending.has(current_record_id):
+			history_notice.text = "记录保存未完成，请在对局记录中重试。"
+
+func _open_history(id: String = "") -> void:
+	if has_started and not result_shown:
+		return
+	history_panel.open_history()
+	if not id.is_empty():
+		history_panel.open_record(id)
 
 func _input(event: InputEvent) -> void:
-	if workshop.visible:
+	if workshop.visible or history_panel.visible:
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		match event.keycode:
@@ -762,13 +850,12 @@ func _input(event: InputEvent) -> void:
 				_toggle_fullscreen()
 				get_viewport().set_input_as_handled()
 			KEY_SPACE:
-				if has_started and not seed_input.get_line_edit().has_focus():
+				if has_started:
 					_toggle_pause()
 					get_viewport().set_input_as_handled()
 			KEY_R:
-				if not seed_input.get_line_edit().has_focus():
-					_start_battle()
-					get_viewport().set_input_as_handled()
+				_start_battle()
+				get_viewport().set_input_as_handled()
 
 func _build_audio() -> void:
 	# Headless verification has no output device or audio mix loop.
@@ -828,7 +915,7 @@ func _save_settings() -> void:
 	config.set_value("audio","music_enabled",music_toggle.button_pressed)
 	config.set_value("audio","music_volume",music_slider.value)
 	config.set_value("migration","map_default_500",map_default_migrated)
-	config.set_value("match","seed",int(seed_input.value))
+	config.set_value("match","last_seed",last_seed)
 	config.set_value("match","configuration_v2",match_panel.serialize())
 	config.save(settings_path)
 
@@ -840,7 +927,7 @@ func _load_settings() -> void:
 	music_toggle.set_pressed_no_signal(bool(config.get_value("audio","music_enabled",true)))
 	music_slider.set_value_no_signal(clampf(float(config.get_value("audio","music_volume",50)),0,100))
 	_update_music()
-	seed_input.value = int(config.get_value("match","seed",42))
+	last_seed = clampi(int(config.get_value("match","last_seed",config.get_value("match","seed",0))),0,999999)
 	var match_data = config.get_value("match","configuration_v2",{})
 	if match_data is Dictionary and not match_data.is_empty():
 		match_data = load("res://scripts/core/settings_migration.gd").map_configuration(match_data,bool(config.get_value("migration","map_default_500",false)))

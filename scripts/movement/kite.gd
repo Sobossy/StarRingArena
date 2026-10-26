@@ -25,7 +25,7 @@ func desired_velocity(_delta: float) -> Vector2:
 		direction.y += 1.4
 	if fighter.position.y > inner.end.y:
 		direction.y -= 1.4
-	return direction.normalized() * fighter.definition.speed
+	return direction.normalized() * fighter.movement_speed()
 
 func on_collision(_normal: Vector2) -> void:
 	clockwise *= -1.0

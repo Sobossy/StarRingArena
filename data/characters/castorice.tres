@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/core/character_definition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/stickers/117_遐蝶 脸红.png" id="2"]
+[resource]
+script = ExtResource("1")
+id = "castorice"
+display_name = "遐蝶"
+description = "基础移速50。敌人入圈后警示并追击，每秒造成25伤害并叠加泰坦印记，总减速为6＋当前层数%，9层为15%。9层后碰撞造成一次100000终结伤害；离圈立即清印记，圈内无人恢复默认移动。受伤额外后退。灰黯之手每0.5秒缩小原场地宽高1%，最低50%。"
+portrait = ExtResource("2")
+normal_image_path = "res://assets/stickers/117_遐蝶 脸红.png"
+portrait_size = 96.0
+speed = 50.0
+theme_color = Color(0.72,0.49,0.91,1)
+skill_slots = Array[Dictionary]([{"template_id":"castorice_aura","slot_id":"castorice_titan","charge_time":0.0,"release_time":0.0,"charge_can_move":true,"charge_image":"","release_image":"","parameters":{}}])

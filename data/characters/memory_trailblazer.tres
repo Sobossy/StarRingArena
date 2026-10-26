@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/core/character_definition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/stickers/156_开拓者 记录.png" id="2"]
+[resource]
+script = ExtResource("1")
+id = "memory_trailblazer"
+display_name = "记忆·星"
+description = "迷迷跟随头顶，对近距离敌人每秒拳击13次，每次10伤害。队友每次有效伤害充能5%，自己的迷迷每拳充能3.5%。满充能时停7秒，仅自己与迷迷活动；期间不充能，拳击标记真伤且攻击距离增加10。"
+portrait = ExtResource("2")
+normal_image_path = "res://assets/stickers/156_开拓者 记录.png"
+portrait_size = 96.0
+theme_color = Color(1,0.74,0.83,1)
+skill_slots = Array[Dictionary]([{"template_id":"memory_mimi","slot_id":"memory_mimi","charge_time":0.0,"release_time":0.0,"charge_can_move":true,"charge_image":"","release_image":"res://assets/stickers/083_开拓者 重写.png","parameters":{}}])

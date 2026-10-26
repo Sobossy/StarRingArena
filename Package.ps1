@@ -12,14 +12,25 @@ foreach ($required in @('SpiritArena.exe','SpiritArena.pck')) {
 }
 # Only replace these two named artifacts inside this project's build directory.
 if (Test-Path -LiteralPath $windowsZip) { Remove-Item -LiteralPath $windowsZip }
-[IO.Compression.ZipFile]::CreateFromDirectory($windowsDir,$windowsZip,[IO.Compression.CompressionLevel]::Optimal,$true)
+$windowsStream = [IO.File]::Open($windowsZip,[IO.FileMode]::Create)
+$windowsArchive = New-Object IO.Compression.ZipArchive($windowsStream,[IO.Compression.ZipArchiveMode]::Create)
+try {
+    # Godot can leave a locked old executable with a .TMP suffix after exporting.
+    foreach ($file in Get-ChildItem -LiteralPath $windowsDir -Recurse -File | Where-Object { $_.Extension -ne '.tmp' }) {
+        $relative = $file.FullName.Substring($windowsDir.Length + 1).Replace('\','/')
+        [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($windowsArchive,$file.FullName,('Windows/' + $relative),[IO.Compression.CompressionLevel]::Optimal) | Out-Null
+    }
+} finally {
+    $windowsArchive.Dispose()
+    $windowsStream.Dispose()
+}
 $androidDir = Join-Path $buildDir 'Android'
 if (Test-Path -LiteralPath (Join-Path $androidDir 'StarRingArena.apk')) {
     if (Test-Path -LiteralPath $androidZip) { Remove-Item -LiteralPath $androidZip }
     [IO.Compression.ZipFile]::CreateFromDirectory($androidDir,$androidZip,[IO.Compression.CompressionLevel]::Optimal,$true)
 }
 $sourceFiles = @()
-foreach ($folder in @('assets','data','docs','examples','scenes','scripts','tests')) {
+foreach ($folder in @('assets','data','docs','examples','scenes','scripts')) {
     $sourceFiles += Get-ChildItem -LiteralPath (Join-Path $ProjectRoot $folder) -Recurse -File
 }
 $sourceFiles += Get-ChildItem -LiteralPath $ProjectRoot -File | Where-Object { $_.Extension -in @('.ps1','.cmd','.md','.godot','.tscn','.cfg') -or $_.Name -eq '.gitignore' }

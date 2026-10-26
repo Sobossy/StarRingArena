@@ -135,9 +135,8 @@ func _build_form(parent: HBoxContainer) -> void:
 	parent.add_child(tabs)
 	var basic := _tab(tabs, "基础属性")
 	fields.name = _line(basic, "角色名称")
-	fields.description = _line(basic, "角色说明")
+	fields.description = _text_area(basic, "角色说明")
 	fields.health = _number(basic, "基础血量", 1, 100000, 1)
-	fields.attack = _number(basic, "基础攻击力", 0, 10000, 1)
 	fields.speed = _number(basic, "移动速度", 0, 1000, 1)
 	basic.add_child(ui._label("默认移动方式", 13, ui.MUTED))
 	var move := OptionButton.new()
@@ -251,6 +250,16 @@ func _number(parent: Node, text: String, minimum: float, maximum: float, step_va
 	parent.add_child(field)
 	return field
 
+func _text_area(parent: Node, text: String) -> TextEdit:
+	parent.add_child(ui._label(text, 13, ui.MUTED))
+	var field := TextEdit.new()
+	field.custom_minimum_size.y = 160 if ui.mobile_mode else 130
+	field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	field.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
+	field.text_changed.connect(_changed)
+	parent.add_child(field)
+	return field
+
 func _image_row(parent: Node, title: String, kind: String) -> Label:
 	var row := HBoxContainer.new()
 	parent.add_child(row)
@@ -324,7 +333,6 @@ func _load_draft() -> void:
 	fields.name.text = draft.display_name
 	fields.description.text = draft.description
 	fields.health.value = draft.max_health
-	fields.attack.value = draft.attack
 	fields.speed.value = draft.speed
 	fields.image_size.value = draft.portrait_size
 	fields.offset_x.value = draft.portrait_offset.x
@@ -345,7 +353,6 @@ func _changed() -> void:
 	draft.display_name = fields.name.text
 	draft.description = fields.description.text
 	draft.max_health = fields.health.value
-	draft.attack = fields.attack.value
 	draft.speed = fields.speed.value
 	draft.portrait_size = fields.image_size.value
 	draft.portrait_offset = Vector2(fields.offset_x.value, fields.offset_y.value)
@@ -420,10 +427,20 @@ func _select_skill(index: int) -> void:
 		skill_behavior_label.text = "上膛时间在下方技能数值设置；每次随机装入一发子弹，逐膛扣扳机，实弹射出后重新上膛。"
 	if item.get("id","") == "yunli_guard":
 		skill_behavior_label.text = "常态每秒回血；首次受击后防反，结束投出老铁并恢复常态。防反图使用下方蓄力形象，时长、减伤与伤害公式在技能数值里调整。"
+	if item.get("id","") == "aglaea_threads":
+		skill_behavior_label.text = "首次碰墙牵线，后续碰墙完成金线段。达到段数后沿线倒序冲刺，使用释放形象，冲刺后本局移速增加；各伤害、段数公式和速度均在下方调整。"
+	if item.get("id","") == "feiying_toast":
+		skill_behavior_label.text = "全场共享一片吐司，拾取回血后才进入大运，朝释放时敌人方向一直冲到墙壁。每名敌人每次冲刺只命中一次，结束后延迟刷新吐司；腾空目标可攻击，落地单独结算摔落伤害。"
+	if item.get("id","") == "memory_mimi":
+		skill_behavior_label.text = "迷迷跟随头顶近距离连打。自己的拳击与同阵营其他伤害分别充能，满100%发动时停；期间不充能，只有自己和迷迷活动。释放形象用于时停。"
+	if item.get("id","") == "castorice_aura":
+		skill_behavior_label.text = "敌人入圈后追击，每秒伤害并独立叠印记；减速总量按当前层数计算，离圈立即清除。足层碰撞终结，受伤后退；灰黯之手缩圈不因多名遐蝶叠加速度。"
+	if item.get("id","") == "acheron_slash":
+		skill_behavior_label.text = "蓄力时预警线平移追踪、旋转逐渐减速，蓄满后锁线再斩；整个棋盘切开，切面挡住角色，武器可穿过。全画面灰白扩散与保持时间分开设置；碰墙迷路立即判负，保持原速度离场。"
 	charge_input.max_value = float(item.get("charge_max",10))
 	charge_input.editable = item.get("type", "") == "主动"
 	release_input.editable = not item.is_empty() and item.get("type", "") != "持续" and not bat_skill
-	if item.get("id","") == "yunli_guard":
+	if item.get("id","") in ["yunli_guard","aglaea_threads","feiying_toast","memory_mimi","castorice_aura","acheron_slash"]:
 		release_input.editable = false
 	movement_check.disabled = not charge_input.editable
 	charge_input.value = float(slot.get("charge_time", 0))
@@ -627,6 +644,9 @@ func play_preview() -> void:
 	sample.skill_slots.clear()
 	sample.skill_slots.append(draft.skill_slots[selected_skill].duplicate(true))
 	sample.speed = 0
+	var thread_preview: bool = draft.skill_slots[selected_skill].get("template_id","") == "aglaea_threads"
+	if thread_preview:
+		sample.speed = maxf(1,draft.speed)
 	var dummy = load("res://scripts/core/character_definition.gd").new()
 	dummy.display_name = "测试目标"
 	dummy.max_health = 100000
@@ -636,6 +656,8 @@ func play_preview() -> void:
 	config.width = 664
 	config.height = 664
 	config.participants = [{"definition":sample,"movement":"chase","team":0},{"definition":dummy,"movement":"chase","team":1}]
+	if thread_preview:
+		config.participants[0].movement = "bounce"
 	preview_arena.start_match(config)
 	preview_arena.fighters[0].position = Vector2(310,380)
 	preview_arena.fighters[1].position = Vector2(405,380)
@@ -643,7 +665,9 @@ func play_preview() -> void:
 	if skill.skill_id == "bat_throw":
 		preview_arena.fighters[1].position = Vector2(560,380)
 	skill.cooldown_remaining = 0
-	if skill.phase_type == "主动":
+	if skill.skill_id in ["feiying_toast","memory_mimi","castorice_aura"]:
+		skill.seed_preview()
+	elif skill.phase_type == "主动":
 		skill.request_cast(preview_arena.fighters[1])
 	elif skill.skill_id == "counter":
 		preview_arena.apply_damage(preview_arena.fighters[1],preview_arena.fighters[0],1,"preview")
@@ -651,6 +675,8 @@ func play_preview() -> void:
 		preview_arena.fighters[1].position = preview_arena.fighters[0].position + Vector2(50,0)
 	elif skill.skill_id == "yunli_guard":
 		preview_arena.apply_damage(preview_arena.fighters[1],preview_arena.fighters[0],100,"preview")
+	elif skill.skill_id == "aglaea_threads":
+		skill.seed_preview()
 	preview_board.arena = preview_arena
 	preview_playing = true
 	preview_clock = 0
@@ -669,7 +695,7 @@ func _process(delta: float) -> void:
 			ui.game_audio.play_weapon_event(str(event.get("kind","")))
 		preview_accumulator -= 1.0/60.0
 	if not preview_arena.fighters.is_empty():
-		preview_caption.text = {"charge":"蓄力中", "guard":"防反中", "release":"释放中", "normal":"常规形象"}.get(preview_arena.fighters[0].visual_phase,"常规形象")
+		preview_caption.text = {"charge":"蓄力中", "guard":"防反中", "thread_dash":"沿金线冲刺 · 不可阻挡", "dayun_charge":"大运蓄力中", "dayun_rush":"大运冲撞中", "time_stop":"时停中 · 迷迷连打", "acheron_charge":"蓄力变色中", "acheron_locked":"斩击预警 · 已锁线", "acheron_release":"斩断 · 灰白扩散", "release":"释放中", "normal":"常规形象"}.get(preview_arena.fighters[0].visual_phase,"常规形象")
 	var flying: bool = false
 	if not preview_arena.fighters.is_empty():
 		for skill in preview_arena.fighters[0].skills:
@@ -678,5 +704,17 @@ func _process(delta: float) -> void:
 	var preview_limit: float = float(draft.skill_slots[selected_skill].get("charge_time",0)) + float(draft.skill_slots[selected_skill].get("release_time",0.3)) + 1.0
 	if draft.skill_slots[selected_skill].get("template_id","") == "yunli_guard":
 		preview_limit = float(draft.skill_slots[selected_skill].get("parameters",{}).get("guard_duration",4.0)) + 2.0
+	if draft.skill_slots[selected_skill].get("template_id","") == "aglaea_threads":
+		var dash_speed: float = float(draft.skill_slots[selected_skill].get("parameters",{}).get("thread_dash_speed",1600.0))
+		preview_limit = 35.0 / maxf(1,draft.speed) + preview_arena.bounds.size.x / maxf(100,dash_speed) + 2.0
+	if draft.skill_slots[selected_skill].get("template_id","") == "feiying_toast":
+		preview_limit = float(draft.skill_slots[selected_skill].get("charge_time",1.5)) + float(draft.skill_slots[selected_skill].get("parameters",{}).get("flight_duration",1.5)) + 2.0
+	if draft.skill_slots[selected_skill].get("template_id","") == "memory_mimi":
+		preview_limit = float(draft.skill_slots[selected_skill].get("parameters",{}).get("time_stop_duration",7.0)) + 1.0
+	if draft.skill_slots[selected_skill].get("template_id","") == "castorice_aura":
+		preview_limit = 10.0
+	if draft.skill_slots[selected_skill].get("template_id","") == "acheron_slash":
+		var params: Dictionary = draft.skill_slots[selected_skill].get("parameters",{})
+		preview_limit = float(draft.skill_slots[selected_skill].get("charge_time",7.0))+float(params.get("warning_lock_time",1.5))+float(params.get("colour_expand_time",.5))+float(params.get("colour_hold_time",1.5))+.5
 	if not flying and preview_clock > preview_limit:
 		_refresh_preview()
