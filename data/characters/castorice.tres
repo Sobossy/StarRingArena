@@ -1,6 +1,8 @@
-[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="CharacterDefinition" format=3]
+
 [ext_resource type="Script" path="res://scripts/core/character_definition.gd" id="1"]
 [ext_resource type="Texture2D" path="res://assets/stickers/117_遐蝶 脸红.png" id="2"]
+
 [resource]
 script = ExtResource("1")
 id = "castorice"
@@ -9,6 +11,27 @@ description = "基础移速50。敌人入圈后警示并追击，每秒造成25�
 portrait = ExtResource("2")
 normal_image_path = "res://assets/stickers/117_遐蝶 脸红.png"
 portrait_size = 96.0
+theme_color = Color(0.72156864, 0.49019608, 0.9098039, 1)
 speed = 50.0
-theme_color = Color(0.72,0.49,0.91,1)
-skill_slots = Array[Dictionary]([{"template_id":"castorice_aura","slot_id":"castorice_titan","charge_time":0.0,"release_time":0.0,"charge_can_move":true,"charge_image":"","release_image":"","parameters":{}}])
+skill_slots = Array[Dictionary]([{
+"charge_can_move": true,
+"charge_image": "",
+"charge_time": 0.0,
+"parameters": {
+"aura_damage": 25.0,
+"aura_radius": 180.0,
+"aura_tick_interval": 1.0,
+"execution_damage": 100000.0,
+"maximum_marks": 9,
+"minimum_arena_scale": 0.5,
+"retreat_distance": 18.0,
+"shrink_fraction": 0.01,
+"shrink_interval": 0.5,
+"slow_base_percent": 6.0,
+"slow_per_mark_percent": 1.5
+},
+"release_image": "",
+"release_time": 0.0,
+"slot_id": "castorice_titan",
+"template_id": "castorice_aura"
+}])

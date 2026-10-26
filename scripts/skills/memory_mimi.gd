@@ -47,6 +47,12 @@ func tick(delta: float) -> void:
 		arena.request_time_stop(fighter,time_stop_duration)
 	if arena.time_stop_owner == fighter:
 		_set_visual("time_stop",release_texture,arena.time_stop_remaining)
+	if fighter.airborne_remaining > 0:
+		# Airborne interrupts punching without banking attacks for landing.
+		punch_accumulator = 0
+		attack_remaining = 0
+		mimi_position = mimi_position.move_toward(rest_position(),mimi_return_speed*delta)
+		return
 	var target = null
 	var distance: float = INF
 	for enemy in arena.get_collision_targets(fighter):

@@ -11,7 +11,7 @@ description = "常态吃琼实鸟串，每秒回复30生命。首次受击后防
 portrait = ExtResource("2")
 normal_image_path = "res://assets/stickers/225_云璃 好吃.png"
 portrait_size = 96.0
-theme_color = Color(0.9, 0.75, 0.4, 1)
+theme_color = Color(0.9019608, 0.7490196, 0.4, 1)
 skill_slots = Array[Dictionary]([{
 "charge_can_move": true,
 "charge_image": "res://assets/stickers/223_云璃 威慑.png",
@@ -23,7 +23,7 @@ skill_slots = Array[Dictionary]([{
 "guard_duration": 4.0,
 "healing_per_second": 30.0,
 "sword_knockback": 1000.0,
-"sword_radius": 24.0,
+"sword_radius": 48.0,
 "sword_speed": 850.0,
 "sword_spin_speed": 10.0
 },

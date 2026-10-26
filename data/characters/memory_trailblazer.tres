@@ -1,6 +1,8 @@
-[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="CharacterDefinition" format=3]
+
 [ext_resource type="Script" path="res://scripts/core/character_definition.gd" id="1"]
 [ext_resource type="Texture2D" path="res://assets/stickers/156_开拓者 记录.png" id="2"]
+
 [resource]
 script = ExtResource("1")
 id = "memory_trailblazer"
@@ -9,5 +11,25 @@ description = "迷迷跟随头顶，对近距离敌人每秒拳击13次，每次
 portrait = ExtResource("2")
 normal_image_path = "res://assets/stickers/156_开拓者 记录.png"
 portrait_size = 96.0
-theme_color = Color(1,0.74,0.83,1)
-skill_slots = Array[Dictionary]([{"template_id":"memory_mimi","slot_id":"memory_mimi","charge_time":0.0,"release_time":0.0,"charge_can_move":true,"charge_image":"","release_image":"res://assets/stickers/083_开拓者 重写.png","parameters":{}}])
+theme_color = Color(1, 0.7411765, 0.83137256, 1)
+skill_slots = Array[Dictionary]([{
+"charge_can_move": true,
+"charge_image": "",
+"charge_time": 0.0,
+"parameters": {
+"ally_hit_charge": 5.0,
+"mimi_hit_charge": 3.5,
+"mimi_move_speed": 800.0,
+"mimi_return_speed": 650.0,
+"mimi_size": 64.0,
+"punch_damage": 10.0,
+"punch_range": 50.0,
+"punches_per_second": 13.0,
+"stopped_range_bonus": 10.0,
+"time_stop_duration": 3.5
+},
+"release_image": "res://assets/stickers/083_开拓者 重写.png",
+"release_time": 0.0,
+"slot_id": "memory_mimi",
+"template_id": "memory_mimi"
+}])
