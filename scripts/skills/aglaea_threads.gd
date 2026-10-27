@@ -4,6 +4,9 @@ extends "res://scripts/skills/skill_base.gd"
 @export_range(0,1,0.01) var threads_per_speed: float = 0.05
 @export_range(0,1000,1) var speed_gain_per_dash: float = 20.0
 @export_range(100,10000,10) var thread_dash_speed: float = 1600.0
+@export_range(1,500,1) var minimum_thread_length: float = 60.0
+@export_range(0,75,1) var minimum_departure_angle: float = 30.0
+@export_range(0,90,1) var departure_jitter: float = 20.0
 @export_range(0,100000,1) var thread_damage: float = 50.0
 @export_range(0,100000,1) var collision_damage: float = 50.0
 @export_range(0.05,10,0.05) var thread_hit_interval: float = 0.5
@@ -25,6 +28,7 @@ var collision_cooldowns: Dictionary = {}
 var previous_targets: Dictionary = {}
 var dash_trail: Array[Vector2] = []
 var last_wall_tick: int = -1
+var latched_walls: Dictionary = {}
 var completed_dashes: int = 0
 var current_dash_damage: float = 0.0
 
@@ -45,14 +49,116 @@ func on_bounds_changed() -> void:
 		anchors[i] = anchors[i].clamp(low,high)
 	for i in range(dash_path.size()):
 		dash_path[i] = dash_path[i].clamp(low,high)
+	_refresh_wall_latches(_wall_surfaces())
 
-func on_wall_contact(_normal: Vector2) -> void:
+func before_step(_delta: float) -> void:
+	if can_act() and arena.running:
+		_refresh_wall_latches(_wall_surfaces())
+
+# Surface origins describe the legal centre position, including actor radius.
+func _wall_surfaces() -> Array:
+	var low: Vector2 = arena.bounds.position + Vector2.ONE*fighter.definition.radius
+	var high: Vector2 = arena.bounds.end - Vector2.ONE*fighter.definition.radius
+	var walls: Array = [
+		{"id":"left","origin":low,"normal":Vector2.RIGHT},
+		{"id":"right","origin":high,"normal":Vector2.LEFT},
+		{"id":"top","origin":low,"normal":Vector2.DOWN},
+		{"id":"bottom","origin":high,"normal":Vector2.UP},
+	]
+	for wall in arena.cut_walls:
+		var side: float = float(fighter.cut_wall_sides.get(wall.id,1.0 if (fighter.position-wall.origin).dot(wall.normal) >= 0 else -1.0))
+		var inward: Vector2 = wall.normal*side
+		walls.append({"id":"cut_%d" % wall.id,"normal":inward,"origin":wall.origin+inward*(fighter.definition.radius+wall.half_width)})
+	return walls
+
+func _wall_contacts(walls: Array) -> Array:
+	return walls.filter(func(wall): return (fighter.position-wall.origin).dot(wall.normal) <= 0.75)
+
+func _refresh_wall_latches(walls: Array) -> void:
+	var remaining: Dictionary = {}
+	for wall in walls:
+		if latched_walls.has(wall.id) and (fighter.position-wall.origin).dot(wall.normal) < fighter.definition.radius - 0.00001:
+			remaining[wall.id] = true
+	latched_walls = remaining
+
+func _latch_contacts(contacts: Array) -> void:
+	for wall in contacts:
+		latched_walls[wall.id] = true
+
+func _inward_score(direction: Vector2, contacts: Array) -> float:
+	var score: float = 1.0
+	for wall in contacts:
+		score = minf(score,direction.dot(wall.normal))
+	return score
+
+func _departure_direction(incoming: Vector2, contacts: Array, jitter: bool) -> Vector2:
+	var desired: Vector2 = incoming.normalized()
+	if desired.is_zero_approx():
+		desired = fighter.position.direction_to(arena.bounds.get_center())
+	if desired.is_zero_approx():
+		desired = Vector2.RIGHT
+	for wall in contacts:
+		if desired.dot(wall.normal) < 0:
+			desired = desired.bounce(wall.normal)
+	if jitter and departure_jitter > 0:
+		desired = desired.rotated(deg_to_rad(arena.rng.randf_range(-departure_jitter,departure_jitter)))
+	if contacts.is_empty():
+		return desired
+	# Acute cut-wall corners may not have room for the requested angle.
+	# Find their feasible inward margin before constraining the heading.
+	var candidates: Array[Vector2] = [desired]
+	for first in contacts:
+		candidates.append(first.normal)
+		candidates.append(first.normal.orthogonal())
+		candidates.append(-first.normal.orthogonal())
+		for second in contacts:
+			var bisector: Vector2 = first.normal+second.normal
+			if not bisector.is_zero_approx():
+				candidates.append(bisector.normalized())
+	var best: Vector2 = desired
+	var maximum_margin: float = -INF
+	for candidate in candidates:
+		var margin: float = _inward_score(candidate,contacts)
+		if margin > maximum_margin:
+			maximum_margin = margin
+			best = candidate
+	var required: float = minf(sin(deg_to_rad(minimum_departure_angle)),maxf(0,maximum_margin))
+	var half_angle: float = acos(clampf(required,0,1))
+	for wall in contacts:
+		candidates.append(wall.normal.rotated(half_angle))
+		candidates.append(wall.normal.rotated(-half_angle))
+	var alignment: float = -INF
+	for candidate in candidates:
+		if _inward_score(candidate,contacts) >= required - 0.00001 and candidate.dot(desired) > alignment:
+			alignment = candidate.dot(desired)
+			best = candidate
+	return best.normalized()
+
+func _set_departure(direction: Vector2) -> void:
+	if fighter.movement_id in ["bounce","wander"]:
+		fighter.movement.direction = direction
+	fighter.velocity = direction*fighter.movement_speed()
+	fighter.collision_rebound_direction = direction
+	fighter.collision_rebound_remaining = 0.2
+
+func on_wall_contact(normal: Vector2) -> void:
 	if not can_act() or dashing or fighter.movement_override != null or not arena.running or last_wall_tick == arena.tick_count:
 		return
 	last_wall_tick = arena.tick_count
-	if not anchors.is_empty() and anchors.back().distance_to(fighter.position) < 1.0:
+	var walls: Array = _wall_surfaces()
+	_refresh_wall_latches(walls)
+	var contacts: Array = _wall_contacts(walls)
+	# Preserve impulse-led movement; only correct ordinary reflected movement.
+	if fighter.impact_remaining <= 0 and fighter.airborne_remaining <= 0 and fighter.dash_remaining <= 0:
+		var departure_contacts: Array = contacts if not contacts.is_empty() else [{"normal":normal.normalized()}]
+		_set_departure(_departure_direction(fighter.velocity,departure_contacts,false))
+	for wall in contacts:
+		if latched_walls.has(wall.id):
+			return
+	if not anchors.is_empty() and anchors.back().distance_to(fighter.position) < maxf(0.001,minimum_thread_length):
 		return
 	anchors.append(fighter.position)
+	_latch_contacts(contacts)
 	arena.emit_effect("burst",fighter.position,Color("ffe280"),{"radius":18.0})
 	if anchors.size() - 1 >= required_threads():
 		_begin_dash()
@@ -144,13 +250,17 @@ func advance_movement(delta: float) -> void:
 func _finish_dash() -> void:
 	completed_dashes += 1
 	fighter.movement_speed_bonus += speed_gain_per_dash
-	# End on the original anchor and depart along the final flight direction.
-	if fighter.movement_id == "bounce" and not fighter.velocity.is_zero_approx():
-		fighter.movement.direction = fighter.velocity.normalized()
+	# The endpoint starts the next weave, but its outgoing heading must leave the wall.
 	var endpoint: Vector2 = fighter.position
+	var contacts: Array = _wall_contacts(_wall_surfaces())
+	var outgoing: Vector2 = _departure_direction(fighter.velocity,contacts,true)
+	var slash_angle: float = fighter.velocity.angle()
 	cancel_cast()
 	anchors.append(endpoint)
-	arena.emit_effect("slash",endpoint,Color("ffe280"),{"radius":55.0,"angle":fighter.velocity.angle()})
+	_latch_contacts(contacts)
+	last_wall_tick = arena.tick_count
+	_set_departure(outgoing)
+	arena.emit_effect("slash",endpoint,Color("ffe280"),{"radius":55.0,"angle":slash_angle})
 
 func cancel_cast() -> void:
 	if fighter != null and fighter.movement_override == self:
@@ -163,6 +273,8 @@ func cancel_cast() -> void:
 	thread_contacts.clear()
 	thread_cooldowns.clear()
 	previous_targets.clear()
+	latched_walls.clear()
+	last_wall_tick = -1
 	super.cancel_cast()
 
 func is_in_flight() -> bool:

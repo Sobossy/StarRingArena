@@ -19,12 +19,13 @@ const ITEMS := [
 ]
 static var _parameter_cache: Dictionary = {}
 const PARAMETER_NAMES := {
+	"wall_damage":"重击击退撞墙额外伤害",
 	"aim_wobble_degrees":"蓄力初始预警线摆动幅度（度）", "aim_jitter_interval":"预警线随机摆动间隔（秒）",
 	"warning_lock_time":"蓄满后锁线预警（秒）", "slash_damage":"斩击伤害", "slash_half_width":"斩击判定半宽", "cut_wall_half_width":"切面墙半宽", "colour_expand_time":"灰白色扩散时间（秒）", "colour_hold_time":"完全灰白保持时间（秒）", "aim_tracking_speed":"预警线初始追踪速度", "aim_rotation_speed":"预警线初始旋转限速（度/秒）", "lost_chance_percent":"每次碰墙迷路概率（%）",
 	"mimi_move_speed":"迷迷出击移动速度", "mimi_return_speed":"迷迷返回头顶速度",
 	"punch_range":"迷迷攻击距离（双方碰撞边缘间距）", "punches_per_second":"迷迷每秒拳击次数", "punch_damage":"每次拳击伤害", "ally_hit_charge":"同阵营每次有效伤害充能（%）", "mimi_hit_charge":"自己的迷迷每拳充能（%）", "time_stop_duration":"时停持续时间（秒）", "stopped_range_bonus":"时停攻击距离增加", "mimi_size":"迷迷显示大小", "aura_radius":"伤害圈半径", "aura_damage":"伤害圈单次伤害", "aura_tick_interval":"伤害圈叠层间隔（秒）", "maximum_marks":"终结所需印记层数", "slow_base_percent":"印记基础减速（%）", "slow_per_mark_percent":"每层增加总减速（%）", "execution_damage":"碰撞终结伤害", "retreat_distance":"受伤额外后退距离", "shrink_interval":"灰黯之手缩圈间隔（秒）", "shrink_fraction":"每次缩小原场地比例", "minimum_arena_scale":"场地最小宽高比例",
 	"toast_respawn_delay":"冲刺结束后吐司刷新延迟（秒）", "toast_radius":"吐司拾取判定半径", "toast_healing":"拾取吐司回复生命", "toast_seek_delay":"常态后主动找吐司的延迟（秒）", "ram_speed":"大运冲撞速度", "ram_hit_radius":"冲撞判定半径", "ram_damage":"大运冲撞伤害", "launch_strength":"大运击飞强度", "flight_duration":"腾空时间（秒）", "flight_height":"腾空最高高度", "fall_damage":"落地摔落伤害",
-	"initial_thread_count":"初始所需金线段数", "threads_per_speed":"每点移速提升增加的金线段数", "speed_gain_per_dash":"每轮冲刺后移速提升", "thread_dash_speed":"沿金线冲刺速度", "thread_damage":"金线触碰伤害", "collision_damage":"身体碰撞伤害", "thread_hit_interval":"金线再次触碰间隔（秒）", "collision_hit_interval":"身体碰撞伤害间隔（秒）", "thread_dash_damage":"冲刺基础伤害", "speed_damage_ratio":"移速提升转冲刺伤害倍率", "thread_hit_radius":"金线判定宽度", "thread_dash_radius":"冲刺判定半径", "thread_dash_knockback":"冲刺击退强度",
+	"minimum_thread_length":"最短金线长度", "minimum_departure_angle":"最小离墙角度（度）", "departure_jitter":"冲刺结束方向扰动（度）", "initial_thread_count":"初始所需金线段数", "threads_per_speed":"每点移速提升增加的金线段数", "speed_gain_per_dash":"每轮冲刺后移速提升", "thread_dash_speed":"沿金线冲刺速度", "thread_damage":"金线触碰伤害", "collision_damage":"身体碰撞伤害", "thread_hit_interval":"金线再次触碰间隔（秒）", "collision_hit_interval":"身体碰撞伤害间隔（秒）", "thread_dash_damage":"冲刺基础伤害", "speed_damage_ratio":"移速提升转冲刺伤害倍率", "thread_hit_radius":"金线判定宽度", "thread_dash_radius":"冲刺判定半径", "thread_dash_knockback":"冲刺击退强度",
 	"cooldown":"技能冷却（秒）", "throw_distance":"球棒固定飞行距离", "outbound_speed":"球棒去程速度", "return_speed":"球棒回程速度",
 	"outbound_damage":"球棒去程伤害", "return_damage":"球棒回程伤害", "damage":"单次伤害", "damage_multiplier":"伤害倍率",
 	"hit_radius":"攻击判定半径", "spin_speed":"旋转速度（弧度/秒）", "knockback_strength":"击退强度", "rehit_interval":"同目标重击间隔（秒）", "contact_extra":"碰撞触发额外距离",

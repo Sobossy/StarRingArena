@@ -23,9 +23,9 @@ skill_slots = Array[Dictionary]([{
 "mimi_return_speed": 650.0,
 "mimi_size": 64.0,
 "punch_damage": 10.0,
-"punch_range": 50.0,
+"punch_range": 100.0,
 "punches_per_second": 13.0,
-"stopped_range_bonus": 10.0,
+"stopped_range_bonus": 20.0,
 "time_stop_duration": 3.5
 },
 "release_image": "res://assets/stickers/083_开拓者 重写.png",

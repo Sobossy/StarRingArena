@@ -1,4 +1,5 @@
 extends "res://scripts/skills/skill_base.gd"
+const HORN = preload("res://assets/audio/feiying_horn.mp3")
 ## A shared toast pickup powers one charged ram, followed by a separate air arc.
 @export_range(0,60,0.1) var toast_respawn_delay: float = 1.0
 @export_range(1,60,1) var toast_radius: float = 18.0
@@ -27,6 +28,8 @@ func tick(delta: float) -> void:
 	if not can_act() or not arena.running:
 		return
 	if state == "charge":
+		if fighter.airborne_remaining > 0:
+			return
 		phase_remaining = maxf(0,phase_remaining - delta)
 		_set_visual("dayun_charge",charge_texture,phase_remaining)
 		if phase_remaining <= 0.000001 and fighter.airborne_remaining <= 0:
@@ -48,7 +51,7 @@ func _pickup_toast() -> void:
 	normal_elapsed = 0
 	state = "charge"
 	phase = "charge"
-	phase_remaining = charge_time
+	phase_remaining = maxf(charge_time,HORN.get_length())
 	fighter.casting_skill = self
 	_set_visual("dayun_charge",charge_texture,phase_remaining)
 	arena.emit_effect("burst",fighter.position,Color("ffd6ad"),{"radius":48.0})
@@ -175,4 +178,4 @@ func get_visuals() -> Array:
 	if not can_act():
 		return []
 	var target = arena.nearest_enemy(fighter)
-	return [{"kind":"dayun","position":fighter.position,"state":state,"remaining":phase_remaining,"duration":charge_time,"direction":fighter.position.direction_to(target.position) if target != null else ram_direction,"seeking":state == "normal" and normal_elapsed >= toast_seek_delay and not arena.nearest_pickup(fighter).is_empty()}]
+	return [{"kind":"dayun","position":fighter.position,"state":state,"remaining":phase_remaining,"duration":maxf(charge_time,HORN.get_length()),"direction":fighter.position.direction_to(target.position) if target != null else ram_direction,"seeking":state == "normal" and normal_elapsed >= toast_seek_delay and not arena.nearest_pickup(fighter).is_empty()}]

@@ -1,6 +1,8 @@
-[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="CharacterDefinition" format=3]
+
 [ext_resource type="Script" path="res://scripts/core/character_definition.gd" id="1"]
 [ext_resource type="Texture2D" path="res://assets/stickers/039_绯英 好累.png" id="2"]
+
 [resource]
 script = ExtResource("1")
 id = "feiying"
@@ -9,5 +11,26 @@ description = "全场共享一片吐司，拾取回复125生命并化身大运�
 portrait = ExtResource("2")
 normal_image_path = "res://assets/stickers/039_绯英 好累.png"
 portrait_size = 96.0
-theme_color = Color(1,0.66,0.79,1)
-skill_slots = Array[Dictionary]([{"template_id":"feiying_toast","slot_id":"feiying_dayun","charge_time":1.5,"release_time":0.0,"charge_can_move":false,"charge_image":"res://assets/stickers/042_绯英 摄取知识.png","release_image":"res://assets/stickers/042_绯英 摄取知识.png","parameters":{}}])
+theme_color = Color(1, 0.65882355, 0.7882353, 1)
+skill_slots = Array[Dictionary]([{
+"charge_can_move": false,
+"charge_image": "res://assets/stickers/042_绯英 摄取知识.png",
+"charge_time": 1.5,
+"parameters": {
+"fall_damage": 75.0,
+"flight_duration": 1.5,
+"flight_height": 100.0,
+"launch_strength": 1800.0,
+"ram_damage": 150.0,
+"ram_hit_radius": 28.0,
+"ram_speed": 1200.0,
+"toast_healing": 125.0,
+"toast_radius": 18.0,
+"toast_respawn_delay": 1.0,
+"toast_seek_delay": 6.0
+},
+"release_image": "res://assets/stickers/042_绯英 摄取知识.png",
+"release_time": 0.0,
+"slot_id": "feiying_dayun",
+"template_id": "feiying_toast"
+}])

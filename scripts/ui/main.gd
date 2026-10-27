@@ -60,9 +60,9 @@ var map_default_migrated: bool = true
 var settings_path: String = "user://settings.cfg"
 var fullscreen_button: Button
 var audio_players: Array[AudioStreamPlayer] = []
-var hit_sound: AudioStreamWAV
+var hit_sound: AudioStream
 var audio_index: int = 0
-var audio_wait: float = 0.0
+
 var paused: bool = false
 var speed: float = 1.0
 var accumulator: float = 0.0
@@ -624,10 +624,13 @@ func _toggle_pause() -> void:
 	pause_button.text = "继续" if paused else "暂停"
 	phase_label.text = "Ⅱ  已暂停" if paused else "●  正在对战"
 	accumulator = 0.0
+	game_audio.sync_character_audio(arena,paused,speed)
 
 func _set_speed(value: float) -> void:
 	speed = value
 	board.display_speed = speed
+	if game_audio != null:
+		game_audio.sync_character_audio(arena,paused,speed)
 	var values := [0.5, 1.0, 2.0]
 	for i in range(speed_buttons.size()):
 		var active: bool = is_equal_approx(values[i], speed)
@@ -704,6 +707,7 @@ func _handle_mobile_back() -> void:
 func _set_backgrounded(backgrounded: bool) -> void:
 	if not mobile_mode or game_audio == null:
 		return
+	game_audio.set_character_backgrounded(backgrounded)
 	if backgrounded:
 		_save_settings()
 		if has_started and not paused and (arena.running or _waiting_for_result() or board.has_departures()):
@@ -733,7 +737,7 @@ func _process(delta: float) -> void:
 	if workshop.visible or history_panel.visible:
 		_tick_smoke()
 		return
-	audio_wait = maxf(0, audio_wait - delta)
+
 	if has_started and arena.running and not paused:
 		accumulator += minf(delta, 0.25) * speed
 		while accumulator >= STEP and arena.running:
@@ -743,10 +747,12 @@ func _process(delta: float) -> void:
 			board.ingest(events)
 			for e in events:
 				game_audio.play_weapon_event(str(e.get("kind","")))
-				if e.get("kind", "") == "hit" and audio_wait <= 0:
+				game_audio.play_character_event(e,arena,speed)
+				if e.get("kind", "") == "hit" and float(e.get("amount",0)) > 0:
 					_play_hit()
 		var seconds: int = maxi(0, int(ceil(arena.duration - arena.elapsed)))
 		timer_label.text = "%02d:%02d" % [seconds / 60, seconds % 60]
+	game_audio.sync_character_audio(arena,paused,speed)
 	if has_started:
 		var alive: int = 0
 		var names: Array[String] = []
@@ -862,21 +868,11 @@ func _build_audio() -> void:
 	if DisplayServer.get_name() == "headless":
 		_set_volume(volume_slider.value)
 		return
-	hit_sound = AudioStreamWAV.new()
-	hit_sound.format = AudioStreamWAV.FORMAT_16_BITS
-	hit_sound.mix_rate = 22050
-	var data := PackedByteArray()
-	var samples := 1800
-	data.resize(samples * 2)
-	for i in range(samples):
-		var t: float = float(i) / 22050.0
-		var envelope: float = pow(1.0 - float(i) / samples, 3.0)
-		var signal_value: float = (sin(t * TAU * (760 - t * 3600)) + 0.2 * sin(t * TAU * 1700)) * envelope * 0.14
-		data.encode_s16(i * 2, int(signal_value * 32767))
-	hit_sound.data = data
+	hit_sound = load("res://assets/audio/hit.mp3")
 	for i in range(4):
 		var player := AudioStreamPlayer.new()
 		player.stream = hit_sound
+		player.max_polyphony = 4
 		add_child(player)
 		audio_players.append(player)
 	_set_volume(volume_slider.value)
@@ -884,9 +880,10 @@ func _build_audio() -> void:
 func _play_hit() -> void:
 	if volume_slider.value <= 0 or audio_players.is_empty():
 		return
+	audio_players[audio_index].volume_db = -8.0 if game_audio != null and game_audio.memory_voice_active else 0.0
 	audio_players[audio_index].play()
 	audio_index = (audio_index + 1) % audio_players.size()
-	audio_wait = 0.075
+
 
 func _exit_tree() -> void:
 	for player in audio_players:

@@ -425,6 +425,7 @@ func _move_with_cut_reflection(actor,destination: Vector2) -> void:
 			return
 
 func _notify_cut_contact(actor,normal: Vector2) -> void:
+	_damage_knockback_wall(actor,normal)
 	actor.last_wall_velocity = actor.velocity
 	actor.movement.on_collision(normal)
 	_reflect_motion(actor,normal)
@@ -441,7 +442,7 @@ func forfeit_outside(actor,direction: Vector2,texture: Texture2D,exit_velocity: 
 	var travel: Vector2 = exit_velocity if not exit_velocity.is_zero_approx() else direction.normalized()*actor.movement_speed()
 	_defeat_fighter(actor,{"exit_kind":"lost","exit_texture":texture,"direction":direction.normalized(),"exit_velocity":travel})
 
-func apply_damage(source, target, amount: float, skill_id: String, allow_reaction: bool = true, impulse: Vector2 = Vector2.ZERO, airborne: Dictionary = {}, damage_type: String = "normal") -> void:
+func apply_damage(source, target, amount: float, skill_id: String, allow_reaction: bool = true, impulse: Vector2 = Vector2.ZERO, airborne: Dictionary = {}, damage_type: String = "normal", wall_damage: float = 0.0) -> void:
 	if not running or target == null or not target.alive or amount <= 0.0 or not is_finite(amount):
 		return
 	if source != null and (not source.alive or not is_enemy(source, target) or is_time_stopped(source)):
@@ -452,7 +453,7 @@ func apply_damage(source, target, amount: float, skill_id: String, allow_reactio
 		return
 	_damage_queue.append({
 		"source": source, "target": target, "amount": amount,
-		"skill_id": skill_id, "allow_reaction": allow_reaction, "impulse": impulse, "airborne":airborne.duplicate(), "damage_type":damage_type,
+		"skill_id": skill_id, "allow_reaction": allow_reaction, "impulse": impulse, "airborne":airborne.duplicate(), "damage_type":damage_type,"wall_damage":wall_damage,
 	})
 
 func heal(target, amount: float) -> void:
@@ -630,6 +631,8 @@ func _launch_airborne(source,target,impulse: Vector2,options: Dictionary) -> voi
 	record_event({"kind":"airborne_start","source":source.side if source != null else -1,"target":target.side,"duration":target.airborne_duration,"height":target.airborne_peak,"landing_damage":target.landing_damage})
 	target.dash_remaining = 0
 	target.knockback = Vector2.ZERO
+	target.wall_impact_source_id = -1
+	target.wall_impact_damage = 0
 	target.impact_remaining = target.airborne_duration
 	target.impact_recovery = 0
 	emit_effect("burst",target.position,Color("ffe1c5"),{"radius":52.0})
@@ -815,20 +818,34 @@ func _move_fighter(fighter, delta: float) -> void:
 	_constrain_fighter(fighter)
 	_update_impact(fighter, delta)
 
-func _apply_impact(fighter, impulse: Vector2) -> void:
+func _apply_impact(fighter, impulse: Vector2) -> bool:
 	if fighter.airborne_remaining > 0 or is_time_stopped(fighter):
-		return
+		return false
 	if fighter.movement_override != null:
 		if fighter.movement_override.resists_displacement():
-			return
+			return false
 		fighter.movement_override.cancel_cast()
 	fighter.knockback = impulse
+	fighter.wall_impact_source_id = -1
+	fighter.wall_impact_damage = 0
 	fighter.collision_rebound_remaining = 0
 	fighter.last_hit_direction = impulse.normalized()
 	fighter.impact_remaining = maxf(0.000001,log(maxf(60.0,impulse.length()) / 60.0) / 8.0)
 	fighter.impact_recovery = 0.0
 	fighter.lift_time = 0.28
 	emit_effect("impact", fighter.position, Color("ffe4a0"), {"side":fighter.side, "angle":impulse.angle()})
+	return true
+
+func _damage_knockback_wall(fighter, normal: Vector2) -> void:
+	if fighter.impact_remaining <= 0 or fighter.wall_impact_damage <= 0 or fighter.knockback.dot(normal) >= 0:
+		return
+	var source_id: int = fighter.wall_impact_source_id
+	var amount: float = fighter.wall_impact_damage
+	# One bonus per successful heavy knockback, including corner contacts.
+	fighter.wall_impact_damage = 0
+	fighter.wall_impact_source_id = -1
+	if source_id >= 0 and source_id < fighters.size():
+		apply_damage(fighters[source_id],fighter,amount,"collision_smash_wall",false)
 
 func _update_impact(fighter, delta: float) -> void:
 	if fighter.impact_remaining > 0.0:
@@ -837,6 +854,8 @@ func _update_impact(fighter, delta: float) -> void:
 		fighter.impact_remaining = maxf(0.000001,log(maxf(60.0,speed) / 60.0) / 8.0)
 		if speed < 60.0:
 			fighter.knockback = Vector2.ZERO
+			fighter.wall_impact_damage = 0
+			fighter.wall_impact_source_id = -1
 			fighter.impact_remaining = 0.0
 			fighter.impact_recovery = 0.12
 			fighter.impact_recovery_start = fighter.impact_angle
@@ -866,6 +885,7 @@ func _constrain_fighter(fighter) -> void:
 		fighter.position.y = maximum.y
 		normal.y = -1.0
 	if normal != Vector2.ZERO:
+		_damage_knockback_wall(fighter,normal)
 		fighter.last_wall_velocity = fighter.velocity
 		# Reflect each axis at corners instead of reflecting around a diagonal normal.
 		if normal.x != 0.0:
@@ -1068,7 +1088,9 @@ func _resolve_damage() -> void:
 		if actual + absorbed > 0.0:
 			var impulse: Vector2 = event.get("impulse", Vector2.ZERO)
 			if not impulse.is_zero_approx():
-				_apply_impact(target, impulse)
+				if _apply_impact(target, impulse) and source != null:
+					target.wall_impact_source_id = source.fighter_id
+					target.wall_impact_damage = maxf(0,float(event.get("wall_damage",0)))
 			elif source != null:
 				target.last_hit_direction = source.position.direction_to(target.position)
 			var airborne: Dictionary = event.get("airborne",{})

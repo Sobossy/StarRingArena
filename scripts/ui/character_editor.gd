@@ -622,6 +622,8 @@ func _image_description(path: String) -> String:
 func _refresh_preview() -> void:
 	if preview_board == null or draft == null:
 		return
+	if ui.game_audio != null:
+		ui.game_audio.stop_character_audio(preview_arena)
 	preview_playing = false
 	preview_arena.clear_battle()
 	preview_board.arena = null
@@ -685,6 +687,8 @@ func play_preview() -> void:
 func _process(delta: float) -> void:
 	if not visible or not preview_playing:
 		return
+	if ui.game_audio.application_backgrounded:
+		return
 	preview_clock += delta
 	preview_accumulator += minf(delta,0.1)
 	while preview_accumulator >= 1.0/60.0 and preview_arena.running:
@@ -693,7 +697,11 @@ func _process(delta: float) -> void:
 		preview_board.ingest(events)
 		for event in events:
 			ui.game_audio.play_weapon_event(str(event.get("kind","")))
+			ui.game_audio.play_character_event(event,preview_arena,1.0)
+			if event.get("kind","") == "hit" and float(event.get("amount",0)) > 0:
+				ui._play_hit()
 		preview_accumulator -= 1.0/60.0
+	ui.game_audio.sync_character_audio(preview_arena,false,1.0)
 	if not preview_arena.fighters.is_empty():
 		preview_caption.text = {"charge":"蓄力中", "guard":"防反中", "thread_dash":"沿金线冲刺 · 不可阻挡", "dayun_charge":"大运蓄力中", "dayun_rush":"大运冲撞中", "time_stop":"时停中 · 迷迷连打", "acheron_charge":"蓄力变色中", "acheron_locked":"斩击预警 · 已锁线", "acheron_release":"斩断 · 灰白扩散", "release":"释放中", "normal":"常规形象"}.get(preview_arena.fighters[0].visual_phase,"常规形象")
 	var flying: bool = false

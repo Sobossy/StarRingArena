@@ -25,6 +25,8 @@ var hit_flash: float = 0.0
 var dash_velocity: Vector2 = Vector2.ZERO
 var dash_remaining: float = 0.0
 var knockback: Vector2 = Vector2.ZERO
+var wall_impact_source_id: int = -1
+var wall_impact_damage: float = 0.0
 var movement_speed_bonus: float = 0.0
 var movement_override = null
 var local_time: float = 0.0
@@ -83,6 +85,8 @@ func clear_runtime() -> void:
 	airborne_source = null
 	airborne_remaining = 0
 	airborne_height = 0
+	wall_impact_source_id = -1
+	wall_impact_damage = 0
 	skills.clear()
 	if movement != null:
 		movement.fighter = null

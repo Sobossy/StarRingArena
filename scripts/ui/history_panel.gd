@@ -327,7 +327,7 @@ func _skill_name(id: String) -> String:
 		for skill in slot.character.get("skills",[]):
 			if str(skill.get("template_id","")) == id:
 				return str(skill.get("name","技能"))
-	return {"mimi_punch":"迷迷拳击","titan_execution":"泰坦终结","burn":"灼烧","feiying_landing":"摔落伤害","aglaea_threads_contact":"阿格莱雅碰撞","aglaea_threads_thread":"金线伤害","aglaea_threads_dash":"沿金线冲刺"}.get(id,"攻击")
+	return {"mimi_punch":"迷迷拳击","titan_execution":"泰坦终结","burn":"灼烧","collision_smash_wall":"重击撞墙追加伤害","feiying_landing":"摔落伤害","aglaea_threads_contact":"阿格莱雅碰撞","aglaea_threads_thread":"金线伤害","aglaea_threads_dash":"沿金线冲刺"}.get(id,"攻击")
 
 static func _outcome(entry: Dictionary) -> String:
 	if entry.result.get("draw",false):
