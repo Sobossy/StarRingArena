@@ -3,6 +3,7 @@ extends Node
 ## Fixed-step battle rules. No drawing, wall-clock timers, or global random state.
 
 const FighterScript = preload("res://scripts/core/fighter.gd")
+const PortalSystem = preload("res://scripts/core/portal_system.gd")
 const MOVEMENTS: Dictionary = {
 	"bounce": preload("res://scripts/movement/bounce.gd"),
 	"chase": preload("res://scripts/movement/chase.gd"),
@@ -13,6 +14,7 @@ const MAX_PROJECTILES: int = 512
 const MAX_EVENTS: int = 512
 const MAX_LOG_ENTRIES: int = 4096
 const MAX_DAMAGE_EVENTS_PER_STEP: int = 256
+const MAX_QUEUED_DAMAGE_EVENTS: int = 8192
 
 signal battle_ended(result: int)
 signal combat_event(event: Dictionary)
@@ -47,6 +49,7 @@ var _damage_queue: Array = []
 var _next_projectile_id: int = 1
 var cut_walls: Array = []
 var _next_cut_id: int = 1
+var portals = PortalSystem.new(self)
 
 func start_battle(definitions: Array, movement_ids: Array, new_seed: int = 42) -> void:
 	var config = load("res://scripts/core/match_config.gd").new()
@@ -156,6 +159,7 @@ func start_match(config) -> String:
 			for packed_scene in fighter.definition.skill_scenes:
 				if packed_scene != null:
 					_attach_skill(fighter, packed_scene.instantiate())
+	portals.update(0)
 	return ""
 
 func _attach_skill(fighter, skill) -> void:
@@ -173,6 +177,7 @@ func step(delta: float) -> void:
 	var step_delta: float = minf(delta, maxf(0.0, duration - elapsed))
 	elapsed = minf(duration, elapsed + step_delta)
 	var stopped_at_start: bool = time_stop_remaining > 0
+	portals.update(step_delta if not stopped_at_start else 0.0)
 	if not stopped_at_start:
 		world_elapsed += step_delta
 		_update_pickups(step_delta)
@@ -211,6 +216,7 @@ func step(delta: float) -> void:
 		_update_projectiles(step_delta)
 	_resolve_damage()
 	_resolve_deaths_and_result()
+	portals.flush_launches()
 	if stopped_at_start and time_stop_remaining > 0:
 		time_stop_remaining = maxf(0,time_stop_remaining-step_delta)
 		if time_stop_remaining <= 0.000001 or time_stop_owner == null or not time_stop_owner.alive:
@@ -230,7 +236,9 @@ func step_post_result_motion(delta: float) -> void:
 			continue
 		actor.local_time += delta
 		actor.velocity = actor.post_result_heading*actor.movement_speed()
-		if cut_walls.is_empty():
+		if portals.enabled():
+			portals.move_actor(actor,actor.velocity*delta,false,true)
+		elif cut_walls.is_empty():
 			actor.position += actor.velocity*delta
 		else:
 			_move_with_cut_reflection(actor,actor.position+actor.velocity*delta)
@@ -447,7 +455,7 @@ func apply_damage(source, target, amount: float, skill_id: String, allow_reactio
 		return
 	if source != null and (not source.alive or not is_enemy(source, target) or is_time_stopped(source)):
 		return
-	if _damage_queue.size() >= MAX_DAMAGE_EVENTS_PER_STEP:
+	if _damage_queue.size() >= MAX_QUEUED_DAMAGE_EVENTS:
 		return
 	if not impulse.is_finite():
 		return
@@ -708,6 +716,7 @@ func get_visuals() -> Array:
 
 func clear_battle() -> void:
 	running = false
+	portals.clear()
 	_end_time_stop()
 	pending_time_stop.clear()
 	world_elapsed = 0
@@ -737,6 +746,7 @@ func clear_battle() -> void:
 	_next_cut_id = 1
 
 func _exit_tree() -> void:
+	portals.clear()
 	time_stop_owner = null
 	pending_time_stop.clear()
 	# Children are freed by Godot; explicitly break RefCounted owner/source cycles.
@@ -808,7 +818,9 @@ func _move_fighter(fighter, delta: float) -> void:
 	if fighter.impact_remaining > 0.0:
 		desired = Vector2.ZERO
 	fighter.velocity = desired + fighter.knockback
-	if cut_walls.is_empty():
+	if portals.enabled():
+		portals.move_actor(fighter,fighter.velocity*delta)
+	elif cut_walls.is_empty():
 		fighter.position += fighter.velocity * delta
 	else:
 		_move_with_cut_reflection(fighter,fighter.position+fighter.velocity*delta)
@@ -885,21 +897,24 @@ func _constrain_fighter(fighter) -> void:
 		fighter.position.y = maximum.y
 		normal.y = -1.0
 	if normal != Vector2.ZERO:
-		_damage_knockback_wall(fighter,normal)
-		fighter.last_wall_velocity = fighter.velocity
-		# Reflect each axis at corners instead of reflecting around a diagonal normal.
-		if normal.x != 0.0:
-			fighter.movement.on_collision(Vector2(normal.x, 0.0))
-			_reflect_motion(fighter,Vector2(normal.x,0.0))
-		if normal.y != 0.0:
-			fighter.movement.on_collision(Vector2(0.0, normal.y))
-			_reflect_motion(fighter,Vector2(0.0,normal.y))
-		if fighter.movement_override == null:
-			for skill in fighter.skills:
-				if fighter.alive and skill.active and skill.has_method("on_wall_contact"):
-					skill.on_wall_contact(normal)
+		_notify_outer_contact(fighter,normal)
 	if fighter.alive and not cut_walls.is_empty():
 		_project_from_cut_walls(fighter)
+
+func _notify_outer_contact(fighter, normal: Vector2) -> void:
+	_damage_knockback_wall(fighter,normal)
+	fighter.last_wall_velocity = fighter.velocity
+	# Reflect axes separately at corners, including solid sides beside a gate.
+	if normal.x != 0.0:
+		fighter.movement.on_collision(Vector2(normal.x,0))
+		_reflect_motion(fighter,Vector2(normal.x,0))
+	if normal.y != 0.0:
+		fighter.movement.on_collision(Vector2(0,normal.y))
+		_reflect_motion(fighter,Vector2(0,normal.y))
+	if fighter.movement_override == null:
+		for skill in fighter.skills:
+			if fighter.alive and skill.active:
+				skill.on_wall_contact(normal)
 
 func _reflect_motion(fighter,normal: Vector2) -> void:
 	if fighter.velocity.dot(normal) < -0.000001:
@@ -986,6 +1001,10 @@ func _update_projectiles(delta: float) -> void:
 		projectile["visual_clock"] = float(projectile.get("visual_clock",0)) + travel_delta
 		var start: Vector2 = projectile["position"]
 		var destination: Vector2 = start + projectile["velocity"] * travel_delta
+		if bool(projectile.get("portal_eligible",false)) or float(projectile.get("angular_velocity",0)) != 0 or bool(projectile.get("explode_on_wall",false)) or bool(projectile.get("explode_on_expiry",false)):
+			if portals.advance_rocket(projectile,travel_delta):
+				remaining.append(projectile)
+			continue
 		projectile["previous_position"] = start
 		projectile["position"] = destination
 		if bool(projectile.get("piercing",false)):
@@ -1062,7 +1081,10 @@ func _segment_circle_contact(start: Vector2, finish: Vector2, center: Vector2, r
 
 func _resolve_damage() -> void:
 	var processed: int = 0
-	while not _damage_queue.is_empty() and processed < MAX_DAMAGE_EVENTS_PER_STEP:
+	# Preserve the normal reaction guard while admitting a bounded batch of
+	# legitimate AoE hits from up to 512 simultaneous rocket explosions.
+	var damage_budget: int = maxi(MAX_DAMAGE_EVENTS_PER_STEP,mini(MAX_QUEUED_DAMAGE_EVENTS,_damage_queue.size()*2))
+	while not _damage_queue.is_empty() and processed < damage_budget:
 		var event: Dictionary = _damage_queue.pop_front()
 		processed += 1
 		var target = event["target"]
@@ -1166,6 +1188,7 @@ func _defeat_fighter(fighter,extra: Dictionary = {}) -> void:
 	for skill in fighter.skills:
 		skill.cancel_cast()
 		skill.active = false
+	portals.update(0)
 	var data: Dictionary = {"side":fighter.side,"direction":fighter.last_hit_direction,"angle":fighter.impact_angle}
 	data.merge(extra,true)
 	emit_effect("death",fighter.position,fighter.definition.theme_color,data)
@@ -1173,6 +1196,7 @@ func _defeat_fighter(fighter,extra: Dictionary = {}) -> void:
 
 func _finish_team(team: int, reason: String) -> void:
 	running = false
+	portals.pending.clear()
 	_end_time_stop()
 	pending_time_stop.clear()
 	winner_team = team

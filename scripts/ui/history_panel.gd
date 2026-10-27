@@ -298,16 +298,32 @@ func _describe_event(event: Dictionary) -> String:
 		"pickup_taken": return "%s：拾取吐司" % source
 		"shrink": return "灰黯之手缩圈，场地剩余%.0f%%" % (float(event.scale)*100)
 		"arena_cut": return "%s：新增永久切面墙" % source
+		"portal_walls": return "%s：百界门开放%s，%.1f秒后重选" % [source,"、".join(event.walls.map(func(side): return ["左墙","右墙","上墙","下墙"][int(side)])),event.duration]
+		"portal_closed": return "百界门关闭"
+		"portal_fighter": return "%s：%s穿过百界门%s%s" % [source,target,_portal_route(event),"（时停期间不发射火箭）" if event.get("fire_suppressed",false) else ""]
+		"portal_projectile": return "%s：火箭%d穿过百界门%s" % [source,event.projectile_id,_portal_route(event)]
+		"portal_launch": return "%s → %s：%s传送触发彩虹火箭" % [source,target,"火箭" if event.trigger_type == "rocket" else "角色"]
+		"portal_limit": return "投射物达到上限，%d枚火箭未生成" % event.count
+		"rocket_explosion": return "%s：火箭%d%s爆炸，范围伤害%.1f，命中%d名敌人" % [source,event.projectile_id,{"hit":"命中后","wall":"碰墙后","expired":"到期后"}.get(event.reason,""),event.damage,event.targets.size()]
 		"death": return "%s：%s" % [target,"迷路判负" if event.get("reason","") == "lost" else "被淘汰"]
 		"start": return "对局开始 · 种子%d" % event.seed
 		"end": return "对局结束 · "+_outcome(store.summarize(record))
 	return "其他对局事件"
 
+static func _portal_route(event: Dictionary) -> String:
+	if not event.has("entry_wall") or not event.has("exit_wall"):
+		return ""
+	var names: Array = ["左门","右门","上门","下门"]
+	var entrance: int = clampi(int(event.entry_wall),0,3)
+	var exit_wall: int = clampi(int(event.exit_wall),0,3)
+	var angle: float = float(event.get("rotation_deg",0))
+	return " · %s→%s%s" % [names[entrance],names[exit_wall],"（旋转%.0f°）" % angle if absf(angle) > .01 else ""]
+
 static func _category(kind: String) -> String:
 	if kind in ["damage","heal","shield","death"]: return kind
 	if kind in ["status","status_end","mark","airborne_start","airborne_end","shield_end"]: return "status"
-	if kind in ["skill_phase","skill_action","projectile","projectile_hit","projectile_end","time_stop_start","time_stop_end"]: return "skill"
-	if kind in ["pickup_spawn","pickup_taken","shrink","arena_cut"]: return "field"
+	if kind in ["skill_phase","skill_action","projectile","projectile_hit","projectile_end","time_stop_start","time_stop_end","portal_launch","portal_projectile","rocket_explosion","portal_limit"]: return "skill"
+	if kind in ["pickup_spawn","pickup_taken","shrink","arena_cut","portal_walls","portal_closed","portal_fighter"]: return "field"
 	return "system"
 
 func _name(slot: int) -> String:

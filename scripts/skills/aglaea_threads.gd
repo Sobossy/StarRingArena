@@ -39,6 +39,12 @@ func setup(owner_fighter,battle_arena) -> void:
 func required_threads() -> int:
 	return maxi(1,ceili(initial_thread_count + maxf(0,fighter.movement_speed() - initial_speed) * threads_per_speed - 0.000001))
 
+func on_fighter_teleported(actor, _from: Vector2, to: Vector2) -> void:
+	previous_targets[actor.fighter_id] = to
+	if actor == fighter:
+		latched_walls.clear()
+		last_wall_tick = arena.tick_count
+
 func resists_displacement() -> bool:
 	return true
 

@@ -1,4 +1,4 @@
-param([switch]$SkipTemplates)
+param([switch]$SkipTemplates,[switch]$WebTemplates)
 . (Join-Path $PSScriptRoot 'tools\common.ps1')
 $ProgressPreference = 'SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -52,6 +52,19 @@ if (-not $SkipTemplates -and (-not (Test-Path -LiteralPath (Join-Path $templateD
 }
 
 $fontsDir = Join-Path $ProjectRoot 'assets\fonts'
+if ($WebTemplates) {
+    $zipPath = Get-VerifiedArchive $templateArchive $templateSha
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $archive = [IO.Compression.ZipFile]::OpenRead($zipPath)
+    try {
+        foreach ($name in @('web_nothreads_debug.zip','web_nothreads_release.zip')) {
+            $entry = $archive.GetEntry("templates/$name")
+            if ($null -eq $entry) { throw "Official template archive missing $name." }
+            [IO.Compression.ZipFileExtensions]::ExtractToFile($entry, (Join-Path $templateDir $name), $true)
+        }
+    } finally { $archive.Dispose() }
+    Write-Host 'Matching single-threaded Web export templates ready.'
+}
 New-Item -ItemType Directory -Path $fontsDir -Force | Out-Null
 if (-not (Test-Path -LiteralPath (Join-Path $fontsDir 'NotoSansSC.ttf'))) {
     Invoke-WebRequest -UseBasicParsing -Uri 'https://raw.githubusercontent.com/google/fonts/main/ofl/notosanssc/NotoSansSC%5Bwght%5D.ttf' -OutFile (Join-Path $fontsDir 'NotoSansSC.ttf')

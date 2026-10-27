@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/core/character_definition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/stickers/131_缇宝 睿智.png" id="2"]
+[resource]
+script = ExtResource("1")
+id = "tribbie"
+display_name = "缇宝"
+description = "百界门随机开放两面外墙，每8秒重选，两门互通。穿门保持速度大小，相邻门随出口转向90°。每次传送让每个存活缇宝发射一枚持续弯曲的火箭，默认转弯40°/秒。火箭碰敌人、实体外墙或10秒到期时爆炸，范围伤害60；时停时门可用，但不发射火箭。"
+portrait = ExtResource("2")
+normal_image_path = "res://assets/stickers/131_缇宝 睿智.png"
+portrait_size = 96.0
+theme_color = Color(1,0.72,0.42,1)
+skill_slots = Array[Dictionary]([{"template_id":"tribbie_portals","slot_id":"tribbie_gates","charge_time":0.0,"release_time":0.0,"charge_can_move":true,"charge_image":"","release_image":"","parameters":{}}])

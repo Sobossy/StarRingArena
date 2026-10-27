@@ -22,3 +22,14 @@ Use case: precise-object-edit / stylized-concept. Asset type: a cute isolated 2D
 ```text
 Use case: stylized-concept. Asset type: one isolated 2D game effect sprite, square canvas requested 1024x1024 PNG, genuine transparent background. Input reference: use ONLY the dark blue-gray elongated claw-hand shape inside the RED RECTANGLE at the upper right of the reference screenshot. Reconstruct that hand as a clean enlarged game sprite, closely matching its angular silhouette: a compact jagged palm and wrist at UPPER RIGHT, long thin pointed claw-like fingers extending diagonally toward LOWER LEFT, with transparent gaps between the fingers. Dark desaturated navy-blue/charcoal flat fill, narrow muted pale slate-blue edge outline, very minimal interior lines. The reference is a simple eerie silhouette, not a realistic detailed skeleton or fleshy human hand. Preserve the recognizable long tapering talons, palm shape, direction and proportions from the red-box hand. Center the COMPLETE SINGLE hand on the square canvas. IMPORTANT: the silhouette's bounding box must stay within the central 76 percent of the canvas in both axes, leaving at least 12 percent fully empty transparent margin at every edge. Nothing cropped. No wrist or fingers going off canvas. No extra hands, no arm beyond the short wrist root, no detached scratches, no particles, no glow, no environment, no game arena, no white boundary, no colored annotation rectangles, no characters, no text, no UI, no watermark, no ground shadow. True alpha transparency everywhere outside the hand and between all fingers; do not paint a checkerboard or backdrop.
 ```
+
+
+## 缇宝火箭
+
+使用内置imagegen编辑用户提供的火箭参考图，输出为 `tribbie_rocket.png`（RGBA透明背景）。原始参考保存在 `references/tribbie-rocket-reference.png`，未从视频提取素材或音频。彩虹拖尾不在贴图中，由游戏按实际路径绘制。
+
+提示词：
+
+Edit the supplied reference image into a single transparent game sprite. Isolate ONLY the small cute red-and-gold cartoon rocket at the lower left. Preserve its precise silhouette, pointed red nose, cream fins, round gold cap, white flower emblem, soft dark outline and flat chibi sticker art. Remove ALL pale blue background, rainbow trail, light streaks and any other marks. Do not add flame, exhaust, rainbow, glow, characters, text or scenery. Keep its current diagonal orientation: nose points toward the lower left, back toward upper right. Enlarge cleanly without adding realistic detail. Single complete rocket centered in a square 1024x1024 image with roughly 10% transparent margin around its visible silhouette. Genuine alpha transparency, no checkerboard or shadow.
+
+实际保存尺寸1254×1254，保留原始输出及透明通道，在游戏中按角色技能的显示大小绘制。

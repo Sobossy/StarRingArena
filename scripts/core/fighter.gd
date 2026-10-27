@@ -13,6 +13,7 @@ var visual_remaining: float = 0.0
 var visual_texture: Texture2D = null
 var position: Vector2 = Vector2.ZERO
 var velocity: Vector2 = Vector2.ZERO
+var teleport_serial: int = 0
 var health: float = 1000.0
 var shield: float = 0.0
 var shield_remaining: float = 0.0

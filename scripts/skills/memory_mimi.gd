@@ -28,6 +28,10 @@ func rest_position() -> Vector2:
 func summon_position() -> Vector2:
 	return mimi_position
 
+func on_fighter_teleported(actor, from: Vector2, to: Vector2) -> void:
+	if actor == fighter and attack_remaining <= 0:
+		mimi_position += to-from
+
 func attack_position(target) -> Vector2:
 	var toward_owner: Vector2 = target.position.direction_to(fighter.position)
 	if toward_owner.is_zero_approx():

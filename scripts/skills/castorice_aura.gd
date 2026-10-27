@@ -52,13 +52,14 @@ func tick(delta: float) -> void:
 			_record_marks(entry.target,int(entry.stacks))
 			arena.apply_damage(fighter,entry.target,aura_damage,skill_id)
 			entry.target.aura_slows[fighter.fighter_id] = {"source":fighter,"power":minf(.95,(slow_base_percent+entry.stacks*slow_per_mark_percent)/100),"stacks":entry.stacks}
+			_try_execute(entry.target)
 		_try_execute(entry.target)
 
 func _try_execute(target) -> void:
 	if not marks.has(target.fighter_id):
 		return
 	var entry: Dictionary = marks[target.fighter_id]
-	if entry.stacks >= maximum_marks and not entry.executed and fighter.position.distance_to(target.position) <= fighter.definition.radius+target.definition.radius+0.15:
+	if entry.stacks >= maximum_marks and not entry.executed:
 		entry.executed = true
 		arena.apply_damage(fighter,target,execution_damage,"titan_execution")
 		arena.emit_effect("smash",target.position,Color("ec4d72"),{"radius":95.0,"angle":fighter.position.direction_to(target.position).angle(),"execution":true})

@@ -1,6 +1,7 @@
 extends RefCounted
 ## Code-registered templates. Saved characters contain IDs, never executable paths.
 const ITEMS := [
+	{"id":"tribbie_portals", "name":"缇宝 · 百界门与彩虹火箭", "type":"持续", "scene":"res://scenes/skills/tribbie_portals.tscn"},
 	{"id":"orbit", "name":"环绕飞剑", "type":"持续", "scene":"res://scenes/skills/orbit_blades.tscn"},
 	{"id":"fireball", "name":"火球", "type":"主动", "scene":"res://scenes/skills/fireball.tscn"},
 	{"id":"melee", "name":"近战重击", "type":"主动", "scene":"res://scenes/skills/melee.tscn"},
@@ -19,6 +20,7 @@ const ITEMS := [
 ]
 static var _parameter_cache: Dictionary = {}
 const PARAMETER_NAMES := {
+	"portal_interval":"百界门重选间隔（秒）", "rocket_damage":"火箭爆炸伤害", "rocket_speed":"火箭飞行速度", "rocket_turn_rate":"火箭持续转弯（度/秒）", "rocket_radius":"火箭碰撞半径", "rocket_size":"火箭显示大小", "rainbow_length":"彩虹拖尾长度", "rocket_lifetime":"火箭爆炸时限（秒）",
 	"wall_damage":"重击击退撞墙额外伤害",
 	"aim_wobble_degrees":"蓄力初始预警线摆动幅度（度）", "aim_jitter_interval":"预警线随机摆动间隔（秒）",
 	"warning_lock_time":"蓄满后锁线预警（秒）", "slash_damage":"斩击伤害", "slash_half_width":"斩击判定半宽", "cut_wall_half_width":"切面墙半宽", "colour_expand_time":"灰白色扩散时间（秒）", "colour_hold_time":"完全灰白保持时间（秒）", "aim_tracking_speed":"预警线初始追踪速度", "aim_rotation_speed":"预警线初始旋转限速（度/秒）", "lost_chance_percent":"每次碰墙迷路概率（%）",
@@ -50,7 +52,7 @@ static func parameter_definitions(template_id: String) -> Array:
 		if not (int(property.usage) & PROPERTY_USAGE_EDITOR) or not (int(property.usage) & PROPERTY_USAGE_SCRIPT_VARIABLE) or int(property.type) not in [TYPE_INT,TYPE_FLOAT,TYPE_BOOL]:
 			continue
 		var key := str(property.name)
-		if key == "cooldown" and template_id in ["bat_throw","collision_smash","sparkle_revolver","yunli_guard","aglaea_threads","feiying_toast","memory_mimi","castorice_aura","acheron_slash"]:
+		if key == "cooldown" and template_id in ["bat_throw","collision_smash","sparkle_revolver","yunli_guard","aglaea_threads","feiying_toast","memory_mimi","castorice_aura","acheron_slash","tribbie_portals"]:
 			continue
 		var minimum: float = 0.0
 		var maximum: float = 100000.0

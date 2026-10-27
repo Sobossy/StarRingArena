@@ -144,6 +144,12 @@ func on_enemy_contact(_enemy) -> void:
 func on_wall_contact(_normal: Vector2) -> void:
 	pass
 
+func on_fighter_teleported(_actor, _from: Vector2, _to: Vector2) -> void:
+	pass
+
+func on_fighter_portal_rotated(_actor, _angle: float) -> void:
+	pass
+
 func desired_velocity_override():
 	return null
 

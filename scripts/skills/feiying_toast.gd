@@ -102,6 +102,20 @@ func _begin_ram() -> void:
 func advance_movement(delta: float) -> void:
 	if state != "rush" or not can_act():
 		return
+	if arena.portals.enabled():
+		fighter.velocity = ram_direction*ram_speed
+		if absf(ram_direction.x) > .01:
+			fighter.facing = signf(ram_direction.x)
+		var path: Dictionary = arena.portals.move_actor(fighter,ram_direction*ram_speed*delta,true)
+		for segment in path.segments:
+			_hit_ram_segment(segment.from,segment.to)
+		if not path.normal.is_zero_approx():
+			if path.cut:
+				arena._notify_cut_contact(fighter,path.normal)
+			else:
+				arena._notify_outer_contact(fighter,path.normal)
+				cancel_cast()
+		return
 	var start: Vector2 = fighter.position
 	var wall_contact: Dictionary = arena.clip_motion_to_cut_walls(fighter,start,start.move_toward(ram_wall_point,ram_speed*delta))
 	var destination: Vector2 = wall_contact.position
@@ -141,6 +155,31 @@ func advance_movement(delta: float) -> void:
 
 func resists_displacement() -> bool:
 	return state == "rush"
+
+func _hit_ram_segment(start: Vector2, destination: Vector2) -> void:
+	var hits: Array = []
+	var hit_direction: Vector2 = start.direction_to(destination)
+	if hit_direction.is_zero_approx():
+		hit_direction = ram_direction
+	for target in arena.get_collision_targets(fighter):
+		if ram_hit_targets.has(target.fighter_id):
+			continue
+		var contact: float = arena._segment_circle_contact(start,destination,target.position,ram_hit_radius+target.definition.radius)
+		if contact >= 0:
+			hits.append({"target":target,"contact":contact})
+	hits.sort_custom(func(a,b): return a.target.fighter_id < b.target.fighter_id if a.contact == b.contact else a.contact < b.contact)
+	for hit in hits:
+		ram_hit_targets[hit.target.fighter_id] = true
+		arena.apply_damage(fighter,hit.target,ram_damage,skill_id,true,hit_direction*launch_strength,{"duration":flight_duration,"height":flight_height,"landing_damage":fall_damage})
+		hits_count += 1
+
+func on_fighter_portal_rotated(actor, angle: float) -> void:
+	if actor == fighter and state == "rush":
+		ram_direction = ram_direction.rotated(angle)
+
+func on_fighter_teleported(actor, _from: Vector2, _to: Vector2) -> void:
+	if actor == fighter:
+		on_bounds_changed()
 
 func on_bounds_changed() -> void:
 	if state != "rush":

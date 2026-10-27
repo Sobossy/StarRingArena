@@ -1,8 +1,10 @@
 # 星环竞技场
 
-Windows / Android 离线2D自动对战游戏。支持2～8人个人竞技与组队、角色编辑、多状态PNG形象、技能数值调整和完整对局记录；安卓采用竖屏布局，每次开局自动更换随机种子。
+Windows / Android / Web 2D自动对战游戏。支持2～8人个人竞技与组队、角色编辑、多状态PNG形象、技能数值调整和完整对局记录；安卓采用竖屏布局，每次开局自动更换随机种子。
 
-已内置：毁灭·星、花火、云璃、阿格莱雅、绯英、记忆·星、遐蝶、黄泉。
+**[点击在线游玩：星环竞技场](https://sobossy.itch.io/star-ring-arena)** — 无需安装，打开页面后点击 `Run game`。推荐电脑浏览器与全屏模式；网页版存档保存在当前浏览器中，不与 Windows / Android 自动同步。
+
+已内置：毁灭·星、花火、云璃、阿格莱雅、绯英、记忆·星、遐蝶、黄泉、缇宝。
 
 ## 参考来源
 
@@ -15,6 +17,7 @@ Windows / Android 离线2D自动对战游戏。支持2～8人个人竞技与组�
 - [安卓APK（竖屏）](https://github.com/Sobossy/StarRingArena/releases/latest/download/StarRingArena.apk)
 - [Windows运行包](https://github.com/Sobossy/StarRingArena/releases/latest/download/StarRingArena-Windows.zip)：完整解压后运行 `Windows/SpiritArena.exe`，保留同目录的PCK文件。
 - [源码包](https://github.com/Sobossy/StarRingArena/releases/latest/download/StarRingArena-Source.zip)
+- [Web部署包](https://github.com/Sobossy/StarRingArena/releases/latest/download/StarRingArena-Web.zip)：供网站部署，解压后需通过网页服务器访问，不能直接双击HTML运行。
 - [更新记录](https://github.com/Sobossy/StarRingArena/releases)
 
 安卓使用相同包名与签名覆盖安装，可保留数据。电脑与手机存档各自保存，暂不自动同步。
@@ -26,6 +29,7 @@ Windows / Android 离线2D自动对战游戏。支持2～8人个人竞技与组�
 - **源码启动：** 双击 `StartGame.cmd`；缺少工具时自动配置Godot 4.7.2。
 - **开发与打包：** `OpenEditor.cmd` 打开工程，`BuildGame.cmd` 导出Windows，`BuildAndroid.ps1` 导出APK；`UpdatePhone.cmd` 可覆盖安装到已授权的USB调试手机。
 - **快捷键：** Space暂停，R重新开局，F11切换全屏。
+- **Web打包：** 运行 `BuildWeb.ps1`，自动准备Godot 4.7.2单线程Web模板，重新导入当前资源并导出 `build/Web/index.html`，生成 `build/StarRingArena-Web.zip`。上传到itch.io时勾选 `This file will be played in the browser`；更新替换该ZIP即可保留原游玩链接。
 - **存档：** Windows位于 `%APPDATA%/StarRingArena/`，包含角色、设置与对局记录。更新时保留该目录。
 
 详细说明：[角色编辑与多人配置](docs/角色编辑与多人对战.md) · [对局记录](docs/对局记录.md) · [安卓使用](docs/安卓使用说明.md) · [角色与技能扩展](docs/角色与技能扩展.md)

@@ -11,6 +11,7 @@ var render_scale: float = 1.0
 const TEAM_COLORS := [Color("78e5dc"),Color("dec58d"),Color("bb96ff"),Color("ff92ae"),Color("91dda2"),Color("8abfff"),Color("ffa16a"),Color("d8e3ef")]
 var effects: Array = []
 var trails: Dictionary = {}
+var teleport_versions: Dictionary = {}
 var hit_flashes: Dictionary = {}
 var hit_reactions: Dictionary = {}
 var dash_ghosts: Dictionary = {}
@@ -27,6 +28,8 @@ var font: Font
 var background_texture: Texture2D
 var mimi_punch_texture: Texture2D = preload("res://assets/effects/mimi_punch.png")
 var ashen_hand_texture: Texture2D = preload("res://assets/effects/ashen_hand.png")
+var tribbie_rocket_texture: Texture2D
+const GATE_HELPERS = [preload("res://assets/stickers/133_缇安 晚安.png"),preload("res://assets/stickers/134_缇宁 发送.png")]
 var _trail_timer: float = 0.0
 const ChargedPortrait = preload("res://scripts/ui/charged_portrait.gd")
 const Plates = preload("res://scripts/ui/board_plates.gd")
@@ -44,6 +47,8 @@ const GOLD := Color("dec58d")
 const CYAN := Color("78e5dc")
 
 func _ready() -> void:
+	if ResourceLoader.exists("res://assets/effects/tribbie_rocket.png"):
+		tribbie_rocket_texture = load("res://assets/effects/tribbie_rocket.png")
 	backdrop = Backdrop.new()
 	add_child(backdrop)
 	var font_variation := FontVariation.new()
@@ -63,6 +68,7 @@ func reset_visuals() -> void:
 	plate_clock = 0
 	effects.clear()
 	trails.clear()
+	teleport_versions.clear()
 	hit_flashes.clear()
 	hit_reactions.clear()
 	dash_ghosts.clear()
@@ -74,6 +80,9 @@ func reset_visuals() -> void:
 
 func ingest(items: Array) -> void:
 	for event in items:
+		if event.get("kind","") == "portal_teleport":
+			trails.erase(int(event.side))
+			dash_ghosts.erase(int(event.side))
 		if event.get("kind","") == "end":
 			trails.clear()
 			dash_ghosts.clear()
@@ -106,6 +115,8 @@ func ingest(items: Array) -> void:
 			punch_popup_index += 1
 		if e.get("kind", "") == "impact":
 			e["life"] = 0.18
+		if e.get("kind","") == "rainbow_afterimage":
+			e["life"] = .2
 		if e.get("kind", "") == "mimi_punch":
 			e["life"] = 0.10
 		if e.get("kind", "") == "time_stop_start":
@@ -141,6 +152,12 @@ func _start_slash_wave(event: Dictionary) -> void:
 	slash_waves.append(wave)
 
 func _process(delta: float) -> void:
+	if arena != null:
+		for actor in arena.fighters:
+			if int(teleport_versions.get(actor.side,actor.teleport_serial)) != actor.teleport_serial:
+				trails.erase(actor.side)
+				dash_ghosts.erase(actor.side)
+			teleport_versions[actor.side] = actor.teleport_serial
 	var step: float = 0.0 if frozen else delta * display_speed
 	visual_time += step
 	for side in hit_flashes.keys():
@@ -156,6 +173,8 @@ func _process(delta: float) -> void:
 	slash_waves = slash_waves.filter(func(wave): return wave.age < wave.duration-.000001)
 	_update_acheron_visuals()
 	for e in effects:
+		if e.get("kind","") == "rainbow_afterimage" and arena != null and arena.time_stop_remaining > 0:
+			continue
 		e["age"] += step
 	for side in departures:
 		var departure: Dictionary = departures[side]
@@ -372,6 +391,7 @@ func _draw() -> void:
 	_draw_board_fragments()
 	_draw_shrinking_arena()
 	_draw_cut_walls()
+	_draw_portal_walls()
 	if arena != null and not arena.fighters.is_empty():
 		for f in arena.fighters:
 			_draw_trail(f)
@@ -617,6 +637,15 @@ func _draw_projectiles() -> void:
 		var velocity: Vector2 = p.get("velocity", Vector2.RIGHT)
 		var radius: float = p.get("radius", 8.0)
 		var color: Color = p.get("color", Color("ffac6d"))
+		if p.get("visual_type","") == "tribbie_rocket":
+			_draw_rainbow(p.get("trail",[]),1.0)
+			_object_transform(position)
+			draw_set_transform_matrix(world_transform*Transform2D(velocity.angle()-3*PI/4,position))
+			var size: float = float(p.get("sprite_size",48))
+			if tribbie_rocket_texture != null:
+				draw_texture_rect(tribbie_rocket_texture,Rect2(Vector2.ONE*-size*.5,Vector2.ONE*size),false)
+			draw_set_transform_matrix(world_transform)
+			continue
 		if p.get("visual_type","") == "laotie":
 			var direction: Vector2 = velocity.normalized()
 			_board_line(position-direction*75,position,Color(0.52,0.68,0.51,0.25),16,true)
@@ -634,6 +663,55 @@ func _draw_projectiles() -> void:
 		draw_circle(position, radius * 1.9, Color(color, 0.08))
 		draw_circle(position, radius, color)
 		draw_circle(position, radius * 0.45, Color("fff3d2"))
+
+func _draw_rainbow(points: Array, alpha: float) -> void:
+	if points.size() < 2:
+		return
+	var colors: Array = [Color("ff5b6d"),Color("ffae45"),Color("ffe65c"),Color("74e978"),Color("6edafa"),Color("8292f2"),Color("d48bef")]
+	if arena == null or arena.cut_walls.is_empty():
+		# Seven strips instead of one draw call per colour per trail segment.
+		draw_set_transform_matrix(base_world_transform)
+		for band in range(7):
+			var vertices := PackedVector2Array()
+			var shades := PackedColorArray()
+			for i in range(points.size()):
+				var tangent: Vector2 = points[maxi(0,i-1)].direction_to(points[mini(points.size()-1,i+1)])
+				vertices.append(points[i]+tangent.orthogonal()*(band-3)*1.45)
+				shades.append(Color(colors[band],alpha*.8*float(i)/float(points.size()-1)))
+			draw_polyline_colors(vertices,shades,1.8,true)
+		draw_set_transform_matrix(world_transform)
+		return
+	for i in range(points.size()-1):
+		var normal: Vector2 = points[i].direction_to(points[i+1]).orthogonal()
+		var fade: float = float(i+1)/maxi(1,points.size()-1)
+		for band in range(7):
+			var offset: Vector2 = normal*(band-3)*1.45
+			_board_line(points[i]+offset,points[i+1]+offset,Color(colors[band],alpha*fade*.8),1.8,true)
+
+func _draw_portal_walls() -> void:
+	if arena == null or not arena.portals.enabled():
+		return
+	var rect: Rect2 = arena.bounds
+	var index: int = 0
+	for wall in arena.portals.walls:
+		var normal: Vector2 = arena.portals.NORMALS[wall]
+		var midpoint: Vector2 = rect.get_center()-normal*rect.size*.5
+		var tangent: Vector2 = normal.orthogonal()
+		var half_length: float = (rect.size.y if wall < 2 else rect.size.x)*.5-9*arena.shrink_scale
+		var first: Vector2 = midpoint-tangent*half_length
+		var last: Vector2 = midpoint+tangent*half_length
+		_board_line(first,last,Color(1,.76,.3,.13),19*arena.shrink_scale,true)
+		_board_line(first,last,Color(1,.84,.43,.5),8*arena.shrink_scale,true)
+		_board_line(first,last,Color("fff0aa"),3*arena.shrink_scale,true)
+		var helper: Vector2 = midpoint-normal*25*arena.shrink_scale
+		_object_transform(helper)
+		var size: float = 48*arena.shrink_scale
+		var triangle := PackedVector2Array([helper-normal*size*.6,helper+normal*size*.35+tangent*size*.6,helper+normal*size*.35-tangent*size*.6])
+		draw_colored_polygon(triangle,Color(1,.88,.51,.75))
+		draw_polyline(PackedVector2Array([triangle[0],triangle[1],triangle[2],triangle[0]]),Color("fff0b1"),2,true)
+		draw_texture_rect(GATE_HELPERS[index%2],Rect2(helper-Vector2.ONE*size*.5,Vector2.ONE*size),false)
+		index += 1
+	_base_transform()
 
 func _draw_skill_visual(v: Dictionary) -> void:
 	var p: Vector2 = v.get("position", Vector2.ZERO)
@@ -809,7 +887,13 @@ func _draw_effect(e: Dictionary) -> void:
 	var color: Color = e.get("color", CYAN)
 	color.a *= 1.0 - t
 	var kind: String = e.get("kind", "")
-	if kind == "acheron_slash":
+	if kind == "rainbow_afterimage":
+		_draw_rainbow(e.get("points",[]),1-t)
+	elif kind == "portal_teleport":
+		for at in [position,e.get("exit",position)]:
+			_object_transform(at)
+			draw_arc(at,18+18*t,0,TAU,24,Color(1,.88,.5,(1-t)*.65),2,true)
+	elif kind == "acheron_slash":
 		var first: Vector2 = e.get("from",position)
 		var last: Vector2 = e.get("to",position)
 		var line: Array = plates.full_line(first,first.direction_to(last))

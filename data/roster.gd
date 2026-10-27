@@ -10,6 +10,7 @@ const CHARACTERS = [
 	preload("res://data/characters/memory_trailblazer.tres"),
 	preload("res://data/characters/castorice.tres"),
 	preload("res://data/characters/acheron.tres"),
+	preload("res://data/characters/tribbie.tres"),
 ]
 
 

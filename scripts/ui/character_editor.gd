@@ -658,7 +658,7 @@ func play_preview() -> void:
 	config.width = 664
 	config.height = 664
 	config.participants = [{"definition":sample,"movement":"chase","team":0},{"definition":dummy,"movement":"chase","team":1}]
-	if thread_preview:
+	if thread_preview or draft.skill_slots[selected_skill].get("template_id","") == "tribbie_portals":
 		config.participants[0].movement = "bounce"
 	preview_arena.start_match(config)
 	preview_arena.fighters[0].position = Vector2(310,380)
@@ -667,7 +667,7 @@ func play_preview() -> void:
 	if skill.skill_id == "bat_throw":
 		preview_arena.fighters[1].position = Vector2(560,380)
 	skill.cooldown_remaining = 0
-	if skill.skill_id in ["feiying_toast","memory_mimi","castorice_aura"]:
+	if skill.skill_id in ["feiying_toast","memory_mimi","castorice_aura","tribbie_portals"]:
 		skill.seed_preview()
 	elif skill.phase_type == "主动":
 		skill.request_cast(preview_arena.fighters[1])
@@ -721,6 +721,8 @@ func _process(delta: float) -> void:
 		preview_limit = float(draft.skill_slots[selected_skill].get("parameters",{}).get("time_stop_duration",7.0)) + 1.0
 	if draft.skill_slots[selected_skill].get("template_id","") == "castorice_aura":
 		preview_limit = 10.0
+	if draft.skill_slots[selected_skill].get("template_id","") == "tribbie_portals":
+		preview_limit = 12.0
 	if draft.skill_slots[selected_skill].get("template_id","") == "acheron_slash":
 		var params: Dictionary = draft.skill_slots[selected_skill].get("parameters",{})
 		preview_limit = float(draft.skill_slots[selected_skill].get("charge_time",7.0))+float(params.get("warning_lock_time",1.5))+float(params.get("colour_expand_time",.5))+float(params.get("colour_hold_time",1.5))+.5

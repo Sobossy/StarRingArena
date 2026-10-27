@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="星环竞技场"
-config/version="0.8.2"
+config/version="0.8.3"
 config/description="可扩展的 2D 自动对战竞技场"
 run/main_scene="res://main.tscn"
 config/use_custom_user_dir=true
