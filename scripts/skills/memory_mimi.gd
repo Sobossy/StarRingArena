@@ -2,6 +2,8 @@ extends "res://scripts/skills/skill_base.gd"
 @export_range(0,200,1) var punch_range: float = 21.0
 @export_range(0.1,60,0.1) var punches_per_second: float = 13.0
 @export_range(0,100000,1) var punch_damage: float = 10.0
+@export_range(0,3000,1) var punch_slow_amount: float = 50.0
+@export_range(0,30,0.01) var punch_slow_duration: float = 0.3
 @export_range(0,100,0.1) var ally_hit_charge: float = 5.0
 @export_range(0,100,0.1) var mimi_hit_charge: float = 3.5
 @export_range(0.1,30,0.1) var time_stop_duration: float = 7.0
@@ -85,12 +87,18 @@ func tick(delta: float) -> void:
 		arena.emit_effect("mimi_punch",effect_position,Color("ffc9df"),{"angle":direction.angle(),"side":fighter.side,"true_damage":stopped})
 
 func on_battle_damage(event: Dictionary) -> void:
-	if not can_act() or arena.time_stop_remaining > 0:
+	if not can_act():
 		return
 	var source = event.get("source")
+	var own_punch: bool = source == fighter and str(event.skill_id) == "mimi_punch"
+	# Use settled hits so shields count, rejected/zero damage does not. Apply
+	# before the charge guard: punches during our time stop also refresh slow.
+	if own_punch and punch_slow_amount > 0 and punch_slow_duration > 0:
+		arena.apply_status(fighter,event.target,"slow_flat",punch_slow_duration,punch_slow_amount)
+	if arena.time_stop_remaining > 0:
+		return
 	if source == null or source.team_id != fighter.team_id:
 		return
-	var own_punch: bool = source == fighter and str(event.skill_id) == "mimi_punch"
 	charge = minf(100,charge + (mimi_hit_charge if own_punch else ally_hit_charge))
 	if charge >= 100:
 		arena.request_time_stop(fighter,time_stop_duration)

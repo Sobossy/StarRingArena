@@ -583,7 +583,7 @@ func _draw_fighter(definition, position: Vector2, side: int, hp: float, shield: 
 		tags = "上膛 "
 	if statuses.has("burn"):
 		tags += "灼烧 "
-	if statuses.has("slow"):
+	if statuses.has("slow") or statuses.has("slow_flat"):
 		tags += "减速 "
 	if not tags.is_empty():
 		_text(tags.strip_edges(), position + Vector2(0, 84), 11, Color("eebd7c"), true)

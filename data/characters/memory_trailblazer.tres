@@ -23,6 +23,8 @@ skill_slots = Array[Dictionary]([{
 "mimi_return_speed": 650.0,
 "mimi_size": 64.0,
 "punch_damage": 10.0,
+"punch_slow_amount": 50.0,
+"punch_slow_duration": 0.3,
 "punch_range": 100.0,
 "punches_per_second": 13.0,
 "stopped_range_bonus": 20.0,

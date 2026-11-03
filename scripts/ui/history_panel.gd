@@ -336,7 +336,7 @@ static func _team(team: int) -> String:
 	return ["A","B","C","D"][team]+"队" if team >= 0 and team < 4 else "阵营%d" % (team+1)
 
 static func _status_name(id: String) -> String:
-	return {"burn":"灼烧","slow":"减速"}.get(id,id)
+	return {"burn":"灼烧","slow":"减速","slow_flat":"固定移速降低"}.get(id,id)
 
 func _skill_name(id: String) -> String:
 	for slot in record.get("participants",[]):

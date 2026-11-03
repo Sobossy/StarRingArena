@@ -491,7 +491,7 @@ func apply_status(source, target, id: String, duration_seconds: float, power: fl
 		return
 	if source != null and is_time_stopped(source):
 		return
-	if source != null and id in ["burn", "slow"] and not is_enemy(source, target):
+	if source != null and id in ["burn", "slow", "slow_flat"] and not is_enemy(source, target):
 		return
 	if not is_finite(duration_seconds) or not is_finite(power):
 		return
@@ -812,6 +812,10 @@ func _move_fighter(fighter, delta: float) -> void:
 		if effect.source.alive and not is_time_stopped(effect.source):
 			slow = maxf(slow,float(effect.power))
 	desired *= clampf(1.0-slow,0.05,1.0)
+	if fighter.statuses.has("slow_flat") and not is_time_stopped(fighter.statuses.slow_flat.source):
+		# Flat reduction follows percentage slows, never reverses movement and
+		# leaves skill dashes / knockback to their existing independent rules.
+		desired = desired.limit_length(maxf(0.0,desired.length()-float(fighter.statuses.slow_flat.power)))
 	if fighter.dash_remaining > 0.0:
 		desired = fighter.dash_velocity
 		fighter.dash_remaining = maxf(0.0, fighter.dash_remaining - delta)
